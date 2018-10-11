@@ -20,8 +20,11 @@ module.exports = {
       })
     } else {
       res.send({
-        user,
-        token: jwtSignUser(user)
+        email: 'abc@gmail.com',
+        token: jwtSignUser(user),
+        userName: 'Grace Li',
+        isSupervisor: true,
+        isWmsUser: false
       })
     }
   }

@@ -2,11 +2,9 @@
   <div id="app">
     <v-app>
       <page-header />
-      <main>
-        <v-container fluid>
-          <router-view/>
-        </v-container>
-      </main>
+      <v-container fluid>
+        <router-view/>
+      </v-container>
     </v-app>
   </div>
 </template>

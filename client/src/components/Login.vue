@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <v-container fluid class="light-blue lighten-5" >
+  <div v-if="!$store.state.isUserLoggedIn">
+    <v-container >
       <v-layout row wrap>
-        <v-flex xs12 class="text-xs-center" mt-5>
+        <v-flex xs12 offset-xs0 class="text-md-center" mt-5>
           <h1>Please Sign In</h1>
         </v-flex>
         <v-flex xs12 sm6 offset-sm3 mt-3>
@@ -20,7 +20,7 @@
                   id="email"
                   type="email"
                   v-model="email"
-                  required></v-text-field>
+                  required box></v-text-field>
               </v-flex>
               <v-flex>
                 <v-text-field
@@ -29,7 +29,7 @@
                   id="password"
                   type="password"
                   v-model="password"
-                  required></v-text-field>
+                  required box></v-text-field>
               </v-flex>
               <v-flex class="text-xs-center" mt-5>
                 <v-btn color="light-blue darken-3" type="submit" v-on:click="login">LOGIN</v-btn>
@@ -60,10 +60,16 @@ export default {
           email: this.email,
           password: this.password
         })
-        this.$store.dispatch('setToken', response.data.token)
+        this.$store.dispatch('setUserInfo',
+          {userName: response.data.userName,
+            email: response.data.email,
+            token: response.data.token,
+            isSupervisor: response.data.isSupervisor,
+            isWmsUser: response.data.isWmsUser})
       } catch (error) {
         this.error = error.response.data.error
       }
+      this.$router.push('/navMenu')
     }
   }
 }

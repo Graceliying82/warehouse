@@ -22,7 +22,7 @@ export default {
   name: 'Hello',
   data () {
     return {
-      msg: 'Welcome to Warehouse Management System'
+      msg: 'Welcome! Please Login.'
     }
   }
 }
