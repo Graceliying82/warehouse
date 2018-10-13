@@ -4,6 +4,7 @@ import Hello from '@/components/Hello'
 import Register from '@/components/Register'
 import Login from '@/components/Login'
 import NavMenu from '@/components/NavMenu'
+import Receiving from '@/components/Receiving'
 
 Vue.use(Router)
 
@@ -28,6 +29,11 @@ export default new Router({
       path: '/navMenu',
       name: 'navMenu',
       component: NavMenu
+    },
+    {
+      path: '/navMenu/receiving',
+      name: 'receiving',
+      compoent: Receiving
     }
   ]
 })
