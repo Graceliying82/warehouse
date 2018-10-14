@@ -18,6 +18,14 @@ module.exports = {
       return res.status(403).send({
         error: 'Login error!'
       })
+    } else if (user.email === 'wms@gmail.com') {
+      res.send({
+        email: 'wms@gmail.com',
+        token: jwtSignUser(user),
+        userName: 'Jialin Li',
+        isSupervisor: false,
+        isWmsUser: true
+      })
     } else {
       res.send({
         email: 'abc@gmail.com',
