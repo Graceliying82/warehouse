@@ -11,8 +11,15 @@ export default new Vuex.Store({
     userName: '',
     email: '',
     isSupervisor: false,
-    isWmsUser: false,
-    drawer: false
+    isWmsUser: false
+  },
+  getters: {
+    getSupervisor: state => {
+      return state.isSupervisor
+    },
+    getWmsUser: state => {
+      return state.isWmsUser
+    }
   },
   mutations: {
     setLogIn (state, loggedIn) {
@@ -39,11 +46,7 @@ export default new Vuex.Store({
       state.isSupervisor = false
       state.isWmsUser = false
       state.isUserLoggedIn = false
-    },
-    setDrawer (state) {
-      state.drawer = !state.drawer
     }
-
   },
   actions: {
     setToken (context, token) {
@@ -63,9 +66,6 @@ export default new Vuex.Store({
     },
     resetUserInfo (context) {
       context.commit('resetUserInfo')
-    },
-    setDrawer (context) {
-      context.commit('setDrawer')
     }
   }
 })

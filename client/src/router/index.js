@@ -3,8 +3,17 @@ import Router from 'vue-router'
 import Hello from '@/components/Hello'
 import Register from '@/components/Register'
 import Login from '@/components/Login'
-import NavMenu from '@/components/NavMenu'
-import Receiving from '@/components/Receiving'
+import Receiving from '@/components/wmsPages/Receiving'
+import Shipping from '@/components/wmsPages/Shipping'
+import StockMove from '@/components/wmsPages/StockMove'
+import InventoryLocations from '@/components/wmsPages/InventoryLocations'
+import UpgradeApprove from '@/components/wmsPages/UpgradeApprove'
+import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
+import Inventory from '@/components/wmsPages/Inventory'
+import Products from '@/components/wmsPages/Products'
+import Reports from '@/components/wmsPages/Reports'
+import CreateUser from '@/components/wmsPages/CreateUser'
+import DeleteUser from '@/components/wmsPages/DeleteUser'
 
 Vue.use(Router)
 
@@ -26,14 +35,59 @@ export default new Router({
       component: Login
     },
     {
-      path: '/navMenu',
-      name: 'navMenu',
-      component: NavMenu
+      path: '/receiving',
+      name: 'receiving',
+      component: Receiving
     },
     {
-      path: '/navMenu/receiving',
-      name: 'receiving',
-      compoent: Receiving
+      path: '/shipping',
+      name: 'shipping',
+      component: Shipping
+    },
+    {
+      path: '/stockMove',
+      name: 'stockMove',
+      component: StockMove
+    },
+    {
+      path: '/inventoryLocations',
+      name: 'inventoryLocations',
+      component: InventoryLocations
+    },
+    {
+      path: '/upgradeApprove',
+      name: 'upgradeApprove',
+      component: UpgradeApprove
+    },
+    {
+      path: '/upgradeRequest',
+      name: 'upgradeRequest',
+      component: UpgradeRequest
+    },
+    {
+      path: '/inventory',
+      name: 'inventory',
+      component: Inventory
+    },
+    {
+      path: '/products',
+      name: 'products',
+      component: Products
+    },
+    {
+      path: '/createUser',
+      name: 'createUser',
+      component: CreateUser
+    },
+    {
+      path: '/reports',
+      name: 'reports',
+      component: Reports
+    },
+    {
+      path: '/deleteUser',
+      name: 'deleteUser',
+      component: DeleteUser
     }
   ]
 })

@@ -2,12 +2,11 @@
   <div class="hello">
     <v-layout>
       <v-flex xs12 sm6 offset-sm3>
-        <v-card>
+        <v-card v-if="!$store.state.isUserLoggedIn">
           <v-img
             src="https://cdn.vuetifyjs.com/images/cards/desert.jpg"
             aspect-ratio="2.75"
           ></v-img>
-
           <v-card-title primary-title>
               <h3 class="headline mb-0">{{ msg }}</h3>
           </v-card-title>
