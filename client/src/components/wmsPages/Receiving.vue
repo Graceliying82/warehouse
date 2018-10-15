@@ -1,14 +1,43 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-content>
-      <v-container fill-height>
-        <v-layout justify-center align-center>
-          <v-flex shrink>
-            <h1>Please scan or input:</h1>
-          </v-flex>
+      <v-container grid-list-xl>
+         <h1>Please scan barcodes:</h1>
+        <v-layout justify-center align-start row>
+            <v-flex lg6 xs12>
+              <v-text-field
+                label="Tracking Number"></v-text-field>
+            </v-flex>
+            
         </v-layout>
+        <v-layout justify-center align-start row>
+            <v-flex lg4 xs12>
+              <v-text-field
+                label="UPC"
+                autofocus=true></v-text-field>
+            </v-flex>
+            <v-flex lg2 xs5>
+              <v-text-field
+                type=number
+                label="Quantity"></v-text-field>
+            </v-flex>
+        </v-layout>
+        <v-layout justify-center align-start row>
+            <v-flex lg4 xs12>
+              <v-text-field
+                label="User/Org name"
+                hint="Optional"
+                persistent-hint></v-text-field>
+            </v-flex>
+            <v-flex lg2 xs5>
+              <v-text-field
+                label="WmsPID"></v-text-field>
+            </v-flex>
+        </v-layout>
+        <v-btn>Submit</v-btn>
       </v-container>
     </v-content>
+
   </div>
 </template>
 
