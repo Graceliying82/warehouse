@@ -8,13 +8,11 @@
               <v-text-field
                 label="Tracking Number"></v-text-field>
             </v-flex>
-            
         </v-layout>
         <v-layout justify-center align-start row>
             <v-flex lg4 xs12>
               <v-text-field
-                label="UPC"
-                autofocus=true></v-text-field>
+                label="UPC"></v-text-field>
             </v-flex>
             <v-flex lg2 xs5>
               <v-text-field
