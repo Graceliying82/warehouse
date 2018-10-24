@@ -117,7 +117,6 @@ export default {
     resetQn: function () {
       const input = this.$refs.quantity
       input.lazyValue = undefined
-//      input.value = undefined
       input.$emit('input')
     },
     nextUPC: function () {
