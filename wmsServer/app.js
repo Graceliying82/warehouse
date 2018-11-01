@@ -3,9 +3,11 @@ var express = require('express');
 var path = require('path');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+const cors = require('cors')
+
 
 // Connection URL
-const dburl = 'mongodb://127.0.0.1:27017/';
+const dburl = 'mongodb://127.0.0.1:27017';
 // Database Name
 const dbName = 'wms';
 
@@ -24,8 +26,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 //set db info TODO not sure why it does not work
-app.set('dburl', dburl);
-app.set('dbName', dbName);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -33,6 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
+app.use(cors())
 
 app.use(express.static(path.join(__dirname, 'public')));
 

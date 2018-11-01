@@ -57,17 +57,18 @@ export default {
     async login () {
       try {
         const response = await AuthenticationService.login({
-          email: this.email,
-          password: this.password
+          'email': this.email,
+          'password': this.password
         })
+        console.log(response.data.email)
         this.$store.dispatch('setUserInfo',
-          {userName: response.data.userName,
-            email: response.data.email,
-            token: response.data.token,
-            isSupervisor: response.data.isSupervisor,
-            isWmsUser: response.data.isWmsUser})
+          {userName: 'abc',
+            email: 'response.data.email',
+            token: 'response.data.token',
+            isSupervisor: true,
+            isWmsUser: false})
       } catch (error) {
-        this.error = error.response.data.error
+        console.log('error:' + error)
       }
       this.$router.push('/')
     }

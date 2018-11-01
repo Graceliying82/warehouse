@@ -12,7 +12,7 @@ function jwtSignUser (user) {
 module.exports = {
   login (req, res) {
   // This is a dummy login function. Will be replaced by real function
-    console.log('test')
+    console.log(req.body)
     const user = req.body
     if (user.email === 'wrong@gmail.com') {
       return res.status(403).send({
