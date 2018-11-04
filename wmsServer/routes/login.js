@@ -38,6 +38,8 @@ router.post('/', function (req, res, next) {
         return next(error);
       } else if (result.password == req.body.password) { //todo check password with hash
         token = jwtSignUser(result);
+        //make it session cookie with expires 0, close browser tap it will be cleaned
+        res.cookie('aToken',token, {expires:0});
         res.send({
           'email': result.email,
           'userName': result.userName,
