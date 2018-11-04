@@ -33,6 +33,7 @@ router.post('/',function(req, res, next){
       if (result.length>0) {
         const error = new Error('user existed, please use other email');
         error.status = 400;
+        error.message = 'user existed, please use other email';
         client.close();
         return next(error);
       }
