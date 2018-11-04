@@ -4,16 +4,15 @@ var path = require('path');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
-
+const jwt = require('jsonwebtoken')
 
 // Connection URL
-const dburl = 'mongodb://127.0.0.1:27017';
+const dburl = 'mongodb://192.168.1.100:27017';
 // Database Name
 const dbName = 'wms';
 
 
 var logger = require('morgan');
-
 
 var loginRouter = require('./routes/login');
 var orgRouter = require('./routes/org');
@@ -42,6 +41,27 @@ app.use(function(req, res, next){
   req.dbName =dbName;
   next();
 });
+
+app.use(function(req, res, next){
+  let baseUrl = req.baseUrl;
+  if (baseUrl === '/login'){
+    next();
+  } else {
+    //todo validate jwt token
+    next();
+    try {
+      token = req.cookies.aToken;
+      console.log('jwt token is ' + token);
+      //TODO temporary private key
+      var decoded = jwt.verify(token, 'warehousemanagement');
+      console.log('jwt token value is ' + decoded.email);
+      //put the informatio in the requests, do we ned clean it after the process? YES?
+      req.user = decoded.email;
+    } catch(err) {
+      // err
+    }
+  }
+})
 
 //app.use('/', indexRouter);
 app.use('/login', loginRouter);
