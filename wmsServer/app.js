@@ -7,7 +7,7 @@ const cors = require('cors')
 
 
 // Connection URL
-const dburl = 'mongodb://127.0.0.1:27017';
+const dburl = 'mongodb://192.168.1.100:27017';
 // Database Name
 const dbName = 'wms';
 
