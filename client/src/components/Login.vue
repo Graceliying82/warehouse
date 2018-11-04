@@ -60,13 +60,16 @@ export default {
           'email': this.email,
           'password': this.password
         })
-        console.log(response.data.email)
+        console.log(response.data)
         this.$store.dispatch('setUserInfo',
-          {userName: 'abc',
-            email: 'response.data.email',
-            token: 'response.data.token',
-            isSupervisor: true,
-            isWmsUser: false})
+          {userName: response.data.userName,
+            email: response.data.email,
+            orgName: response.data.orgName,
+            isSupervisor: response.data.isSupervisor,
+            isWmsUser: response.data.isWmsUser,
+            isSeller: response.data.isSeller,
+            isBuyer: response.data.isBuyer,
+            token: response.data.token})
       } catch (error) {
         console.log('error:' + error)
       }

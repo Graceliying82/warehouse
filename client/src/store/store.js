@@ -8,10 +8,13 @@ export default new Vuex.Store({
   state: {
     token: null,
     isUserLoggedIn: false,
-    userName: '',
     email: '',
+    userName: '',
+    orgName: '',
     isSupervisor: false,
-    isWmsUser: false
+    isWmsUser: false,
+    isBuyer: false,
+    isSeller: false
   },
   getters: {
     getSupervisor: state => {
@@ -19,6 +22,12 @@ export default new Vuex.Store({
     },
     getWmsUser: state => {
       return state.isWmsUser
+    },
+    getBuyer: state => {
+      return state.isBuyer
+    },
+    getSeller: state => {
+      return state.isSeller
     }
   },
   mutations: {
@@ -35,16 +44,22 @@ export default new Vuex.Store({
       state.userName = payload.userName
       state.email = payload.email
       state.token = payload.token
+      state.orgName = payload.orgName
       state.isSupervisor = payload.isSupervisor
       state.isWmsUser = payload.isWmsUser
+      state.isBuyer = payload.isBuyer
+      state.isSeller = payload.isSeller
       state.isUserLoggedIn = true
     },
     resetUserInfo (state) {
       state.userName = ''
       state.email = ''
       state.token = ''
+      state.orgName = ''
       state.isSupervisor = false
       state.isWmsUser = false
+      state.isBuyer = false
+      state.isSeller = false
       state.isUserLoggedIn = false
     }
   },
@@ -56,7 +71,7 @@ export default new Vuex.Store({
       context.commit('setLogIn', isUserLoggedIn)
     },
     setUserName (context, userName) {
-      context.commit('setUerName', userName)
+      context.commit('setUserName', userName)
     },
     setEmail (context, email) {
       context.commit('setEmail', email)

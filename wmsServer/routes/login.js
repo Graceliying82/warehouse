@@ -9,6 +9,13 @@ const assert = require('assert');
 // Database Name
 //const dbName = app.get('wms');
 
+const jwt = require('jsonwebtoken')
+
+function jwtSignUser (user) {
+  return jwt.sign(user,'warehousemanagement', {
+    expiresIn: '7d'
+  })
+}
 
 
 /* GET home page. */
@@ -30,7 +37,17 @@ router.post('/', function (req, res, next) {
         client.close();
         return next(error);
       } else if (result.password == req.body.password) { //todo check password with hash
-        res.send(result);
+        token = jwtSignUser(result);
+        res.send({
+          'email': result.email,
+          'userName': result.userName,
+          'isSupervisor': result.isSupervisor,
+          'isWmsUser': result.isWmsUser,
+          'isBuyer': result.isBuyer,
+          'isSeller': result.isSeller,
+          'orgName': result.orgName,
+          'token': token
+        });
         client.close();
         res.end();
       } else {
@@ -47,3 +64,4 @@ router.post('/', function (req, res, next) {
 });
 
 module.exports = router;
+

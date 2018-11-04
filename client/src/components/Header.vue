@@ -82,39 +82,76 @@ export default {
       drawer: false,
       items: null,
       supervisor: [
-        { heading: 'Warehouse' },
+        { heading: 'Receiving' },
         { icon: 'account_balance', text: 'Receiving', name: 'receiving' },
+        { icon: 'add_shopping_cart', text: 'Receiving Records', name: 'receivingRecords' },
+        { divider: true },
+        { heading: 'Location' },
+        { icon: 'event_seat', text: 'Inventory Locations Management', name: 'stockMove' },
+        { icon: 'compare_arrows', text: 'Product Move In', name: 'stockMove' },
+        { icon: 'compare_arrows', text: 'Product Move Out', name: 'stockMove' },
+        { divider: true },
+        { heading: 'Shipping' },
         { icon: 'add_shopping_cart', text: 'Shipping', name: 'shipping' },
-        { icon: 'compare_arrows', text: 'Stock move', name: 'stockMove' },
-        { icon: 'event_seat', text: 'Inventory Locations', name: 'inventoryLocations' },
+        { icon: 'add_shopping_cart', text: 'Shipping Records', name: 'shippingRecords' },
         { divider: true },
-        { heading: 'Upgrade' },
-        { icon: 'class', text: 'Upgrade Request', name: 'upgradeRequest' },
-        { icon: 'build', text: 'Upgrade approve', name: 'upgradeApprove' },
-        { divider: true },
-        { icon: 'dashboard', text: 'Inventory', name: 'inventory' },
-        { divider: true },
+        { heading: 'Manage Product' },
         { icon: 'important_devices', text: 'Products', name: 'products' },
         { divider: true },
-        { icon: 'textsms', text: 'Reports', name: 'reports' },
+        { heading: 'Upgrade' },
+        { icon: 'class', text: 'New Upgrade Request', name: 'upgradeRequest' },
+        { icon: 'build', text: 'Active Upgrade Request', name: 'upgradeApprove' },
+        { icon: 'build', text: 'Upgrade Request Records', name: 'upgradeApprove' },
         { divider: true },
-        { heading: 'User Management' },
-        { icon: 'contacts', text: 'Create User', name: 'createUser' },
-        { icon: 'delete', text: 'Delete User', name: 'deleteUser' }
+        { heading: 'User' },
+        { icon: 'contacts', text: 'Add User', name: 'createUser' },
+        { icon: 'delete', text: 'User Records', name: 'deleteUser' }
       ],
       wmsUser: [
-        { heading: 'Warehouse' },
+        { heading: 'Receiving' },
         { icon: 'account_balance', text: 'Receiving', name: 'receiving' },
+        { icon: 'add_shopping_cart', text: 'Receiving Records', name: 'receivingRecords' },
+        { divider: true },
+        { heading: 'Location' },
+        { icon: 'event_seat', text: 'Inventory Locations Management', name: 'stockMove' },
+        { icon: 'compare_arrows', text: 'Product Move In', name: 'stockMove' },
+        { icon: 'compare_arrows', text: 'Product Move Out', name: 'stockMove' },
+        { divider: true },
+        { heading: 'Shipping' },
         { icon: 'add_shopping_cart', text: 'Shipping', name: 'shipping' },
-        { icon: 'compare_arrows', text: 'Stock move', name: 'stockMove' },
-        { icon: 'event_seat', text: 'Inventory Locations', name: 'inventoryLocations' },
+        { icon: 'add_shopping_cart', text: 'Shipping Records', name: 'shippingRecords' },
+        { divider: true },
+        { heading: 'Manage Product' },
+        { icon: 'important_devices', text: 'Products', name: 'products' },
         { divider: true },
         { heading: 'Upgrade' },
-        { icon: 'class', text: 'Upgrade Request', name: 'upgradeRequest' },
-        { icon: 'build', text: 'Upgrade approve', name: 'upgradeApprove' },
+        { icon: 'class', text: 'New Upgrade Request', name: 'upgradeRequest' },
+        { icon: 'build', text: 'Active Upgrade Request', name: 'upgradeApprove' },
+        { icon: 'build', text: 'Upgrade Request Records', name: 'upgradeApprove' }
+      ],
+      buyer: [
+        { heading: 'Receiving' },
+        { icon: 'add_shopping_cart', text: 'Receiving Records', name: 'receivingRecords' },
         { divider: true },
-        { icon: 'dashboard', text: 'Inventory', name: 'inventory' },
+        { heading: 'Shipping' },
+        { icon: 'add_shopping_cart', text: 'Shipping Records', name: 'shippingRecords' },
         { divider: true },
+        { heading: 'Manage Product' },
+        { icon: 'important_devices', text: 'Products', name: 'products' },
+        { divider: true },
+        { heading: 'Upgrade' },
+        { icon: 'class', text: 'New Upgrade Request', name: 'upgradeRequest' },
+        { icon: 'build', text: 'Active Upgrade Request', name: 'upgradeApprove' },
+        { icon: 'build', text: 'Upgrade Request Records', name: 'upgradeApprove' }
+      ],
+      seller: [
+        { heading: 'Receiving' },
+        { icon: 'add_shopping_cart', text: 'Receiving Records', name: 'receivingRecords' },
+        { divider: true },
+        { heading: 'Shipping' },
+        { icon: 'add_shopping_cart', text: 'Shipping Records', name: 'shippingRecords' },
+        { divider: true },
+        { heading: 'Manage Product' },
         { icon: 'important_devices', text: 'Products', name: 'products' }
       ]
     }
@@ -141,6 +178,18 @@ export default {
       if (user) {
         this.items = this.wmsUser
         console.log('This is a wmsUser')
+      }
+    })
+    this.$store.watch(() => { return this.$store.getters.getBuyer }, user => {
+      if (user) {
+        this.items = this.buyer
+        console.log('This is a buyer')
+      }
+    })
+    this.$store.watch(() => { return this.$store.getters.getSeller }, user => {
+      if (user) {
+        this.items = this.seller
+        console.log('This is a seller')
       }
     })
   }
