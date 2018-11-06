@@ -6,5 +6,8 @@ export default {
   },
   createUser (credentials) {
     return Api().post('/users', credentials)
+  },
+  getOrgName () {
+    return Api().get('/org')
   }
 }
