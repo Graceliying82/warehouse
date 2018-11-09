@@ -1,14 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var app = require('../app').default;
-
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
-// Connection URL
-//const dburl = app.get('dburl');
-// Database Name
-//const dbName = app.get('wms');
-
+const MongoClient = require('mongodb').MongoClient
+const assert = require('assert')
+const Config = require('../config/config')
 const jwt = require('jsonwebtoken')
 
 function jwtSignUser (user) {
@@ -17,53 +9,66 @@ function jwtSignUser (user) {
   })
 }
 
-
 /* GET home page. */
-router.post('/', function (req, res, next) {
-  const dburl = req.dburl;
-  const dbName = req.dbName;
-  MongoClient.connect(dburl, function (err, client) {
-    assert.equal(null, err);
-    console.log("connected successfully to mongo server");
-    const dbcollection = client.db(dbName).collection("user");
-    dbcollection.findOne({ 'email': req.body.email }, ((error, result) => {
-      if (error)  {
-        client.close();
-        return next(error);
+module.exports = {
+  async post (req, res, next) {
+      let client = await MongoClient.connect(Config.dburl,  { useNewUrlParser: true });
+      const dbcollection = client.db(Config.dbname).collection("user");
+      try {
+        var result = await dbcollection.findOne ({'email': req.body.email})
+        if (result == null) {
+          const error = new Error('failed to authenticate');
+          error.status = 401;
+          client.close();
+          return next(error);
+
+        } else {
+          token = jwtSignUser(result);
+          res.send({
+            'email': result.email,
+            'userName': result.userName,
+            'isSupervisor': result.isSupervisor,
+            'isWmsUser': result.isWmsUser,
+            'isBuyer': result.isBuyer,
+            'isSeller': result.isSeller,
+            'orgName': result.orgName,
+            'token': token
+          })
+        };
+        client.close()
+        next()
+      } catch (error) {
+        console.log("login/get error: " + error)
+        client.close()
+        next(error)
       }
+  },
+
+  // Check the email address and see whether it is existed
+  async checkEmail (req, res, next) {
+    let client = await MongoClient.connect(Config.dburl,  { useNewUrlParser: true });
+    const dbcollection = client.db(Config.dbname).collection("user");
+    try {
+      var result = await dbcollection.findOne ({'email': req.body.email})
       if (result == null) {
-        const error = new Error('failed to authenticate');
-        error.status = 401;
-        client.close();
-        return next(error);
-      } else if (result.password == req.body.password) { //todo check password with hash
-        token = jwtSignUser(result);
-        //make it session cookie with expires 0, close browser tap it will be cleaned
-        res.cookie('aToken',token, {expires:0});
         res.send({
-          'email': result.email,
-          'userName': result.userName,
-          'isSupervisor': result.isSupervisor,
-          'isWmsUser': result.isWmsUser,
-          'isBuyer': result.isBuyer,
-          'isSeller': result.isSeller,
-          'orgName': result.orgName,
-          'token': token
-        });
+          'emailExisted': false
+        })
         client.close();
-        res.end();
+        return next();
       } else {
-        const error = new Error('failed to authenticate');
-        error.status = 401;
+        res.send({
+          'emailExisted': true
+        })
         client.close();
-        return next(error);
-      }
-      
-
-    }))
-
-  })
-});
-
-module.exports = router;
-
+        return next();
+      };
+      client.close()
+      next()
+    } catch (error) {
+      console.log("login/get error: " + error)
+      client.close()
+      next(error)
+    }
+  }
+}
