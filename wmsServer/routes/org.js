@@ -1,61 +1,48 @@
-var express = require('express');
-var router = express.Router();
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
+module.exports = {
 
-
-
-router.post('/', function(req, res, next) {
-
-  MongoClient.connect(req.dburl, function(err, client){
-    assert.equal(null, err);
-    console.log("connected successfully to mongo server");
-    const dbcollection = client.db(req.dbName).collection("org");
-    dbcollection.find({'orgName':req.body.orgName}).toArray((error, result)=>{
-      if (err) next(err);
-      if (result.length>0) {
+  //create new org
+  async post (req, res, next) {
+    const dbcollection = req.db.collection("org");
+    try {
+      var result1 = await dbcollection.find({'orgName':req.body.orgName}).toArray()
+      if (result1.length>0) {
         const error = new Error('Org existed, please use other orgName');
         error.status = 400;
-        client.close();
-        return next(error);
+        throw error;
       }
       req.body.createTime = new Date().toString();
-      dbcollection.insert(req.body, (error, result2)=>{
-        if (error) return next(error);
-        res.send(result2)
-        client.close();
-        res.end();
-      })
-    })
-  })
-});
+      result2 = await dbcollection.insertOne(req.body)
+      res.send(result2)
+      res.end();
+    } catch (error) {
+      console.log("Create Org error: " + error)
+      next(error)
+    }
+  },
 
-router.get('/', function(req, res, next) {
-  MongoClient.connect(req.dburl, function(err, client){
-    assert.equal(null, err);
-    console.log("connected successfully to mongo server");
-    client.db(req.dbName).collection("org").find().toArray((error, result)=>{
-      if (error) return next(error);
+  //  Get orgs
+  async get (req, res, next) {
+    const dbcollection = req.db.collection("org");
+    try {
+      var result = await dbcollection.find().toArray()
       res.send(result)
-    })
-    client.close();
-  })
-});
+      res.end()
+    } catch (error) {
+      console.log("Get Org error: " + error)
+      next(error)
+    }
+  },
 
-router.get('/:name', function(req, res, next){
-  MongoClient.connect(req.dburl, function(err, client){
-    assert.equal(null, err);
-    console.log("connected successfully to mongo server");
-    console.log(req.params.name);
-    client.db(req.dbName).collection("org").find({'orgName':req.params.name}).toArray((error, result)=>{
-      console.log('result ' + result);
-      if (error) return next(error);
+  // Get org by name
+  async getByName (req, res, next) {
+    const dbcollection = req.db.collection("org");
+    try {
+      var result = await dbcollection.find({'orgName':req.params.name}).toArray()
       res.send(result)
-    })
-    client.close();
-  })
-});
-
-
-
-module.exports = router;
+      res.end()
+    } catch (error) {
+      console.log("Get Org error: " + error)
+      next(error)
+    }
+  }
+}

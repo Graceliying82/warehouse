@@ -1,7 +1,6 @@
-const MongoClient = require('mongodb').MongoClient
-const assert = require('assert')
-const Config = require('../config/config')
 const jwt = require('jsonwebtoken')
+const passport = require('passport')
+const passportSetup = require('../config/passport-setup')
 
 function jwtSignUser (user) {
   return jwt.sign(user,'warehousemanagement', {
@@ -12,16 +11,13 @@ function jwtSignUser (user) {
 /* GET home page. */
 module.exports = {
   async post (req, res, next) {
-      let client = await MongoClient.connect(Config.dburl,  { useNewUrlParser: true });
-      const dbcollection = client.db(Config.dbname).collection("user");
+      const dbcollection = req.db.collection("user");
       try {
         var result = await dbcollection.findOne ({'email': req.body.email})
         if (result == null) {
           const error = new Error('failed to authenticate');
           error.status = 401;
-          client.close();
           return next(error);
-
         } else {
           token = jwtSignUser(result);
           res.send({
@@ -35,39 +31,31 @@ module.exports = {
             'token': token
           })
         };
-        client.close()
-        next()
+        res.end();
       } catch (error) {
         console.log("login/get error: " + error)
-        client.close()
         next(error)
       }
   },
 
   // Check the email address and see whether it is existed
   async checkEmail (req, res, next) {
-    let client = await MongoClient.connect(Config.dburl,  { useNewUrlParser: true });
-    const dbcollection = client.db(Config.dbname).collection("user");
+    const dbcollection = req.db.collection("user");
     try {
       var result = await dbcollection.findOne ({'email': req.body.email})
       if (result == null) {
         res.send({
           'emailExisted': false
         })
-        client.close();
-        return next();
       } else {
         res.send({
           'emailExisted': true
         })
-        client.close();
-        return next();
+
       };
-      client.close()
-      next()
+      res.end()
     } catch (error) {
       console.log("login/get error: " + error)
-      client.close()
       next(error)
     }
   }
