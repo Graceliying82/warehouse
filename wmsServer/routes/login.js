@@ -19,17 +19,23 @@ module.exports = {
           error.status = 401;
           return next(error);
         } else {
-          token = jwtSignUser(result);
-          res.send({
-            'email': result.email,
-            'userName': result.userName,
-            'isSupervisor': result.isSupervisor,
-            'isWmsUser': result.isWmsUser,
-            'isBuyer': result.isBuyer,
-            'isSeller': result.isSeller,
-            'orgName': result.orgName,
-            'token': token
-          })
+          if (result.password === req.body.password) {
+            token = jwtSignUser(result);
+            res.send({
+              'email': result.email,
+              'userName': result.userName,
+              'isSupervisor': result.isSupervisor,
+              'isWmsUser': result.isWmsUser,
+              'isBuyer': result.isBuyer,
+              'isSeller': result.isSeller,
+              'orgName': result.orgName,
+              'token': token
+            })
+          } else {
+            const error = new Error('failed to authenticate');
+            error.status = 401;
+            return next(error);
+          }
         };
         res.end();
       } catch (error) {

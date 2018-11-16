@@ -1,6 +1,6 @@
 <template>
 <div>
-  <v-toolbar fixed clipped-left app class="light-blue">
+  <v-toolbar fixed clipped-left app class="cyan">
     <v-toolbar-side-icon
       v-if="$store.state.isUserLoggedIn"
       @click.stop="drawer=!drawer"></v-toolbar-side-icon>
@@ -25,6 +25,7 @@
       <v-navigation-drawer
         v-model="drawer"
         app
+        temporary
         clipped>
         <v-list class="pa-1" mt-3>
           <v-list-tile avatar>
@@ -84,10 +85,10 @@ export default {
       supervisor: [
         { heading: 'Receiving' },
         { icon: 'account_balance', text: 'Receiving', name: 'receiving' },
-        { icon: 'add_shopping_cart', text: 'Receiving Records', name: 'receivingRecords' },
+        { icon: 'add_shopping_cart', text: 'Receiving Records', name: 'inventory' },
         { divider: true },
         { heading: 'Location' },
-        { icon: 'event_seat', text: 'Inventory Locations Management', name: 'stockMove' },
+        { icon: 'event_seat', text: 'Inventory Locations Management', name: 'inventory' },
         { icon: 'compare_arrows', text: 'Product Move In', name: 'stockMove' },
         { icon: 'compare_arrows', text: 'Product Move Out', name: 'stockMove' },
         { divider: true },

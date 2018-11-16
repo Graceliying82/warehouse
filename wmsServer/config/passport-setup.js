@@ -10,5 +10,8 @@ passport.use(
     clientSecret: keys.google.clientSecret
   }, (accessToken, refreshToken, profile, done) => {
     // passport callback function
+    console.log('passport callback function fired')
+    console.log('From passport setup: ' + profile.emails[0].value)
+    return done(null, profile.emails[0].value);
   })
 )
