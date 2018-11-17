@@ -1,51 +1,53 @@
 <template>
   <div v-if="!$store.state.isUserLoggedIn">
     <v-container >
-      <v-layout row wrap>
-        <v-flex xs12 offset-xs0 class="text-md-center" mt-5>
-          <h1>Please login</h1>
-        </v-flex>
-        <v-flex xs12 sm6 offset-sm3 mt-3>
-          <form @submit.prevent="login">
-            <v-layout column>
-              <v-flex>
-                <v-alert type="error"
-                  outline
-                  :value="error"
-                  dismissible>
-                  {{ error }}
-                </v-alert>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  name="email"
-                  label="Email"
-                  id="email"
-                  type="email"
-                  v-model="email"
-                  v-on:click = "error = null"
-                  required box></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  name="password"
-                  label="Password"
-                  id="password"
-                  type="password"
-                  v-model="password"
-                  v-on:click = "error = null"
-                  required box></v-text-field>
-              </v-flex>
-              <v-flex class="text-xs-center" mt-5>
-                <v-btn color="light-blue darken-3"
-                  dark
-                  type = "submit"
-                  v-on:click.prevent="login">LOGIN</v-btn>
-              </v-flex>
-            </v-layout>
-          </form>
-        </v-flex>
-      </v-layout>
+      <panel>
+        <v-layout row wrap>
+          <v-flex xs12 offset-xs0 class="text-md-center" mt-5>
+            <h1>Please Login</h1>
+          </v-flex>
+          <v-flex xs12 sm6 offset-sm3 mt-3>
+            <form @submit.prevent="login">
+              <v-layout column>
+                <v-flex>
+                  <v-alert type="error"
+                    outline
+                    :value="error"
+                    dismissible>
+                    {{ error }}
+                  </v-alert>
+                </v-flex>
+                <v-flex>
+                  <v-text-field
+                    name="email"
+                    label="Email"
+                    id="email"
+                    type="email"
+                    v-model="email"
+                    v-on:click = "error = null"
+                    required box></v-text-field>
+                </v-flex>
+                <v-flex>
+                  <v-text-field
+                    name="password"
+                    label="Password"
+                    id="password"
+                    type="password"
+                    v-model="password"
+                    v-on:click = "error = null"
+                    required box></v-text-field>
+                </v-flex>
+                <v-flex class="text-xs-center" mt-5>
+                  <v-btn color="cyan darken-2"
+                    dark
+                    type = "submit"
+                    v-on:click.prevent="login">LOGIN</v-btn>
+                </v-flex>
+              </v-layout>
+            </form>
+          </v-flex>
+        </v-layout>
+      </panel>
     </v-container>
   </div>
 </template>

@@ -14,6 +14,7 @@ import Products from '@/components/wmsPages/Products'
 import Reports from '@/components/wmsPages/Reports'
 import CreateUser from '@/components/wmsPages/CreateUser'
 import DeleteUser from '@/components/wmsPages/DeleteUser'
+import ReceiveRecords from '@/components/wmsPages/ReceiveRecords'
 
 Vue.use(Router)
 
@@ -88,6 +89,11 @@ export default new Router({
       path: '/deleteUser',
       name: 'deleteUser',
       component: DeleteUser
+    },
+    {
+      path: '/receiveRecords',
+      name: 'receiveRecords',
+      component: ReceiveRecords
     }
   ]
 })

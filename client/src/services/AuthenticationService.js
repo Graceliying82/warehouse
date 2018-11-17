@@ -11,6 +11,6 @@ export default {
     return Api().post('/users', credentials)
   },
   getOrgName () {
-    return Api().get('/org')
+    return Api().get('/orgs')
   }
 }
