@@ -34,7 +34,7 @@
                 <v-text-field
                   label = "Quantity"
                   ref="Quantity"
-                  v-model="receiveItem.qn"
+                  v-model.number="receiveItem.qn"
                   v-on:keydown.enter="addNewReceiveItem(i)"
                   type="number"
                   ></v-text-field>

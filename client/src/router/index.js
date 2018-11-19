@@ -15,6 +15,7 @@ import Reports from '@/components/wmsPages/Reports'
 import CreateUser from '@/components/wmsPages/CreateUser'
 import DeleteUser from '@/components/wmsPages/DeleteUser'
 import ReceiveRecords from '@/components/wmsPages/ReceiveRecords'
+import InvtLocMg from '@/components/wmsPages/InvtLocMg'
 
 Vue.use(Router)
 
@@ -94,6 +95,11 @@ export default new Router({
       path: '/receiveRecords',
       name: 'receiveRecords',
       component: ReceiveRecords
+    },
+    {
+      path: '/invtLocMg',
+      name: 'invtLocMg',
+      component: InvtLocMg
     }
   ]
 })

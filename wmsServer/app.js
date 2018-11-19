@@ -31,7 +31,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
 app.use(function(req, res, next) {
     // initDatabase().then(db => {
@@ -54,3 +54,4 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+9102805213683062522920

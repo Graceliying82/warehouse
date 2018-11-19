@@ -10,7 +10,7 @@ module.exports = {
         error.status = 400;
         throw error;
       }
-      req.body.createTime = new Date().toString();
+      req.body.createTime = new Date().toLocaleString();
       result2 = await dbcollection.insertOne(req.body)
       res.send(result2)
       res.end();
