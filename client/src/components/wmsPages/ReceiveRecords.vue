@@ -144,6 +144,8 @@
 </template>
 
 <script>
+import Inventory from '@/services/inventory'
+
 export default {
   data () {
     return {
@@ -198,75 +200,26 @@ export default {
     this.initialize()
   },
   methods: {
-    initialize () {
-      this.items = [
-        {
-          createTime: 'Thu Nov 15 2018 11:26:55',
-          trackingNo: '9102805213683062123455',
-          orgName: 'D',
-          productName: 'ABCD',
-          UPC: '744120875512',
-          price: 0,
-          qn: 5,
-          id: '5bed9e4f664330297cfd2131',
-          note: ''
-        },
-        {
-          createTime: 'Thu Nov 16 2018 11:26:55',
-          trackingNo: '9102805213683062123455',
-          orgName: 'A',
-          productName: 'EFGH',
-          UPC: '744120875512',
-          price: 0,
-          qn: 4,
-          id: '5bed9e4f664330297cfd2132',
-          note: ''
-        },
-        {
-          createTime: 'Thu Nov 17 2018 11:26:55',
-          trackingNo: '9102805213683062123455',
-          orgName: 'B',
-          productName: 'XYZ',
-          UPC: '744120875512',
-          price: 0,
-          qn: 3,
-          id: '5bed9e4f664330297cfd2133',
-          note: ''
-        },
-        {
-          createTime: 'Thu Nov 15 2018 11:26:55',
-          trackingNo: '9102805213683062123454',
-          orgName: 'C',
-          productName: 'asdfsd',
-          UPC: '744120875512',
-          price: 240,
-          qn: 6,
-          id: '5bed9e4f664330297cfd2134',
-          note: ''
-        },
-        {
-          createTime: 'Thu Nov 18 2018 11:26:55',
-          trackingNo: '9102805213683062123455',
-          orgName: 'D',
-          productName: 'ewrwe',
-          UPC: '744120875512',
-          price: 0,
-          qn: 7,
-          id: '5bed9e4f664330297cfd2135',
-          note: ''
-        },
-        {
-          createTime: 'Thu Nov 19 2018 11:26:55',
-          trackingNo: '9102805213683062123455',
-          orgName: 'D',
-          productName: '',
-          UPC: '744120875512',
-          price: 120,
-          qn: 8,
-          id: '5bed9e4f664330297cfd2136',
-          note: ''
+    async initialize () {
+      try {
+        // result from inventory collection
+        const invRes = await Inventory.get()
+        for (let i = 0; i < invRes.data.length; i++) {
+          for (let j = 0; j < invRes.data[i].rcIts.length; j++) {
+            this.items.push({
+              createTime: invRes.data[i].crtTm,
+              trackingNo: invRes.data[i].trNo,
+              orgName: invRes.data[i].ogNm,
+              UPC: invRes.data[i].rcIts[j].UPC,
+              productName: invRes.data[i].rcIts[j].prodNm,
+              qn: invRes.data[i].rcIts[j].qn
+            })
+          }
         }
-      ]
+        console.log(this.items)
+      } catch (error) {
+        console.log(error)
+      }
     },
     editItem (item) {
       this.editedIndex = this.items.indexOf(item)

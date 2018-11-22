@@ -7,7 +7,7 @@
       <v-flex xs6 ma-5>
           <v-card>
             <v-card-title color="purple">
-               Add New Location 
+            Add New Location
             </v-card-title>
             <v-text-field
             v-model="LocationID"
@@ -36,7 +36,7 @@
         </panel>
       </v-flex>
     </v-layout>
-    <v-layout>  
+    <v-layout>
       <v-flex ma-5>
         <panel title = "Current Locations">
           <v-text-field

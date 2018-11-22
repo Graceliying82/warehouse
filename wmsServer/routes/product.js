@@ -15,19 +15,30 @@ module.exports = {
   async post (req, res, next) {
     const dbcollection = req.db.collection("product");
     try {
-      var wmsPid = req.body.wmsPid;
-      if ((wmsPid == null) || (wmsPid == undefined)) { 
-        const error = new Error('wmsPid missing');
-        error.status = 400;
-        throw error;
-      }
-      var result1 = await dbcollection.find({'wmsPid':wmsPid}).toArray()
-      if (result1.length>0) {
-        const error = new Error('product existed, please use other wmsPid');
-        error.status = 400;
-        throw error;
-      }
-      req.body.createTime = new Date().toString();
+      // await dbcollection.findOneAndUpdate(
+      //   {
+      //     _id: req.data.UPC
+      //   }, //query
+      //   {
+      //     $set: { mdfTm: req.body.crtTm },
+      //   },
+      //   { upsert: true }
+      // );
+      var UPC = req.body.UPC;
+      // if ((UPC == null) || (UPC == undefined)) { 
+      //   const error = new Error('UPC missing');
+      //   error.status = 406;
+      //   throw error;
+      // }
+      // var result1 = await dbcollection.find({'UPC':UPC}).toArray()
+      // if (result1.length>0) {
+      //   const error = new Error('Product already existed!');
+      //   error.status = 409;
+      //   throw error;
+      // }
+      req.body.createTime = new Date().toLocaleString();
+      // req.body._id = req.body.UPC;
+      // delete req.body.UPC;
       result2 = await dbcollection.insertOne(req.body)
       res.send(result2)
       res.end();

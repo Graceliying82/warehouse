@@ -24,7 +24,9 @@ module.exports = (app) => {
   app.post('/products', Product.post)
   app.get('/products', Product.get)
 
-  app.post('/receive', Inventory.receive)
+  // from inventory
+  app.post('/inventory', Inventory.post)
+  app.get('/inventory', Inventory.get)
 
   //auth with google
   // app.get('/auth/google', (req, res, next) => {

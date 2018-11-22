@@ -34,33 +34,46 @@
                 <v-text-field
                   label = "Quantity"
                   ref="Quantity"
+                  :rules="[rules.qnRule1, rules.qnRule2]"
                   v-model.number="receiveItem.qn"
                   v-on:keydown.enter="addNewReceiveItem(i)"
                   type="number"
                   ></v-text-field>
               </v-flex>
             </v-layout >
-            <v-btn dark class="cyan darken-2">Submit</v-btn>
+            <v-btn dark class="cyan darken-2" @click.prevent="submit()">Submit</v-btn>
           </panel>
         </v-flex>
         <v-layout align-center justify-center column>
         <v-flex >
           <h2>Camera 1</h2>
           <div>
-            <video video ref="video" id="video" width="480" height="300" autoplay>
+            <video ref="video1" id="video" width="100%" height="300" 
+              :src="source1" autoplay>
               Video stream not available.</video>
-            <canvas ref="canvas" id="canvas" width="480" height="320"></canvas>
+            <canvas ref="canvas1" id="canvas" width="480" height="320"></canvas>
           </div>
-          <v-btn v-on:click= "initCamera">Turn on Camera</v-btn>
+          <v-layout>
+          <v-btn v-on:click= "startCamera1"
+            :disabled=cam1NotFound>Turn on</v-btn>
+          <v-btn v-on:click= "stopCamera1"
+            :disabled=cam1NotFound>Turn off</v-btn>
+          </v-layout>
         </v-flex>
         <v-flex ma-4>
           <h2>Camera 2</h2>
           <div>
-          <video video ref="video" id="video" width="480" height="300" autoplay>
+          <video ref="video2" id="video" width="100%" height="300" 
+              :src="source2" autoplay>
               Video stream not available.</video>
-          <canvas ref="canvas" id="canvas" width="480" height="320"></canvas>
+          <canvas ref="canvas2" id="canvas" width="480" height="320"></canvas>
           </div>
-          <v-btn v-on:click= "initCamera">Turn on Camera</v-btn>
+          <v-layout>
+          <v-btn v-on:click= "startCamera2"
+            :disabled=cam2NotFound>Turn on</v-btn>
+          <v-btn v-on:click= "stopCamera2"
+            :disabled=cam2NotFound>Turn off</v-btn>
+          </v-layout>
        </v-flex>
         </v-layout>
       </v-layout>
@@ -69,22 +82,35 @@
 </template>
 
 <script>
-import Receive from '@/services/Receive'
+import Inventory from '@/services/inventory'
 export default {
   data () {
     return {
+      qnvalid: false,
+      rules: {
+        qnRule1: val => val < 1000000 || 'Not a valid number',
+        qnRule2: val => val >= 0 || 'Not a valid number'
+      },
       trackingNumber: '', // tracking Number
       orgName: '', // orgName
       receiveItems: [// receiveItems
-        { UPC: '', qn: undefined }
+        { UPC: '', qn: 0, prodNm: '', price: 0 }
       ],
       result: '',
       alertType: 'success',
       showAlert: false,
       message: '',
       // camera related codes
-      video: {},
-      canvas: {}
+      source1: null,
+      source2: null,
+      canvas1: null,
+      canvas2: null,
+      cameras: [],
+      camerasListEmitted: false,
+      deviceId1: null,
+      deviceId2: null,
+      cam1NotFound: true,
+      cam2NotFound: true
     }
   },
   methods: {
@@ -105,13 +131,13 @@ export default {
     addNewReceiveItem (i) {
       if (i === (this.receiveItems.length - 1)) {
         // Add a line only if reach to the buttom of the lines
-        this.receiveItems.push({ UPC: '', qn: undefined })
+        this.receiveItems.push({ UPC: '', qn: 0, prodNm: '', price: 0 })
       }
       this.$nextTick(() => {
         this.$refs.UPC[i + 1].focus()
       })
     },
-    async receive () {
+    async submit () {
       try {
         // need to delete empty lines in receiveItems
         for (var i = this.receiveItems.length - 1; i >= 0; i--) {
@@ -120,7 +146,7 @@ export default {
           }
         }
         // Send data to server
-        const response = await Receive.receive({
+        const response = await Inventory.post({
           // tracking No
           'trNo': this.trackingNumber,
           // OrgName
@@ -134,8 +160,14 @@ export default {
         this.result = response.data.ok
         this.alertType = 'success'
         this.showAlert = true
+        // clean up data
+        this.trackingNumber = ''
+        this.orgName = ''
+        this.receiveItems = [{ UPC: '', qn: 0, prodNm: '', price: 0 }]
+        this.changeFocusToTracking()
       } catch (error) {
-        this.message = error.response.data.error
+        this.message = error
+        console.log(error)
         this.result = 0
         this.alertType = 'error'
         this.showAlert = true
@@ -146,30 +178,161 @@ export default {
         // submit current input
         console.log('Calling to wrote pass data to server')
         // some code to pass data to server
-        this.receive()
-        // clean up data
-        this.trackingNumber = ''
-        this.orgName = ''
-        this.receiveItems = [{ UPC: '', qn: undefined }]
-        this.changeFocusToTracking()
+        this.submit()
       } else {
-        this.changeFocusToQuantity(i)
+        let idx = -1
+        for (let j = 0; j <= this.receiveItems.length - 1; j++) {
+          if ((this.receiveItems[j].UPC === this.receiveItems[i].UPC) && (i !== j)) {
+            idx = j
+          }
+        }
+        if (idx === -1) {
+          this.changeFocusToQuantity(i)
+        } else {
+          this.receiveItems[idx].qn++
+          this.receiveItems[i].UPC = ''
+        }
       }
     },
-    initCamera () {
-      console.log('initCamera called')
-      console.log('navigator.mediaDevices : ' + navigator.mediaDevices)
-      console.log('navigator.mediaDevices.getUserMedia : ' + navigator.mediaDevices.getUserMedia)
-      this.video = this.$refs.video
+    //Cameras related code
+    legacyGetUserMediaSupport() {
+      return constraints => {
+        // First get ahold of the legacy getUserMedia, if present
+        let getUserMedia =
+          navigator.getUserMedia ||
+          navigator.webkitGetUserMedia ||
+          navigator.mozGetUserMedia ||
+          navigator.msGetUserMedia ||
+          navigator.oGetUserMedia;
+        // Some browsers just don't implement it - return a rejected promise with an error
+        // to keep a consistent interface
+        if (!getUserMedia) {
+          return Promise.reject(
+            new Error('getUserMedia is not implemented in this browser')
+          );
+        }
+        // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
+        return new Promise(function(resolve, reject) {
+          getUserMedia.call(navigator, constraints, resolve, reject);
+        });
+      };
+    },
+    setupMedia() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-          console.log('in then')
-          this.video.src = window.URL.createObjectURL(stream)
-          this.video.play()
+        this.testMediaAccess();
+      }
+    },
+    loadCameras() {
+      navigator.mediaDevices
+      .enumerateDevices()
+      .then(
+        deviceInfos => {
+          for (var i = 0; i !== deviceInfos.length; ++i) {
+            var deviceInfo = deviceInfos[i];
+            if (deviceInfo.kind === 'videoinput') {
+              this.cameras.push(deviceInfo);
+            }
+          }
+        },
+      )
+      .then(
+        () => {
+          console.log(this.cameras.length)
+          if (this.cameras.length == 1) {
+            this.cam1NotFound = false
+          }
+          if (this.cameras.length == 2) {
+            this.cam1NotFound = false
+            this.cam2NotFound = false
+          }
+        }
+      )
+      .catch(error => this.$emit('notsupported', error));
+    },
+    /**
+     * load the stream to the
+     */
+    // Stop the video
+    stop() {
+      if(this.$refs.video !== null && this.$refs.video.srcObject) {
+        this.stopStreamedVideo(this.$refs.video);
+      }
+    },
+    /**
+     * test access
+     */
+    testMediaAccess() {
+      navigator.mediaDevices
+        .getUserMedia({video: true})
+        .then(stream => this.loadCameras())
+        .catch(error => this.$emit('error', error));
+    },
+    startCamera1 () {
+      console.log("initCamera1")
+      if (this.cameras === null) {
+        console.log('No camera found!')
+      } else {
+        if (this.cameras[0].deviceId) {
+          console.log('Camera 1 deviceId：  ' + this.cameras[0].deviceId)
+          this.deviceId1 = this.cameras[0].deviceId
+        }
+      }
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { deviceId: { exact: this.deviceId1 } }
         })
+        .then(stream => {
+          this.$refs.video1.srcObject = stream
+          this.$refs.video1.play()
+        })
+        .catch(error => this.$emit('error', error));
+    },
+    startCamera2 () {
+      console.log("initCamera2")
+      if (this.cameras === null) {
+        console.log('No camera found!')
+      } else {
+        if (this.cameras[1].deviceId) {
+          console.log('Camera 2 deviceId：  ' + this.cameras[1].deviceId)
+          this.deviceId2 = this.cameras[1].deviceId
+        }
+      }
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { deviceId: { exact: this.deviceId2 } }
+        })
+        .then(stream => {
+          this.$refs.video2.srcObject = stream
+          this.$refs.video2.play()
+        })
+        .catch(error => this.$emit('error', error));
+    },
+    stopCamera1 () {
+      if(this.$refs.video1 !== null && this.$refs.video1.srcObject) {
+        let tracks = this.$refs.video1.srcObject.getVideoTracks()
+        tracks.forEach(track => {
+        // stops the video track
+        track.stop();
+        this.$refs.video1.srcObject = null;
+        this.source1 = null;
+      });
+      }
+    },
+    stopCamera2 () {
+      if(this.$refs.video2 !== null && this.$refs.video2.srcObject) {
+        let tracks = this.$refs.video2.srcObject.getVideoTracks()
+        tracks.forEach(track => {
+        // stops the video track
+        track.stop();
+        this.$refs.video2.srcObject = null;
+        this.source2 = null;
+      });
       }
     }
-  }
+  },
+  mounted() {
+    this.setupMedia()
+  },
 }
 </script>
 
