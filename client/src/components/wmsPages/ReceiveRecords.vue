@@ -2,6 +2,12 @@
   <div>
     <panel title = 'Receiving Records'>
       <v-card>
+        <v-layout>
+          <v-spacer></v-spacer>
+          <v-btn fab dark  small color="indigo">
+            <v-icon dark>get_app</v-icon>
+          </v-btn>
+        </v-layout>
         <v-card-title>
         <v-spacer></v-spacer>
         <v-text-field

@@ -48,7 +48,7 @@
         <v-flex >
           <h2>Camera 1</h2>
           <div>
-            <video ref="video1" id="video" width="100%" height="300" 
+            <video ref="video1" id="video" width="100%" height="300"
               :src="source1" autoplay>
               Video stream not available.</video>
             <canvas ref="canvas1" id="canvas" width="480" height="320"></canvas>
@@ -63,7 +63,7 @@
         <v-flex ma-4>
           <h2>Camera 2</h2>
           <div>
-          <video ref="video2" id="video" width="100%" height="300" 
+          <video ref="video2" id="video" width="100%" height="300"
               :src="source2" autoplay>
               Video stream not available.</video>
           <canvas ref="canvas2" id="canvas" width="480" height="320"></canvas>
@@ -194,81 +194,52 @@ export default {
         }
       }
     },
-    //Cameras related code
-    legacyGetUserMediaSupport() {
-      return constraints => {
-        // First get ahold of the legacy getUserMedia, if present
-        let getUserMedia =
-          navigator.getUserMedia ||
-          navigator.webkitGetUserMedia ||
-          navigator.mozGetUserMedia ||
-          navigator.msGetUserMedia ||
-          navigator.oGetUserMedia;
-        // Some browsers just don't implement it - return a rejected promise with an error
-        // to keep a consistent interface
-        if (!getUserMedia) {
-          return Promise.reject(
-            new Error('getUserMedia is not implemented in this browser')
-          );
-        }
-        // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-        return new Promise(function(resolve, reject) {
-          getUserMedia.call(navigator, constraints, resolve, reject);
-        });
-      };
-    },
-    setupMedia() {
+    setupMedia () {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        this.testMediaAccess();
+        this.testMediaAccess()
       }
     },
-    loadCameras() {
+    loadCameras () {
       navigator.mediaDevices
-      .enumerateDevices()
-      .then(
-        deviceInfos => {
-          for (var i = 0; i !== deviceInfos.length; ++i) {
-            var deviceInfo = deviceInfos[i];
-            if (deviceInfo.kind === 'videoinput') {
-              this.cameras.push(deviceInfo);
+        .enumerateDevices()
+        .then(
+          deviceInfos => {
+            for (var i = 0; i !== deviceInfos.length; ++i) {
+              var deviceInfo = deviceInfos[i]
+              if (deviceInfo.kind === 'videoinput') {
+                this.cameras.push(deviceInfo)
+              }
             }
           }
-        },
-      )
-      .then(
-        () => {
-          console.log(this.cameras.length)
-          if (this.cameras.length == 1) {
-            this.cam1NotFound = false
+        )
+        .then(
+          () => {
+            console.log(this.cameras.length)
+            if (this.cameras.length === 1) {
+              this.cam1NotFound = false
+            }
+            if (this.cameras.length === 2) {
+              this.cam1NotFound = false
+              this.cam2NotFound = false
+            }
           }
-          if (this.cameras.length == 2) {
-            this.cam1NotFound = false
-            this.cam2NotFound = false
-          }
-        }
-      )
-      .catch(error => this.$emit('notsupported', error));
+        )
+        .catch(error => this.$emit('notsupported', error))
     },
-    /**
-     * load the stream to the
-     */
     // Stop the video
-    stop() {
-      if(this.$refs.video !== null && this.$refs.video.srcObject) {
-        this.stopStreamedVideo(this.$refs.video);
+    stop () {
+      if (this.$refs.video !== null && this.$refs.video.srcObject) {
+        this.stopStreamedVideo(this.$refs.video)
       }
     },
-    /**
-     * test access
-     */
-    testMediaAccess() {
+    testMediaAccess () {
       navigator.mediaDevices
         .getUserMedia({video: true})
         .then(stream => this.loadCameras())
-        .catch(error => this.$emit('error', error));
+        .catch(error => console.log(error))
     },
     startCamera1 () {
-      console.log("initCamera1")
+      console.log('initCamera1')
       if (this.cameras === null) {
         console.log('No camera found!')
       } else {
@@ -285,10 +256,10 @@ export default {
           this.$refs.video1.srcObject = stream
           this.$refs.video1.play()
         })
-        .catch(error => this.$emit('error', error));
+        .catch(error => console.log(error))
     },
     startCamera2 () {
-      console.log("initCamera2")
+      console.log('initCamera2')
       if (this.cameras === null) {
         console.log('No camera found!')
       } else {
@@ -305,34 +276,34 @@ export default {
           this.$refs.video2.srcObject = stream
           this.$refs.video2.play()
         })
-        .catch(error => this.$emit('error', error));
+        .catch(error => console.log(error))
     },
     stopCamera1 () {
-      if(this.$refs.video1 !== null && this.$refs.video1.srcObject) {
+      if (this.$refs.video1 !== null && this.$refs.video1.srcObject) {
         let tracks = this.$refs.video1.srcObject.getVideoTracks()
         tracks.forEach(track => {
-        // stops the video track
-        track.stop();
-        this.$refs.video1.srcObject = null;
-        this.source1 = null;
-      });
+          // stops the video track
+          track.stop()
+          this.$refs.video1.srcObject = null
+          this.source1 = null
+        })
       }
     },
     stopCamera2 () {
-      if(this.$refs.video2 !== null && this.$refs.video2.srcObject) {
+      if (this.$refs.video2 !== null && this.$refs.video2.srcObject) {
         let tracks = this.$refs.video2.srcObject.getVideoTracks()
         tracks.forEach(track => {
-        // stops the video track
-        track.stop();
-        this.$refs.video2.srcObject = null;
-        this.source2 = null;
-      });
+          // stops the video track
+          track.stop()
+          this.$refs.video2.srcObject = null
+          this.source2 = null
+        })
       }
     }
   },
-  mounted() {
+  mounted () {
     this.setupMedia()
-  },
+  }
 }
 </script>
 
