@@ -3,10 +3,41 @@
     <panel title = 'Receiving Records'>
       <v-card>
         <v-layout>
+          <v-flex xs12 sm6 md4>
+          <v-menu
+            :close-on-content-click="false"
+            v-model="menu"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="290px"
+          >
+        <v-text-field
+          slot="activator"
+          v-model="date"
+          label="Picker without buttons"
+          prepend-icon="event"
+          readonly
+        ></v-text-field>
+        <v-date-picker 
+          v-model="date"
+          max = currentDate
+          @input="menu = false">
+        </v-date-picker>
+      </v-menu>
+    </v-flex>
           <v-spacer></v-spacer>
-          <v-btn fab dark  small color="indigo">
-            <v-icon dark>get_app</v-icon>
-          </v-btn>
+          <download-excel
+              class   = "v-btn"
+              type    = "csv"
+              name    = "inventoryReceive.xls"
+              :data   = "items"
+              :fields = "json_fields"
+              >
+              Download
+          </download-excel>
         </v-layout>
         <v-card-title>
         <v-spacer></v-spacer>
@@ -155,6 +186,9 @@ import Inventory from '@/services/inventory'
 export default {
   data () {
     return {
+      currentDate: new Date().toISOString().substr(0, 10),
+      date: new Date().toISOString().substr(0, 10),
+      menu: false,
       dialog: false,
       search: '',
       headers: [
@@ -172,6 +206,16 @@ export default {
         { text: 'Actions', value: 'id', sortable: false }
       ],
       items: [],
+      json_fields: {
+        'Create Time': 'createTime',
+        'Tracking No': 'trackingNo',
+        'Orgization Name': 'orgName',
+        'Product Name': 'productName',
+        'UPC': 'UPC',
+        'Price': 'price',
+        'Quantity': 'qn',
+        'Note': 'note'
+      },
       editedIndex: -1,
       editedItem: {
         createTime: '',
@@ -181,7 +225,6 @@ export default {
         UPC: '',
         price: 0,
         qn: 0,
-        id: '',
         note: ''
       },
       defaultItem: {
@@ -192,7 +235,6 @@ export default {
         UPC: '',
         price: 0,
         qn: 0,
-        id: '',
         note: ''
       }
     }
@@ -210,19 +252,7 @@ export default {
       try {
         // result from inventory collection
         const invRes = await Inventory.get()
-        for (let i = 0; i < invRes.data.length; i++) {
-          for (let j = 0; j < invRes.data[i].rcIts.length; j++) {
-            this.items.push({
-              createTime: invRes.data[i].crtTm,
-              trackingNo: invRes.data[i].trNo,
-              orgName: invRes.data[i].ogNm,
-              UPC: invRes.data[i].rcIts[j].UPC,
-              productName: invRes.data[i].rcIts[j].prodNm,
-              qn: invRes.data[i].rcIts[j].qn
-            })
-          }
-        }
-        console.log(this.items)
+        this.items = invRes.data
       } catch (error) {
         console.log(error)
       }

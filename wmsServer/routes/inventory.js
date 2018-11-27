@@ -1,6 +1,22 @@
 //query inventory for upc, for upc + location, for upc + seller org,...
 
 //receive, pickup, shipment
+function makeFlat(invResult) {
+  let items = []
+  for (let i = 0; i < invResult.length; i++) {
+    for (let j = 0; j < invResult[i].rcIts.length; j++) {
+      items.push({
+        createTime: invResult[i].crtTm,
+        trackingNo: invResult[i].trNo,
+        orgName: invResult[i].ogNm,
+        UPC: invResult[i].rcIts[j].UPC,
+        productName: invResult[i].rcIts[j].prodNm,
+        qn: invResult[i].rcIts[j].qn
+      })
+    }
+  }
+  return items
+}
 
 module.exports = {
   async post(req, res, next) {
@@ -82,7 +98,7 @@ module.exports = {
     let invCollection = req.db.collection("inventoryReceive");
     try {
       let invResult = await invCollection.find().toArray()
-      res.send(invResult)
+      res.send(makeFlat(invResult))
       res.end()
     } catch (error) {
       console.log("Get Org error: " + error)
