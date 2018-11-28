@@ -201,7 +201,7 @@
 </template>
 
 <script>
-import Inventory from '@/services/inventory'
+import Inventory from '@/services/Inventory'
 
 export default {
   data () {
