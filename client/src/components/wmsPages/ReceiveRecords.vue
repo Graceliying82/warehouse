@@ -3,24 +3,7 @@
     <panel title = 'Receiving Records'>
       <v-card>
         <v-layout>
-          <v-flex >
-            <span
-            class="title font-weight-light"
-            v-text="slider"
-            ></span>
-           <span class="subheading font-weight-light mr-1">Days</span>
-            <v-slider
-              v-model="slider"
-              :min="1"
-              :max="30"
-              label="Days to show"
-              light
-              thumb-label
-              hint="Show or download maximum 30 days' data"
-              persistent-hint=true
-            ></v-slider>
-          </v-flex>
-          <v-flex offset-xs1>
+          <v-flex>
             <v-menu
               :close-on-content-click="false"
               v-model="menu"
@@ -32,23 +15,47 @@
               min-width="290px">
               <v-text-field
                 slot="activator"
-                v-model="date"
+                v-model="startDate"
                 label="Choose a start Date"
                 prepend-icon="event"
                 readonly
               ></v-text-field>
               <v-date-picker
-                v-model="date"
+                v-model="startDate"
+                @change = "changeDate()"
                 @input="menu = false">
               </v-date-picker>
             </v-menu>
           </v-flex>
+          <v-flex ml-5>
+            <span
+              class="title font-weight-light"
+              v-text="slider"
+              ></span>
+            <span class="subheading font-weight-light mr-3">Days</span>
+            <span class="body-1 font-weight-light">End Date: </span>
+            <span class="subheading font-weight-light"
+              v-text="endDate"></span>
+            <v-slider
+              v-model="slider"
+              :min="1"
+              :max="30"
+              label="Days to show"
+              light
+              @change = "changeDate()"
+            ></v-slider>
+          </v-flex>
           <v-spacer></v-spacer>
-          <v-flex offset-xs6>
+          <v-flex>
+            <v-text-field
+                slot="activator"
+                v-model="downloadName"
+                label="Download File Name"
+              ></v-text-field>
             <download-excel
                 class   = "v-btn"
                 type    = "csv"
-                name    = "inventoryReceive.xls"
+                :name    = "downloadName"
                 :data   = "items"
                 :fields = "json_fields"
                 >
@@ -206,8 +213,10 @@ import Inventory from '@/services/Inventory'
 export default {
   data () {
     return {
+      downloadName: 'InventoryReceive.xls',
       currentDate: new Date().toISOString().substr(0, 10),
-      date: new Date().toISOString().substr(0, 10),
+      startDate: new Date().toISOString().substr(0, 10),
+      endDate: new Date().toISOString().substr(0, 10),
       menu: false,
       slider: 1,
       dialog: false,
@@ -273,7 +282,7 @@ export default {
     async initialize () {
       try {
         // result from inventory collection
-        const invRes = await Inventory.get()
+        let invRes = await Inventory.get()
         this.items = invRes.data
       } catch (error) {
         console.log(error)
@@ -291,7 +300,6 @@ export default {
         this.editedIndex = -1
       }, 300)
     },
-
     save () {
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
@@ -299,6 +307,19 @@ export default {
         this.items.push(this.editedItem)
       }
       this.close()
+    },
+    async changeDate () {
+      // new Date(new Date().setDate(new Date().getDate()-1)).toLocaleString()
+      let result = new Date(this.startDate)
+      result.setDate(result.getDate() + this.slider - 1)
+      this.endDate = result.toISOString().split('T')[0]
+      try {
+        // result from inventory collection
+        let invResDate = await Inventory.getByDates(this.startDate, this.endDate)
+        this.items = invResDate.data
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }
