@@ -251,10 +251,10 @@ export default {
           // tracking No
           'trNo': this.trackingNumber1,
           // OrgName
-          'ogNm': this.orgName1,
+          'orgNm': this.orgName1,
           // receiveItems:
           'rcIts': this.receiveItems1,
-          'usEm': this.$store.email
+          'usrID': this.$store.state.email
         })
         this.message1 = 'Successfully Added a new Package'
         this.alertType1 = 'success'

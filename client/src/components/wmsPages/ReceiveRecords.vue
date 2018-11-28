@@ -22,7 +22,7 @@
               ></v-text-field>
               <v-date-picker
                 v-model="startDate"
-                @change = "changeDate()"
+                @change = "changeFilter()"
                 @input="menu = false">
               </v-date-picker>
             </v-menu>
@@ -42,7 +42,7 @@
               :max="30"
               label="Days to show"
               light
-              @change = "changeDate()"
+              @change = "changeFilter()"
             ></v-slider>
           </v-flex>
           <v-spacer></v-spacer>
@@ -63,17 +63,26 @@
             </download-excel>
           </v-flex>
         </v-layout>
-        <v-card-title>
+        <v-layout>
+        <v-flex>
+          <v-text-field
+            v-model="search"
+            append-icon="search"
+            label="Search"
+            single-line
+          ></v-text-field>
+        </v-flex>
         <v-spacer></v-spacer>
-          <v-flex offset-sm6>
+          <v-flex lg5 xs12 offset-lg2>
             <v-text-field
-              v-model="search"
-              append-icon="search"
-              label="Search"
-              single-line
-            ></v-text-field>
+              name="orgName"
+              label="Show OrgName"
+              id="orgName"
+              v-model="orgName"
+              @change = "changeFilter()"
+              ></v-text-field>
           </v-flex>
-        </v-card-title>
+        </v-layout>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
               <v-card-text>
@@ -198,9 +207,6 @@
                 </v-btn>
               </td>
             </template>
-            <template slot="no-data">
-              <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
           </v-data-table>
       </v-card>
     </panel>
@@ -213,6 +219,7 @@ import Inventory from '@/services/Inventory'
 export default {
   data () {
     return {
+      orgName: 'All',
       downloadName: 'InventoryReceive.xls',
       currentDate: new Date().toISOString().substr(0, 10),
       startDate: new Date().toISOString().substr(0, 10),
@@ -308,14 +315,14 @@ export default {
       }
       this.close()
     },
-    async changeDate () {
+    async changeFilter () {
       // new Date(new Date().setDate(new Date().getDate()-1)).toLocaleString()
       let result = new Date(this.startDate)
       result.setDate(result.getDate() + this.slider - 1)
       this.endDate = result.toISOString().split('T')[0]
       try {
         // result from inventory collection
-        let invResDate = await Inventory.getByDates(this.startDate, this.endDate)
+        let invResDate = await Inventory.getByDates(this.startDate, this.endDate, this.orgName)
         this.items = invResDate.data
       } catch (error) {
         console.log(error)

@@ -82,7 +82,6 @@ export default {
   data () {
     return {
       valid: true,
-      orgName: '',
       name: '',
       email: '',
       password: '',
@@ -153,13 +152,13 @@ export default {
         this.setRole()
         await AuthenticationService.createUser({
           'email': this.email,
-          'password': this.password,
-          'userName': this.name,
-          'OrgName': this.orgName,
-          'isSupervisor': this.isSupervisor,
-          'isWmsUser': this.isWmsUser,
-          'isBuyer': this.isBuyer,
-          'isSeller': this.isSeller
+          'pswd': this.password,
+          'usrNm': this.name,
+          'orgNm': this.selectOrg,
+          'isSup': this.isSupervisor,
+          'isWms': this.isWmsUser,
+          'isB': this.isBuyer,
+          'isS': this.isSeller
         })
         this.submited = true
       } catch (error) {
@@ -178,7 +177,7 @@ export default {
       console.log('error: ' + error)
     }
     for (var i in this.orgs) {
-      this.orgNames.push(this.orgs[i].orgName)
+      this.orgNames.push(this.orgs[i].orgNm)
     }
     this.orgNames.sort()
   }
