@@ -26,7 +26,9 @@ module.exports = {
     const locInvCollection = req.db.collection("locationInv");
     const prodCollection = req.db.collection("product");
     try {
-      req.body.crtTm = new Date().toLocaleString(); // add data create Time
+      //Modify to add more test data:
+      req.body.crtTm = new Date(new Date().setDate(new Date().getDate()-10))
+//      req.body.crtTm = new Date(); // add data create Time
       req.body.mdfTm = req.body.crtTm; //add data modify Time
       const ogNm = req.body.ogNm;
       for (var i = 0; i < req.body.rcIts.length; i++) {
@@ -95,14 +97,40 @@ module.exports = {
   },
 
   async get(req, res, next) {
-    let invCollection = req.db.collection("inventoryReceive");
-    try {
-      let invResult = await invCollection.find().toArray()
-      res.send(makeFlat(invResult))
-      res.end()
-    } catch (error) {
-      console.log("Get Org error: " + error)
-      next(error)
-    }
+    if ((req.query.startDate !== undefined) && (req.query.endDate !== undefined)) {
+      let qr = req.query
+      var startDate = new Date(qr.startDate).toLocaleString()
+      var endDate = new Date(qr.endDate).toLocaleString();
+      let invCollection = req.db.collection("inventoryReceive");
+      try {
+        let invResult = await invCollection.find({
+          crtTm: {
+            $lte: endDate,
+            $gte: startDate
+          }
+        }).toArray()
+        console.log(invResult.length)
+        res.send(makeFlat(invResult))
+        res.end()
+      } catch (error) {
+        console.log("Get Org by dates error: " + error)
+        next(error)
+      }
+    } else {
+      let invCollection = req.db.collection("inventoryReceive");
+      try {
+        let invResult = await invCollection.find({
+          crtTm: {
+            $lte: new Date().toLocaleString(),
+            $gt: new Date(new Date().setDate(new Date().getDate()-1)).toLocaleString()
+          }
+        }).toArray()
+        res.send(makeFlat(invResult))
+        res.end()
+      } catch (error) {
+        console.log("Get Org error: " + error)
+        next(error)
+      }
+   }
   }
 };

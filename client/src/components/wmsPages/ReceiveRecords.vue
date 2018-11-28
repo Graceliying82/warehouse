@@ -3,50 +3,69 @@
     <panel title = 'Receiving Records'>
       <v-card>
         <v-layout>
-          <v-flex xs12 sm6 md4>
-          <v-menu
-            :close-on-content-click="false"
-            v-model="menu"
-            :nudge-right="40"
-            lazy
-            transition="scale-transition"
-            offset-y
-            full-width
-            min-width="290px"
-          >
-        <v-text-field
-          slot="activator"
-          v-model="date"
-          label="Picker without buttons"
-          prepend-icon="event"
-          readonly
-        ></v-text-field>
-        <v-date-picker 
-          v-model="date"
-          max = currentDate
-          @input="menu = false">
-        </v-date-picker>
-      </v-menu>
-    </v-flex>
+          <v-flex >
+            <span
+            class="title font-weight-light"
+            v-text="slider"
+            ></span>
+           <span class="subheading font-weight-light mr-1">Days</span>
+            <v-slider
+              v-model="slider"
+              :min="1"
+              :max="30"
+              label="Days to show"
+              light
+              thumb-label
+              hint="Show or download maximum 30 days' data"
+              persistent-hint=true
+            ></v-slider>
+          </v-flex>
+          <v-flex offset-xs1>
+            <v-menu
+              :close-on-content-click="false"
+              v-model="menu"
+              :nudge-right="40"
+              lazy
+              transition="scale-transition"
+              offset-y
+              full-width
+              min-width="290px">
+              <v-text-field
+                slot="activator"
+                v-model="date"
+                label="Choose a start Date"
+                prepend-icon="event"
+                readonly
+              ></v-text-field>
+              <v-date-picker
+                v-model="date"
+                @input="menu = false">
+              </v-date-picker>
+            </v-menu>
+          </v-flex>
           <v-spacer></v-spacer>
-          <download-excel
-              class   = "v-btn"
-              type    = "csv"
-              name    = "inventoryReceive.xls"
-              :data   = "items"
-              :fields = "json_fields"
-              >
-              Download
-          </download-excel>
+          <v-flex offset-xs6>
+            <download-excel
+                class   = "v-btn"
+                type    = "csv"
+                name    = "inventoryReceive.xls"
+                :data   = "items"
+                :fields = "json_fields"
+                >
+                Download
+            </download-excel>
+          </v-flex>
         </v-layout>
         <v-card-title>
         <v-spacer></v-spacer>
-        <v-text-field
-          v-model="search"
-          append-icon="search"
-          label="Search"
-          single-line
-        ></v-text-field>
+          <v-flex offset-sm6>
+            <v-text-field
+              v-model="search"
+              append-icon="search"
+              label="Search"
+              single-line
+            ></v-text-field>
+          </v-flex>
         </v-card-title>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
@@ -129,6 +148,7 @@
             :headers="headers"
             :items="items"
             :search="search"
+            :rows-per-page-items="rowsPerPageItems"
             class="elevation-1"
           >
             <template v-for = "it in items" slot="items" slot-scope="props">
@@ -189,17 +209,19 @@ export default {
       currentDate: new Date().toISOString().substr(0, 10),
       date: new Date().toISOString().substr(0, 10),
       menu: false,
+      slider: 1,
       dialog: false,
       search: '',
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       headers: [
         {
           text: 'CreateTime',
           align: 'left',
           value: 'createTime'
         },
-        { text: 'TrackingNo', value: 'trackingNo', sortable: false },
+        { text: 'TrackingNo', value: 'trackingNo' },
         { text: 'ProductName', value: 'productName' },
-        { text: 'UPC', value: 'UPC', sortable: false },
+        { text: 'UPC', value: 'UPC' },
         { text: 'OrgName', value: 'orgName' },
         { text: 'Price', value: 'price' },
         { text: 'Quantity', value: 'qn', sortable: false },

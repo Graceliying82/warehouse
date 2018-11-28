@@ -105,13 +105,13 @@
             </div>
           </v-flex>
           <v-flex>
-            <v-btn fab dark small 
+            <v-btn fab dark small
               v-on:click= "startCamera1"
               :disabled=cam1NotFound
               color="cyan darken-2">
               <v-icon dark>videocam</v-icon>
             </v-btn>
-            <v-btn fab dark small 
+            <v-btn fab dark small
               v-on:click= "stopCamera1"
               :disabled=cam1NotFound
               color="cyan darken-2">
@@ -129,13 +129,13 @@
             </div>
           </v-flex>
           <v-flex>
-            <v-btn fab small 
+            <v-btn fab small
               v-on:click= "startCamera2"
               :disabled=cam2NotFound
               color="cyan darken-2">
               <v-icon>videocam</v-icon>
             </v-btn>
-            <v-btn fab small 
+            <v-btn fab small
               v-on:click= "stopCamera2"
               :disabled=cam2NotFound
               color="cyan darken-2">
@@ -153,7 +153,6 @@ import Inventory from '@/services/inventory'
 export default {
   data () {
     return {
-      currentDate: new Date().toISOString().substr(0, 10),
       rules: {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
