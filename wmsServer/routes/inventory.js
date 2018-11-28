@@ -27,7 +27,7 @@ module.exports = {
     const prodCollection = req.db.collection("product");
     try {
       //Modify to add more test data:
-      req.body.crtTm = new Date(new Date().setDate(new Date().getDate()-10))
+      req.body.crtTm = new Date(new Date().setDate(new Date().getDate()-8)).toLocaleString()
 //      req.body.crtTm = new Date(); // add data create Time
       req.body.mdfTm = req.body.crtTm; //add data modify Time
       const ogNm = req.body.ogNm;
