@@ -212,15 +212,9 @@
     </panel>
   </div>
 </template>
+
 <script>
 import Inventory from '@/services/Inventory'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 4398ea042ee7a2dad645ce79f208c5ea585b7f8e
-
->>>>>>> 4398ea042ee7a2dad645ce79f208c5ea585b7f8e
 export default {
   data () {
     return {
