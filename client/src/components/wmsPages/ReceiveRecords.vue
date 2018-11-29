@@ -215,7 +215,6 @@
 
 <script>
 import Inventory from '@/services/Inventory'
-
 export default {
   data () {
     return {
