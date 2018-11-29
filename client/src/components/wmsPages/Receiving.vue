@@ -1,105 +1,178 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-    <v-container>
-      <v-layout align-start justify-center>
-        <v-flex lg6 xs12 ma-4>
-          <panel title = "Scan Package">
+    <v-layout row>
+      <panel title = "Scan Package">
+        <v-tabs
+          color = "cyan"
+          dark
+          slider-color = "cyan darken-4">
+          <v-tab ripple>
+            Lazy Mode
+          </v-tab>
+          <v-tab ripple>
+            Number Mode
+          </v-tab>
+          <v-tab-item>
             <v-alert
-            v-show = showAlert
-            :type = alertType>
-              {{message}}
+            v-show = showAlert1
+            :type = alertType1>
+              {{message1}}
             </v-alert>
             <v-text-field
-              label="Tracking Number"
-              v-model="trackingNumber"
-              ref='tracking'
-              v-bind:autofocus= "true"
-              v-on:keydown.enter="changeFocusToOrgName()"></v-text-field>
-            <v-text-field
               label="Organization Name"
-              ref="orgName"
-              v-model="orgName"
-              v-on:keydown.enter="changeFocusToUPC(0)"></v-text-field>
-            <v-layout v-for = "(receiveItem, i) in receiveItems" :key = "i">
+              ref="orgName1"
+              v-model="orgName1"
+              v-bind:autofocus= "true"
+              v-on:keydown.enter="changeFocusToTracking1()"></v-text-field>
+            <v-text-field
+              label="Tracking Number"
+              v-model="trackingNumber1"
+              ref='tracking1'
+              v-on:keydown.enter="changeFocusToUPC1(0)"></v-text-field>
+            <v-layout v-for = "(receiveItem1, i) in receiveItems1" :key = "i">
               <v-flex >
                 <v-text-field
                   label="UPC"
-                  ref="UPC"
-                  v-model="receiveItem.UPC"
-                  v-on:keydown.enter="handleUPCInput(i)"
+                  ref="UPC1"
+                  v-model="receiveItem1.UPC"
+                  v-on:keydown.enter="handleUPCInput1(i)"
                   required
                   ></v-text-field>
               </v-flex>
               <v-flex offset-lg2>
                 <v-text-field
                   label = "Quantity"
-                  ref="Quantity"
+                  ref="Quantity1"
                   :rules="[rules.qnRule1, rules.qnRule2]"
-                  v-model.number="receiveItem.qn"
-                  v-on:keydown.enter="addNewReceiveItem(i)"
+                  v-model.number="receiveItem1.qn"
+                  v-on:keydown.enter="addNewReceiveItem1(i)"
                   type="number"
                   ></v-text-field>
               </v-flex>
             </v-layout >
-            <v-btn dark class="cyan darken-2" @click.prevent="submit()">Submit</v-btn>
-          </panel>
-        </v-flex>
-        <v-layout align-center justify-center column>
-        <v-flex >
-          <h2>Camera 1</h2>
-          <div>
-            <video ref="video1" id="video" width="100%" height="300"
-              :src="source1" autoplay>
-              Video stream not available.</video>
-            <canvas ref="canvas1" id="canvas" width="480" height="320"></canvas>
-          </div>
-          <v-layout>
-          <v-btn v-on:click= "startCamera1"
-            :disabled=cam1NotFound>Turn on</v-btn>
-          <v-btn v-on:click= "stopCamera1"
-            :disabled=cam1NotFound>Turn off</v-btn>
-          </v-layout>
-        </v-flex>
-        <v-flex ma-4>
-          <h2>Camera 2</h2>
-          <div>
-          <video ref="video2" id="video" width="100%" height="300"
-              :src="source2" autoplay>
-              Video stream not available.</video>
-          <canvas ref="canvas2" id="canvas" width="480" height="320"></canvas>
-          </div>
-          <v-layout>
-          <v-btn v-on:click= "startCamera2"
-            :disabled=cam2NotFound>Turn on</v-btn>
-          <v-btn v-on:click= "stopCamera2"
-            :disabled=cam2NotFound>Turn off</v-btn>
-          </v-layout>
-       </v-flex>
+          <v-btn dark class="cyan darken-2" @click.prevent="submit1()">Submit</v-btn>
+          </v-tab-item>
+          <v-tab-item>
+          <v-alert
+          v-show = showAlert2
+          :type = alertType2>
+            {{message2}}
+          </v-alert>
+          <v-text-field
+            label="Organization Name"
+            ref="orgName2"
+            v-model="orgName2"
+            v-bind:autofocus= "true"
+            v-on:keydown.enter="changeFocusToTracking2()"></v-text-field>
+          <v-text-field
+            label="Tracking Number"
+            v-model="trackingNumber2"
+            ref='tracking2'
+            v-on:keydown.enter="changeFocusToUPC2(0)"></v-text-field>
+          <v-layout v-for = "(receiveItem2, i) in receiveItems2" :key = "i">
+            <v-flex >
+              <v-text-field
+                label="UPC"
+                ref="UPC2"
+                v-model="receiveItem2.UPC"
+                v-on:keydown.enter="handleUPCInput2(i)"
+                required
+                ></v-text-field>
+            </v-flex>
+            <v-flex offset-lg2>
+              <v-text-field
+                label = "Quantity"
+                ref="Quantity2"
+                :rules="[rules.qnRule1, rules.qnRule2]"
+                v-model.number="receiveItem2.qn"
+                v-on:keydown.enter="addNewReceiveItem2(i)"
+                type="number"
+                ></v-text-field>
+            </v-flex>
+          </v-layout >
+          <v-btn dark class="cyan darken-2" @click.prevent="submit2()">Submit</v-btn>
+          </v-tab-item>
+        </v-tabs>
+      </panel>
+      <v-layout align-start justify-start justify-space-around ml-5 column>
+        <v-layout align-start row>
+          <v-flex>
+            <div>
+              <video ref="video1" id="video" width="100%" height="400"
+                :src="source1" autoplay>
+                Video stream not available.</video>
+              <canvas ref="canvas1" id="canvas" width="100%" height="400"></canvas>
+            </div>
+          </v-flex>
+          <v-flex>
+            <v-btn fab dark small
+              v-on:click= "startCamera1"
+              :disabled=cam1NotFound
+              color="cyan darken-2">
+              <v-icon dark>videocam</v-icon>
+            </v-btn>
+            <v-btn fab dark small
+              v-on:click= "stopCamera1"
+              :disabled=cam1NotFound
+              color="cyan darken-2">
+              <v-icon dark>videocam_off</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
+        <v-layout align-start row>
+          <v-flex>
+            <div>
+              <video ref="video2" id="video" width="100%" height="400"
+                  :src="source2" autoplay>
+                  Video stream not available.</video>
+              <canvas ref="canvas2" id="canvas" width="100%" height="400"></canvas>
+            </div>
+          </v-flex>
+          <v-flex>
+            <v-btn fab small
+              v-on:click= "startCamera2"
+              :disabled=cam2NotFound
+              color="cyan darken-2">
+              <v-icon>videocam</v-icon>
+            </v-btn>
+            <v-btn fab small
+              v-on:click= "stopCamera2"
+              :disabled=cam2NotFound
+              color="cyan darken-2">
+              <v-icon >videocam_off</v-icon>
+            </v-btn>
+          </v-flex>
         </v-layout>
       </v-layout>
-    </v-container>
+    </v-layout>
   </div>
 </template>
 
 <script>
-import Inventory from '@/services/inventory'
+import Inventory from '@/services/Inventory'
 export default {
   data () {
     return {
-      qnvalid: false,
       rules: {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
       },
-      trackingNumber: '', // tracking Number
-      orgName: '', // orgName
-      receiveItems: [// receiveItems
-        { UPC: '', qn: 0, prodNm: '', price: 0 }
+      trackingNumber1: '', // tracking Number
+      trackingNumber2: '', // tracking Number
+      orgName1: '', // orgName
+      orgName2: '', // orgName
+      receiveItems1: [// receiveItems
+        { UPC: '', qn: 0, prodNm: '', price: 0, note: '' }
       ],
-      result: '',
-      alertType: 'success',
-      showAlert: false,
-      message: '',
+      receiveItems2: [// receiveItems
+        { UPC: '', qn: 0, prodNm: '', price: 0, note: '' }
+      ],
+      alertType1: 'success',
+      showAlert1: false,
+      alertType2: 'success',
+      showAlert2: false,
+      message1: '',
+      message2: '',
       // camera related codes
       source1: null,
       source2: null,
@@ -114,83 +187,176 @@ export default {
     }
   },
   methods: {
-    changeFocusToTracking () {
-      this.$refs.tracking.focus()
+    changeFocusToOrgName1 () {
+      this.$refs.orgName1.focus()
     },
-    changeFocusToOrgName () {
-      this.showAlert = false
-      this.$refs.orgName.focus()
+    changeFocusToOrgName2 () {
+      this.$refs.orgName2.focus()
     },
-    changeFocusToUPC (i) {
-      console.log('This function called')
-      this.$refs.UPC[i].focus()
+    changeFocusToTracking1 () {
+      this.showAlert1 = false
+      this.$refs.tracking1.focus()
+    },
+    changeFocusToTracking2 () {
+      this.showAlert2 = false
+      this.$refs.tracking2.focus()
+    },
+    changeFocusToUPC1 (i) {
+      this.$refs.UPC1[i].focus()
+    },
+    changeFocusToUPC2 (i) {
+      this.$refs.UPC2[i].focus()
     },
     changeFocusToQuantity (i) {
-      this.$refs.Quantity[i].focus()
+      this.$refs.Quantity1[i].focus()
     },
-    addNewReceiveItem (i) {
-      if (i === (this.receiveItems.length - 1)) {
+    changeFocusToQuantity2 (i) {
+      this.$refs.Quantity2[i].focus()
+    },
+    addNewReceiveItem1 (i) {
+      if (i === (this.receiveItems1.length - 1)) {
         // Add a line only if reach to the buttom of the lines
-        this.receiveItems.push({ UPC: '', qn: 0, prodNm: '', price: 0 })
+        this.receiveItems1.push({ UPC: '', qn: 0, prodNm: '', price: 0, note: '' })
       }
       this.$nextTick(() => {
-        this.$refs.UPC[i + 1].focus()
+        this.$refs.UPC1[i + 1].focus()
       })
     },
-    async submit () {
+    addNewReceiveItem2 (i) {
+      if (i === (this.receiveItems2.length - 1)) {
+        // Add a line only if reach to the buttom of the lines
+        this.receiveItems2.push({ UPC: '', qn: 0, prodNm: '', price: 0, note: '' })
+      }
+      this.$nextTick(() => {
+        this.$refs.UPC2[i + 1].focus()
+      })
+    },
+    async submit1 () {
       try {
         // need to delete empty lines in receiveItems
-        for (var i = this.receiveItems.length - 1; i >= 0; i--) {
-          if ((this.receiveItems[i].UPC === '') || (this.receiveItems[i].UPC === 'WMS-RECEIVING-SUBMIT')) {
-            this.receiveItems.splice(i, 1)
+        for (var i = this.receiveItems1.length - 1; i >= 0; i--) {
+          if ((this.receiveItems1[i].UPC === '') || (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT')) {
+            this.receiveItems1.splice(i, 1)
           }
         }
+        if (this.receiveItems1.length === 0) {
+          this.receiveItems1 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+          this.message1 = 'UPC is needed! Not a valid receive.'
+          this.alertType1 = 'error'
+          this.showAlert1 = true
+          return
+        }
         // Send data to server
-        const response = await Inventory.post({
+        await Inventory.post({
           // tracking No
-          'trNo': this.trackingNumber,
+          'trNo': this.trackingNumber1,
           // OrgName
-          'ogNm': this.orgName,
+          'orgNm': this.orgName1,
           // receiveItems:
-          'rcIts': this.receiveItems,
-          'usEm': this.$store.email
+          'rcIts': this.receiveItems1,
+          'usrID': this.$store.state.email
         })
-        console.log(response.data.ok)
-        this.message = 'Successfully Added a new Package'
-        this.result = response.data.ok
-        this.alertType = 'success'
-        this.showAlert = true
+        this.message1 = 'Successfully Added a new Package'
+        this.alertType1 = 'success'
+        this.showAlert1 = true
         // clean up data
-        this.trackingNumber = ''
-        this.orgName = ''
-        this.receiveItems = [{ UPC: '', qn: 0, prodNm: '', price: 0 }]
-        this.changeFocusToTracking()
+        this.trackingNumber1 = ''
+        this.orgName1 = ''
+        this.receiveItems1 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+        this.changeFocusToOrgName1()
       } catch (error) {
-        this.message = error
+        this.message1 = error
         console.log(error)
-        this.result = 0
-        this.alertType = 'error'
-        this.showAlert = true
+        this.alertType1 = 'error'
+        this.showAlert1 = true
       }
     },
-    handleUPCInput (i) {
-      if (this.receiveItems[i].UPC === 'WMS-RECEIVING-SUBMIT') {
+    async submit2 () {
+      try {
+        // need to delete empty lines in receiveItems
+        for (var i = this.receiveItems2.length - 1; i >= 0; i--) {
+          if ((this.receiveItems2[i].UPC === '') || (this.receiveItems2[i].UPC === 'WMS-RECEIVING-SUBMIT')) {
+            this.receiveItems2.splice(i, 1)
+          }
+        }
+        if (this.receiveItems2.length === 0) {
+          this.receiveItems2 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+          this.message2 = 'UPC is needed! Not a valid receive.'
+          this.alertType2 = 'error'
+          this.showAlert2 = true
+          return
+        }
+        // Send data to server
+        await Inventory.post({
+          // tracking No
+          'trNo': this.trackingNumber2,
+          // OrgName
+          'ogNm': this.orgName2,
+          // receiveItems:
+          'rcIts': this.receiveItems2,
+          'usEm': this.$store.email
+        })
+        this.message2 = 'Successfully Added a new Package'
+        this.alertType2 = 'success'
+        this.showAlert2 = true
+        // clean up data
+        this.trackingNumber2 = ''
+        this.orgName2 = ''
+        this.receiveItems2 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+        this.changeFocusToOrgName2()
+      } catch (error) {
+        this.message2 = error
+        console.log(error)
+        this.alertType2 = 'error'
+        this.showAlert2 = true
+      }
+    },
+    handleUPCInput1 (i) {
+      if (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {
         // submit current input
         console.log('Calling to wrote pass data to server')
         // some code to pass data to server
-        this.submit()
+        this.submit1()
       } else {
         let idx = -1
-        for (let j = 0; j <= this.receiveItems.length - 1; j++) {
-          if ((this.receiveItems[j].UPC === this.receiveItems[i].UPC) && (i !== j)) {
+        for (let j = 0; j <= this.receiveItems1.length - 1; j++) {
+          if ((this.receiveItems1[j].UPC === this.receiveItems1[i].UPC) && (i !== j)) {
             idx = j
           }
         }
         if (idx === -1) {
-          this.changeFocusToQuantity(i)
+          this.receiveItems1[i].qn = 1
+          if (i === (this.receiveItems1.length - 1)) {
+            // Add a line only if reach to the buttom of the lines
+            this.receiveItems1.push({ UPC: '', qn: 0, prodNm: '', price: 0, note: '' })
+          }
+          this.$nextTick(() => {
+            this.$refs.UPC1[i + 1].focus()
+          })
         } else {
-          this.receiveItems[idx].qn++
-          this.receiveItems[i].UPC = ''
+          this.receiveItems1[idx].qn++
+          this.receiveItems1[i].UPC = ''
+        }
+      }
+    },
+    handleUPCInput2 (i) {
+      if (this.receiveItems2[i].UPC === 'WMS-RECEIVING-SUBMIT') {
+        // some code to pass data to server
+        this.submit2()
+      } else {
+        let idx = -1
+        // If this UPC has already been scanned. Just add up the quantity. Otherwise Change focus to qn and make
+        // user input
+        for (let j = 0; j <= this.receiveItems2.length - 1; j++) {
+          if ((this.receiveItems2[j].UPC === this.receiveItems2[i].UPC) && (i !== j)) {
+            idx = j
+          }
+        }
+        if (idx === -1) {
+          this.changeFocusToQuantity2(i)
+        } else {
+          this.receiveItems2[idx].qn++
+          this.receiveItems2[i].UPC = ''
         }
       }
     },

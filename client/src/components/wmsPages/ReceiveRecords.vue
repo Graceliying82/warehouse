@@ -3,20 +3,86 @@
     <panel title = 'Receiving Records'>
       <v-card>
         <v-layout>
+          <v-flex>
+            <v-menu
+              :close-on-content-click="false"
+              v-model="menu"
+              :nudge-right="40"
+              lazy
+              transition="scale-transition"
+              offset-y
+              full-width
+              min-width="290px">
+              <v-text-field
+                slot="activator"
+                v-model="startDate"
+                label="Choose a start Date"
+                prepend-icon="event"
+                readonly
+              ></v-text-field>
+              <v-date-picker
+                v-model="startDate"
+                @change = "changeFilter()"
+                @input="menu = false">
+              </v-date-picker>
+            </v-menu>
+          </v-flex>
+          <v-flex ml-5>
+            <span
+              class="title font-weight-light"
+              v-text="slider"
+              ></span>
+            <span class="subheading font-weight-light mr-3">Days</span>
+            <span class="body-1 font-weight-light">End Date: </span>
+            <span class="subheading font-weight-light"
+              v-text="endDate"></span>
+            <v-slider
+              v-model="slider"
+              :min="1"
+              :max="30"
+              label="Days to show"
+              light
+              @change = "changeFilter()"
+            ></v-slider>
+          </v-flex>
           <v-spacer></v-spacer>
-          <v-btn fab dark  small color="indigo">
-            <v-icon dark>get_app</v-icon>
-          </v-btn>
+          <v-flex>
+            <v-text-field
+                slot="activator"
+                v-model="downloadName"
+                label="Download File Name"
+              ></v-text-field>
+            <download-excel
+                class   = "v-btn"
+                type    = "csv"
+                :name    = "downloadName"
+                :data   = "items"
+                :fields = "json_fields"
+                >
+                Download
+            </download-excel>
+          </v-flex>
         </v-layout>
-        <v-card-title>
+        <v-layout>
+        <v-flex>
+          <v-text-field
+            v-model="search"
+            append-icon="search"
+            label="Search"
+            single-line
+          ></v-text-field>
+        </v-flex>
         <v-spacer></v-spacer>
-        <v-text-field
-          v-model="search"
-          append-icon="search"
-          label="Search"
-          single-line
-        ></v-text-field>
-        </v-card-title>
+          <v-flex lg5 xs12 offset-lg2>
+            <v-text-field
+              name="orgName"
+              label="Show OrgName"
+              id="orgName"
+              v-model="orgName"
+              @change = "changeFilter()"
+              ></v-text-field>
+          </v-flex>
+        </v-layout>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
               <v-card-text>
@@ -98,6 +164,7 @@
             :headers="headers"
             :items="items"
             :search="search"
+            :rows-per-page-items="rowsPerPageItems"
             class="elevation-1"
           >
             <template v-for = "it in items" slot="items" slot-scope="props">
@@ -140,38 +207,55 @@
                 </v-btn>
               </td>
             </template>
-            <template slot="no-data">
-              <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
           </v-data-table>
       </v-card>
     </panel>
   </div>
 </template>
-
 <script>
-import Inventory from '@/services/inventory'
+import Inventory from '@/services/Inventory'
+<<<<<<< HEAD
+=======
 
+>>>>>>> 4398ea042ee7a2dad645ce79f208c5ea585b7f8e
 export default {
   data () {
     return {
+      orgName: 'All',
+      downloadName: 'InventoryReceive.xls',
+      currentDate: new Date().toISOString().substr(0, 10),
+      startDate: new Date().toISOString().substr(0, 10),
+      endDate: new Date().toISOString().substr(0, 10),
+      menu: false,
+      slider: 1,
       dialog: false,
       search: '',
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       headers: [
         {
           text: 'CreateTime',
           align: 'left',
           value: 'createTime'
         },
-        { text: 'TrackingNo', value: 'trackingNo', sortable: false },
+        { text: 'TrackingNo', value: 'trackingNo' },
         { text: 'ProductName', value: 'productName' },
-        { text: 'UPC', value: 'UPC', sortable: false },
+        { text: 'UPC', value: 'UPC' },
         { text: 'OrgName', value: 'orgName' },
         { text: 'Price', value: 'price' },
         { text: 'Quantity', value: 'qn', sortable: false },
         { text: 'Actions', value: 'id', sortable: false }
       ],
       items: [],
+      json_fields: {
+        'Create Time': 'createTime',
+        'Tracking No': 'trackingNo',
+        'Orgization Name': 'orgName',
+        'Product Name': 'productName',
+        'UPC': 'UPC',
+        'Price': 'price',
+        'Quantity': 'qn',
+        'Note': 'note'
+      },
       editedIndex: -1,
       editedItem: {
         createTime: '',
@@ -181,7 +265,6 @@ export default {
         UPC: '',
         price: 0,
         qn: 0,
-        id: '',
         note: ''
       },
       defaultItem: {
@@ -192,7 +275,6 @@ export default {
         UPC: '',
         price: 0,
         qn: 0,
-        id: '',
         note: ''
       }
     }
@@ -209,20 +291,8 @@ export default {
     async initialize () {
       try {
         // result from inventory collection
-        const invRes = await Inventory.get()
-        for (let i = 0; i < invRes.data.length; i++) {
-          for (let j = 0; j < invRes.data[i].rcIts.length; j++) {
-            this.items.push({
-              createTime: invRes.data[i].crtTm,
-              trackingNo: invRes.data[i].trNo,
-              orgName: invRes.data[i].ogNm,
-              UPC: invRes.data[i].rcIts[j].UPC,
-              productName: invRes.data[i].rcIts[j].prodNm,
-              qn: invRes.data[i].rcIts[j].qn
-            })
-          }
-        }
-        console.log(this.items)
+        let invRes = await Inventory.get()
+        this.items = invRes.data
       } catch (error) {
         console.log(error)
       }
@@ -239,7 +309,6 @@ export default {
         this.editedIndex = -1
       }, 300)
     },
-
     save () {
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
@@ -247,6 +316,19 @@ export default {
         this.items.push(this.editedItem)
       }
       this.close()
+    },
+    async changeFilter () {
+      // new Date(new Date().setDate(new Date().getDate()-1)).toLocaleString()
+      let result = new Date(this.startDate)
+      result.setDate(result.getDate() + this.slider - 1)
+      this.endDate = result.toISOString().split('T')[0]
+      try {
+        // result from inventory collection
+        let invResDate = await Inventory.getByDates(this.startDate, this.endDate, this.orgName)
+        this.items = invResDate.data
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }

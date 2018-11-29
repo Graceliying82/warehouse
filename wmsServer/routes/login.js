@@ -19,16 +19,16 @@ module.exports = {
           error.status = 401;
           return next(error);
         } else {
-          if (result.password === req.body.password) {
+          if (result.pswd === req.body.pswd) {
             token = jwtSignUser(result);
             res.send({
               'email': result.email,
-              'userName': result.userName,
-              'isSupervisor': result.isSupervisor,
-              'isWmsUser': result.isWmsUser,
-              'isBuyer': result.isBuyer,
-              'isSeller': result.isSeller,
-              'orgName': result.orgName,
+              'userName': result.usrNm,
+              'isSupervisor': result.isSup,
+              'isWmsUser': result.isWms,
+              'isBuyer': result.isB,
+              'isSeller': result.isS,
+              'orgName': result.orgNm,
               'token': token
             })
           } else {

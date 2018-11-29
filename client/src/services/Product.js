@@ -6,5 +6,5 @@ export default {
   },
   get () {
     return Api().get('/products')
-  }
+  },
 }

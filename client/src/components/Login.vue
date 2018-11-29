@@ -68,7 +68,7 @@ export default {
       try {
         const response = await AuthenticationService.login({
           'email': this.email,
-          'password': this.password
+          'pswd': this.password
         })
         console.log(response.data)
         this.$store.dispatch('setUserInfo',
@@ -82,7 +82,7 @@ export default {
             token: response.data.token})
         this.$router.push('/')
       } catch (error) {
-        this.error = error.response.data.error
+        this.error = error
       }
     }
   }

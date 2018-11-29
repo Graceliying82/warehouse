@@ -27,17 +27,18 @@
         app
         temporary
         clipped>
-        <v-list class="pa-1" mt-3>
-          <v-list-tile avatar>
-            <v-list-tile-avatar>
-              <v-icon>person_pin</v-icon>
-            </v-list-tile-avatar>
-            <v-list-tile-content>
-              <v-list-tile-title >Hello! {{$store.state.userName}}</v-list-tile-title>
+        <v-list class="pa-1 font-weight-regular" mt-3>
+          <v-list-tile font-weight-regular>
+          <v-list-tile-content font-weight-regular>
+              <v-list-tile-title font-weight-regular>
+                <h3>
+                Hello!   {{$store.state.orgName}}  {{$store.state.userName}}
+                </h3>
+              </v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </v-list>
-        <v-list dense class="grey lighten-4">
+          <v-list dense class="grey lighten-4">
           <template v-for="(item, i) in items">
             <v-layout
               v-if="item.heading"

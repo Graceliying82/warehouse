@@ -10,9 +10,12 @@ module.exports = {
         error.status = 400;
         throw error;
       }
-      req.body.createTime = new Date().toString();
-      result2 = await dbcollection.insertOne(req.body)
-      res.send(result2)
+      // req.body.createTime = new Date().toString();
+      let createTime = new Date();
+      req.body.crtTm = createTime.toISOString().split('.')[0];
+      req.body.crtStmp = createTime.getTime();
+      result2 = await dbcollection.insertOne(req.body);
+      res.send(result2);
       res.end();
     } catch (error) {
       console.log("Create User error: " + error)

@@ -4,13 +4,16 @@ module.exports = {
   async post (req, res, next) {
     const dbcollection = req.db.collection("org");
     try {
-      var result1 = await dbcollection.find({'orgName':req.body.orgName}).toArray()
+      var result1 = await dbcollection.find({'orgNm':req.body.orgName}).toArray()
       if (result1.length>0) {
         const error = new Error('Org existed, please use other orgName');
         error.status = 400;
         throw error;
       }
-      req.body.createTime = new Date().toLocaleString();
+      // req.body.createTime = new Date().toLocaleString();
+      let createTime = new Date();
+      req.body.crtTm = createTime.toISOString().split('.')[0];
+      req.body.crtStmp = createTime.getTime();
       result2 = await dbcollection.insertOne(req.body)
       res.send(result2)
       res.end();
