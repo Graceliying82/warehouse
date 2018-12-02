@@ -70,7 +70,6 @@ export default {
           'email': this.email,
           'pswd': this.password
         })
-        console.log(response.data)
         this.$store.dispatch('setUserInfo',
           {userName: response.data.userName,
             email: response.data.email,

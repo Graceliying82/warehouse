@@ -1,5 +1,8 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
+    <v-flex shrink>
+      <h1>User Records Under Construction</h1>
+    </v-flex>
     <v-content>
       <v-container fill-height>
         <v-layout justify-center align-center>

@@ -10,5 +10,4 @@ export default {
   updateProduct (data) {
     return Api().post('/receiveUpdate', data)
   }
-  
 }

@@ -4,7 +4,7 @@
       <v-container fill-height>
         <v-layout justify-center align-center>
           <v-flex shrink>
-            <h1>Locations Management Under Construction</h1>
+            <h1>Product Move Out Under Construction</h1>
           </v-flex>
         </v-layout>
       </v-container>

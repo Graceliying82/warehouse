@@ -89,9 +89,9 @@ export default {
         { icon: 'library_books', text: 'Receiving Records', name: 'receiveRecords' },
         { divider: true },
         { heading: 'Location' },
-        { icon: 'business', text: 'Inventory Locations Management', name: 'invtLocMg' },
-        { icon: 'last_page', text: 'Product Move In', name: 'stockMove' },
-        { icon: 'first_page', text: 'Product Move Out', name: 'stockMove' },
+        { icon: 'business', text: 'Locations Management', name: 'invtLocMg' },
+        { icon: 'last_page', text: 'Product Move In', name: 'PrdMoveIn' },
+        { icon: 'first_page', text: 'Product Move Out', name: 'PrdMoveOut' },
         { divider: true },
         { heading: 'Shipping' },
         { icon: 'local_shipping', text: 'Shipping', name: 'shipping' },
@@ -103,7 +103,7 @@ export default {
         { heading: 'Upgrade' },
         { icon: 'build', text: 'New Upgrade Request', name: 'upgradeRequest' },
         { icon: 'gavel', text: 'Active Upgrade Request', name: 'upgradeApprove' },
-        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeApprove' },
+        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' },
         { divider: true },
         { heading: 'User' },
         { icon: 'person_add', text: 'Add User', name: 'createUser' },
@@ -115,7 +115,7 @@ export default {
         { icon: 'library_books', text: 'Receiving Records', name: 'receiveRecords' },
         { divider: true },
         { heading: 'Location' },
-        { icon: 'business', text: 'Inventory Locations Management', name: 'invtLocMg' },
+        { icon: 'business', text: 'Locations Management', name: 'invtLocMg' },
         { icon: 'last_page', text: 'Product Move In', name: 'stockMove' },
         { icon: 'first_page', text: 'Product Move Out', name: 'stockMove' },
         { divider: true },
@@ -129,7 +129,7 @@ export default {
         { heading: 'Upgrade' },
         { icon: 'build', text: 'New Upgrade Request', name: 'upgradeRequest' },
         { icon: 'gavel', text: 'Active Upgrade Request', name: 'upgradeApprove' },
-        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeApprove' }
+        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' }
       ],
       buyer: [
         { heading: 'Receiving' },
@@ -146,7 +146,7 @@ export default {
         { heading: 'Upgrade' },
         { icon: 'build', text: 'New Upgrade Request', name: 'upgradeRequest' },
         { icon: 'gavel', text: 'Active Upgrade Request', name: 'upgradeApprove' },
-        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeApprove' }
+        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' }
       ],
       seller: [
         { heading: 'Receiving' },

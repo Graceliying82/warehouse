@@ -4,6 +4,9 @@
       <v-container fill-height>
         <v-layout justify-center align-center>
           <v-flex>
+            <v-flex shrink>
+            <h1>Products Under Construction</h1>
+            </v-flex>
             <v-text-field
               label="Please input a UPC number"
               v-model="UPC"
@@ -27,12 +30,6 @@ export default {
     async submit () {
       console.log('Submit New User Infomation')
       this.submited = true
-    },
-    createAnother () {
-      this.email = ''
-      this.password = ''
-      this.pwv = false
-      this.submited = !this.submited
     }
   }
 }

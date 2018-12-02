@@ -4,10 +4,13 @@ import Hello from '@/components/Hello'
 import Login from '@/components/Login'
 import Receiving from '@/components/wmsPages/Receiving'
 import Shipping from '@/components/wmsPages/Shipping'
-import StockMove from '@/components/wmsPages/StockMove'
+import ShippingRecords from '@/components/wmsPages/ShippingRecords'
+import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
+import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
 import InventoryLocations from '@/components/wmsPages/InventoryLocations'
 import UpgradeApprove from '@/components/wmsPages/UpgradeApprove'
 import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
+import UpgradeRequestRecord from '@/components/wmsPages/UpgradeRequestRecord'
 import Inventory from '@/components/wmsPages/Inventory'
 import Products from '@/components/wmsPages/Products'
 import Reports from '@/components/wmsPages/Reports'
@@ -41,9 +44,19 @@ export default new Router({
       component: Shipping
     },
     {
-      path: '/stockMove',
-      name: 'stockMove',
-      component: StockMove
+      path: '/shippingRecords',
+      name: 'shippingRecords',
+      component: ShippingRecords
+    },
+    {
+      path: '/PrdMoveIn',
+      name: 'PrdMoveIn',
+      component: PrdMoveIn
+    },
+    {
+      path: '/PrdMoveOut',
+      name: 'PrdMoveOut',
+      component: PrdMoveOut
     },
     {
       path: '/inventoryLocations',
@@ -59,6 +72,11 @@ export default new Router({
       path: '/upgradeRequest',
       name: 'upgradeRequest',
       component: UpgradeRequest
+    },
+    {
+      path: '/upgradeRequestRecord',
+      name: 'upgradeRequestRecord',
+      component: UpgradeRequestRecord
     },
     {
       path: '/inventory',

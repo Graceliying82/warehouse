@@ -140,7 +140,8 @@
                   </v-flex>
                   <v-flex xs12 sm6 md4>
                     <v-text-field label="Price"
-                    v-model="editedItem.price">
+                    v-model="editedItem.price"
+                    type="number">
                   </v-text-field>
                   </v-flex>
                   <v-flex xs12 sm6 md4>
@@ -221,9 +222,9 @@ export default {
     return {
       orgName: 'All',
       downloadName: 'InventoryReceive.xls',
-      currentDate: new Date(new Date().toLocaleString()+ ' UTC').toISOString().split('T')[0],
-      startDate: new Date(new Date().toLocaleString()+ ' UTC').toISOString().split('T')[0],
-      endDate: new Date(new Date().toLocaleString()+ ' UTC').toISOString().split('T')[0],
+      currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
+      startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
+      endDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       menu: false,
       slider: 1,
       dialog: false,
@@ -310,21 +311,19 @@ export default {
       }
     },
     async save () {
-      try{
-         Object.assign(this.items[this.editedIndex], this.editedItem)
-         console.log(this.items[this.editedIndex].note)
-         console.log(this.items[this.editedIndex].price)
-         await Product.updateProduct({
-          "UPC": this.items[this.editedIndex].UPC,
-          "trNo": this.items[this.editedIndex].trackingNo,
-          "note": this.items[this.editedIndex].note,
-          "prdNm": this.items[this.editedIndex].productName,
-          "price": this.items[this.editedIndex].price,
-         })
+      try {
+        Object.assign(this.items[this.editedIndex], this.editedItem)
+        await Product.updateProduct({
+          'UPC': this.items[this.editedIndex].UPC,
+          'trNo': this.items[this.editedIndex].trackingNo,
+          'note': this.items[this.editedIndex].note,
+          'prdNm': this.items[this.editedIndex].productName,
+          'price': this.items[this.editedIndex].price * 100
+        })
+        this.changeFilter()
       } catch (error) {
         console.log(error)
       }
-     
       this.close()
     },
     async changeFilter () {

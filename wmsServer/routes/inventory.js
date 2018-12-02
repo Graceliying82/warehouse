@@ -13,7 +13,7 @@ function makeFlat(invResult) {
         UPC: invResult[i].rcIts[j].UPC,
         productName: invResult[i].rcIts[j].prdNm,
         qn: invResult[i].rcIts[j].qn,
-        price: invResult[i].rcIts[j].price
+        price: invResult[i].rcIts[j].price / 100
       })
     }
   }
@@ -50,7 +50,7 @@ module.exports = {
           }
         );
         if (prod) {
-          req.body.rcIts[i].prodNm = prod.prdNm;
+          req.body.rcIts[i].prdNm = prod.prdNm;
         } else { //no product found
           await prodCollection.insertOne(
             {
