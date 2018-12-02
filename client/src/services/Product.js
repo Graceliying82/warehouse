@@ -1,10 +1,14 @@
 import Api from '@/services/Api'
 
 export default {
-  post (credentials) {
-    return Api().post('/products', credentials)
+  post (data) {
+    return Api().post('/products', data)
   },
   get () {
     return Api().get('/products')
   },
+  updateProduct (data) {
+    return Api().post('/receiveUpdate', data)
+  }
+  
 }

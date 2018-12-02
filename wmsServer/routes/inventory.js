@@ -9,9 +9,11 @@ function makeFlat(invResult) {
         createTime: invResult[i].crtTm,
         trackingNo: invResult[i].trNo,
         orgName: invResult[i].orgNm,
+        note: invResult[i].note,
         UPC: invResult[i].rcIts[j].UPC,
-        productName: invResult[i].rcIts[j].prodNm,
-        qn: invResult[i].rcIts[j].qn
+        productName: invResult[i].rcIts[j].prdNm,
+        qn: invResult[i].rcIts[j].qn,
+        price: invResult[i].rcIts[j].price
       })
     }
   }
@@ -29,7 +31,7 @@ module.exports = {
       //Modify to add more test data:
       // let createTime = new Date(new Date().setDate(new Date().getDate()-49))
       let createTime = new Date()
-      req.body.crtTm = createTime.toISOString().split('.')[0]; // add data create Time
+      req.body.crtTm = new Date(createTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST'
       req.body.crtStmp = createTime.getTime() // add a create timestamp
       req.body.mdfTm = req.body.crtTm; //add data modify Time
       req.body.mdfStmp = req.body.crtStmp; // add a modify timestamp

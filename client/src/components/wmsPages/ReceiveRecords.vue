@@ -215,14 +215,15 @@
 
 <script>
 import Inventory from '@/services/Inventory'
+import Product from '@/services/Product'
 export default {
   data () {
     return {
       orgName: 'All',
       downloadName: 'InventoryReceive.xls',
-      currentDate: new Date().toISOString().substr(0, 10),
-      startDate: new Date().toISOString().substr(0, 10),
-      endDate: new Date().toISOString().substr(0, 10),
+      currentDate: new Date(new Date().toLocaleString()+ ' UTC').toISOString().split('T')[0],
+      startDate: new Date(new Date().toLocaleString()+ ' UTC').toISOString().split('T')[0],
+      endDate: new Date(new Date().toLocaleString()+ ' UTC').toISOString().split('T')[0],
       menu: false,
       slider: 1,
       dialog: false,
@@ -299,23 +300,34 @@ export default {
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
-    close () {
+    async close () {
       this.dialog = false
-      setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
+      try {
+        this.editedItem = await Object.assign({}, this.defaultItem)
         this.editedIndex = -1
-      }, 300)
-    },
-    save () {
-      if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
-      } else {
-        this.items.push(this.editedItem)
+      } catch (error) {
+        console.log(error)
       }
+    },
+    async save () {
+      try{
+         Object.assign(this.items[this.editedIndex], this.editedItem)
+         console.log(this.items[this.editedIndex].note)
+         console.log(this.items[this.editedIndex].price)
+         await Product.updateProduct({
+          "UPC": this.items[this.editedIndex].UPC,
+          "trNo": this.items[this.editedIndex].trackingNo,
+          "note": this.items[this.editedIndex].note,
+          "prdNm": this.items[this.editedIndex].productName,
+          "price": this.items[this.editedIndex].price,
+         })
+      } catch (error) {
+        console.log(error)
+      }
+     
       this.close()
     },
     async changeFilter () {
-      // new Date(new Date().setDate(new Date().getDate()-1)).toLocaleString()
       let result = new Date(this.startDate)
       result.setDate(result.getDate() + this.slider - 1)
       this.endDate = result.toISOString().split('T')[0]

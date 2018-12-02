@@ -12,7 +12,7 @@ module.exports = {
       }
       // req.body.createTime = new Date().toString();
       let createTime = new Date();
-      req.body.crtTm = createTime.toISOString().split('.')[0];
+      req.body.crtTm = new Date(createTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST'
       req.body.crtStmp = createTime.getTime();
       result2 = await dbcollection.insertOne(req.body);
       res.send(result2);

@@ -18,7 +18,7 @@ module.exports = {
       let UPC = req.body.UPC;
       // req.body.createTime = new Date().toLocaleString();
       let createTime = new Date();
-      req.body.crtTm = createTime.toISOString().split(".")[0];
+      req.body.crtTm =  new Date(createTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
       req.body.crtStmp = createTime.getTime();
       result2 = await dbcollection.insertOne(req.body);
       res.send(result2);
@@ -35,33 +35,51 @@ module.exports = {
     try {
       //update product find by upc
       let modifyTime = new Date();
-      let mdfTm = modifyTime.toISOString().split(".")[0];
+      let mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
       let mdfStmp = modifyTime.getTime();
+
+      //update inventory receive
+      //find one inventory receive by trancing NO
+      //set price, set product name
+      //update inventory receive recersive (for past 1 month)
+      //update condition past 1 month,
 
       await prdCollection.findOneAndUpdate(
         {
           _id: req.body.UPC
         }, //query
         {
-          $set: { mdfTm: mdfTm, mdfStmp: mdfStmp },
-          $set: { prdNm: req.body.prdNm }
+          $set: { "mdfTm": mdfTm, "mdfStmp": mdfStmp, "prdNm": req.body.prdNm }
+          // $set: { "mdfStmp": mdfStmp},
+          // $set: { "prdNm": req.body.prdNm }
         }
       );
-
-      await invReceivecollection.findOneAndUpdate(
+      await invReceivecollection.updateMany(
         {
           "trNo": req.body.trNo,
           "rcIts.UPC": req.body.UPC
         },
         {
-          $set: {"rcIts.$.price" : new Number(req.body.price)}
+          $set: {
+            "rcIts.$.price" : parseInt(req.body.price),
+            "note" : req.body.note
+          }
+        }
+
+      )
+      await invReceivecollection.updateMany(
+        {
+          "rcIts.UPC": req.body.UPC
+        },
+        {
+          $set: {
+            "rcIts.$.prdNm" : req.body.prdNm
+          }
         }
       )
-      //update inventory receive
-      //find one inventory receive by trancing NO
-      //set price, set product name
-      //update inventory receive recersive (for past 1 month)
-      //update condition past 1 month,
+      //TODO ste status code 
+      res.end();
+
     } catch (error) {
       console.log("Create Product error: " + error);
       next(error);

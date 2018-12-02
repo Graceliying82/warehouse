@@ -162,10 +162,10 @@ export default {
       orgName1: '', // orgName
       orgName2: '', // orgName
       receiveItems1: [// receiveItems
-        { UPC: '', qn: 0, prodNm: '', price: 0, note: '' }
+        { UPC: '', qn: 0, prdNm: '', price: 0 }
       ],
       receiveItems2: [// receiveItems
-        { UPC: '', qn: 0, prodNm: '', price: 0, note: '' }
+        { UPC: '', qn: 0, prdNm: '', price: 0 }
       ],
       alertType1: 'success',
       showAlert1: false,
@@ -216,7 +216,7 @@ export default {
     addNewReceiveItem1 (i) {
       if (i === (this.receiveItems1.length - 1)) {
         // Add a line only if reach to the buttom of the lines
-        this.receiveItems1.push({ UPC: '', qn: 0, prodNm: '', price: 0, note: '' })
+        this.receiveItems1.push({ UPC: '', qn: 0, prdNm: '', price: 0 })
       }
       this.$nextTick(() => {
         this.$refs.UPC1[i + 1].focus()
@@ -225,7 +225,7 @@ export default {
     addNewReceiveItem2 (i) {
       if (i === (this.receiveItems2.length - 1)) {
         // Add a line only if reach to the buttom of the lines
-        this.receiveItems2.push({ UPC: '', qn: 0, prodNm: '', price: 0, note: '' })
+        this.receiveItems2.push({ UPC: '', qn: 0, prdNm: '', price: 0 })
       }
       this.$nextTick(() => {
         this.$refs.UPC2[i + 1].focus()
@@ -240,7 +240,7 @@ export default {
           }
         }
         if (this.receiveItems1.length === 0) {
-          this.receiveItems1 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+          this.receiveItems1 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
           this.message1 = 'UPC is needed! Not a valid receive.'
           this.alertType1 = 'error'
           this.showAlert1 = true
@@ -252,6 +252,7 @@ export default {
           'trNo': this.trackingNumber1,
           // OrgName
           'orgNm': this.orgName1,
+          'note': '',
           // receiveItems:
           'rcIts': this.receiveItems1,
           'usrID': this.$store.state.email
@@ -262,7 +263,7 @@ export default {
         // clean up data
         this.trackingNumber1 = ''
         this.orgName1 = ''
-        this.receiveItems1 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+        this.receiveItems1 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
         this.changeFocusToOrgName1()
       } catch (error) {
         this.message1 = error
@@ -280,7 +281,7 @@ export default {
           }
         }
         if (this.receiveItems2.length === 0) {
-          this.receiveItems2 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+          this.receiveItems2 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
           this.message2 = 'UPC is needed! Not a valid receive.'
           this.alertType2 = 'error'
           this.showAlert2 = true
@@ -292,6 +293,7 @@ export default {
           'trNo': this.trackingNumber2,
           // OrgName
           'ogNm': this.orgName2,
+          'note': '',
           // receiveItems:
           'rcIts': this.receiveItems2,
           'usEm': this.$store.email
@@ -302,7 +304,7 @@ export default {
         // clean up data
         this.trackingNumber2 = ''
         this.orgName2 = ''
-        this.receiveItems2 = [{ UPC: '', qn: 0, prodNm: '', price: 0, note: '' }]
+        this.receiveItems2 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
         this.changeFocusToOrgName2()
       } catch (error) {
         this.message2 = error
@@ -328,7 +330,7 @@ export default {
           this.receiveItems1[i].qn = 1
           if (i === (this.receiveItems1.length - 1)) {
             // Add a line only if reach to the buttom of the lines
-            this.receiveItems1.push({ UPC: '', qn: 0, prodNm: '', price: 0, note: '' })
+            this.receiveItems1.push({ UPC: '', qn: 0, prdNm: '', price: 0 })
           }
           this.$nextTick(() => {
             this.$refs.UPC1[i + 1].focus()
