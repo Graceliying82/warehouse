@@ -105,17 +105,17 @@
             </div>
           </v-flex>
           <v-flex>
-            <v-btn fab dark small
+            <v-btn fab small
               v-on:click= "startCamera1"
               :disabled=cam1NotFound
               color="cyan darken-2">
-              <v-icon dark>videocam</v-icon>
+              <v-icon>videocam</v-icon>
             </v-btn>
-            <v-btn fab dark small
+            <v-btn fab small
               v-on:click= "stopCamera1"
               :disabled=cam1NotFound
               color="cyan darken-2">
-              <v-icon dark>videocam_off</v-icon>
+              <v-icon>videocam_off</v-icon>
             </v-btn>
           </v-flex>
         </v-layout>
@@ -292,11 +292,11 @@ export default {
           // tracking No
           'trNo': this.trackingNumber2,
           // OrgName
-          'ogNm': this.orgName2,
+          'orgNm': this.orgName2,
           'note': '',
           // receiveItems:
           'rcIts': this.receiveItems2,
-          'usEm': this.$store.email
+          'usrID': this.$store.state.email
         })
         this.message2 = 'Successfully Added a new Package'
         this.alertType2 = 'success'
@@ -363,15 +363,37 @@ export default {
       }
     },
     setupMedia () {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        this.testMediaAccess()
+      // if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      //   this.testMediaAccess()
+      // } else {
+      //   console.log('navigator.mediaDevices :' + navigator.mediaDevices)
+      //   console.log('navigator.mediaDevices.getUserMedia :' + navigator.mediaDevices.getUserMedia)
+      // }
+      let constraints = { audio: false, video: true }
+      if (navigator.mediaDevices === undefined) {
+        console.log('navigator.mediaDevices undefined')
+        navigator.mediaDevices = {}
       }
+      if (navigator.mediaDevices.getUserMedia === undefined) {
+        navigator.mediaDevices.getUserMedia = function (constraints) {
+          let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+          if (!getUserMedia) {
+            return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
+          }
+          return new Promise(function (resolve, reject) {
+            getUserMedia.call(navigator, constraints, resolve, reject)
+          })
+        }
+      }
+      this.testMediaAccess(constraints)
     },
     loadCameras () {
+      console.log('In loadCameras')
       navigator.mediaDevices
         .enumerateDevices()
         .then(
           deviceInfos => {
+            console.log('In deviceInfos')
             for (var i = 0; i !== deviceInfos.length; ++i) {
               var deviceInfo = deviceInfos[i]
               if (deviceInfo.kind === 'videoinput') {
@@ -400,11 +422,15 @@ export default {
         this.stopStreamedVideo(this.$refs.video)
       }
     },
-    testMediaAccess () {
+    testMediaAccess (constraints) {
+      console.log('In testMediaAccess')
       navigator.mediaDevices
-        .getUserMedia({video: true})
-        .then(stream => this.loadCameras())
-        .catch(error => console.log(error))
+        .getUserMedia(constraints)
+        .then(stream => {
+          console.log('In getUserMedia.then. Call ')
+          this.loadCameras()
+        })
+        .catch(function (err) { console.log(err.name + ': ' + err.message) })
     },
     startCamera1 () {
       console.log('initCamera1')
