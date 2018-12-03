@@ -288,13 +288,7 @@ export default {
   },
   methods: {
     async initialize () {
-      try {
-        // result from inventory collection
-        let invRes = await Inventory.get()
-        this.items = invRes.data
-      } catch (error) {
-        console.log(error)
-      }
+      this.changeFilter()
     },
     editItem (item) {
       this.editedIndex = this.items.indexOf(item)

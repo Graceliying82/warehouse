@@ -137,12 +137,7 @@ module.exports = {
       }
     } else {
       try {
-        let invResult = await invCollection.find({
-          crtStmp: {
-            $lte: new Date().getTime(),
-            $gt: new Date(new Date().setDate(new Date().getDate()-1)).getTime()
-          }
-        }).toArray()
+        let invResult = await invCollection.find().toArray()
         res.send(makeFlat(invResult))
         res.end()
       } catch (error) {

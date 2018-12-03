@@ -65,6 +65,8 @@ export default {
   },
   methods: {
     async login () {
+      console.log(new Date().toString())
+      console.log(new Date(new Date().setDate(new Date().getDate()-1)).toString())
       try {
         const response = await AuthenticationService.login({
           'email': this.email,
