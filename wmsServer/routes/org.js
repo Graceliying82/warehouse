@@ -4,11 +4,11 @@ module.exports = {
   async post (req, res, next) {
     const dbcollection = req.db.collection("org");
     try {
-      var result1 = await dbcollection.find({'orgNm':req.body.orgName}).toArray()
+      var result1 = await dbcollection.find({'orgNm':req.body.orgNm}).toArray()
       if (result1.length>0) {
-        const error = new Error('Org existed, please use other orgName');
+        const error = new Error('Org Name existed. Please use other orgName');
         error.status = 400;
-        throw error;
+        return next(error);
       }
       // req.body.createTime = new Date().toLocaleString();
       let createTime = new Date();
@@ -19,6 +19,7 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Create Org error: " + error)
+      error.message = 'Fail to access database! Try again'
       next(error)
     }
   },
@@ -32,6 +33,7 @@ module.exports = {
       res.end()
     } catch (error) {
       console.log("Get Org error: " + error)
+      error.message = 'Fail to access database! Try again'
       next(error)
     }
   },

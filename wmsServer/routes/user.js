@@ -6,9 +6,9 @@ module.exports = {
     try {
       var result1 = await dbcollection.find({'email':req.body.email}).toArray()
       if (result1.length>0) {
-        const error = new Error('user existed, please use other email');
+        const error = new Error('User existed. Please use other email');
         error.status = 400;
-        throw error;
+        return next(error)
       }
       // req.body.createTime = new Date().toString();
       let createTime = new Date();
@@ -16,9 +16,10 @@ module.exports = {
       req.body.crtStmp = createTime.getTime();
       result2 = await dbcollection.insertOne(req.body);
       res.send(result2);
-      res.end();
+      res.end()
     } catch (error) {
       console.log("Create User error: " + error)
+      error.message = 'Fail to access database! Try again'
       next(error)
     }
   },
@@ -32,6 +33,7 @@ module.exports = {
       res.end()
     } catch (error) {
       console.log("Get User error: " + error)
+      error.message = 'Fail to access database! Try again'
       next(error)
     }
   }

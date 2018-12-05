@@ -15,7 +15,7 @@ module.exports = {
       try {
         var result = await dbcollection.findOne ({'email': req.body.email})
         if (result == null) {
-          const error = new Error('failed to authenticate');
+          const error = new Error('Failed to authenticate');
           error.status = 401;
           return next(error);
         } else {
@@ -32,7 +32,7 @@ module.exports = {
               'token': token
             })
           } else {
-            const error = new Error('failed to authenticate');
+            const error = new Error('Failed to authenticate');
             error.status = 401;
             return next(error);
           }
@@ -40,6 +40,7 @@ module.exports = {
         res.end();
       } catch (error) {
         console.log("login/get error: " + error)
+        error.message = 'Fail to access database! Try again'
         next(error)
       }
   },
@@ -62,6 +63,7 @@ module.exports = {
       res.end()
     } catch (error) {
       console.log("login/get error: " + error)
+      error.message = 'Fail to access database! Try again'
       next(error)
     }
   }

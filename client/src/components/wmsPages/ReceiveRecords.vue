@@ -161,6 +161,14 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-flex>
+          <v-alert type="error"
+            outline
+            :value="error"
+            dismissible>
+            {{ error }}
+          </v-alert>
+          </v-flex>
           <v-data-table
             :headers="headers"
             :items="items"
@@ -220,6 +228,7 @@ import Product from '@/services/Product'
 export default {
   data () {
     return {
+      error: null,
       orgName: 'All',
       downloadName: 'InventoryReceive.xls',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
@@ -301,7 +310,8 @@ export default {
         this.editedItem = await Object.assign({}, this.defaultItem)
         this.editedIndex = -1
       } catch (error) {
-        console.log(error)
+        console.log('error  : ' + error)
+        this.error = error
       }
     },
     async save () {
@@ -316,11 +326,18 @@ export default {
         })
         this.changeFilter()
       } catch (error) {
-        console.log(error)
+        if (!error.response) {
+          // network error
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.error = error.response.data.error
+        }
       }
       this.close()
     },
     async changeFilter () {
+      this.error = null
       let result = new Date(this.startDate)
       result.setDate(result.getDate() + this.slider - 1)
       this.endDate = result.toISOString().split('T')[0]
@@ -329,7 +346,13 @@ export default {
         let invResDate = await Inventory.getByDates(this.startDate, this.endDate, this.orgName)
         this.items = invResDate.data
       } catch (error) {
-        console.log(error)
+        if (!error.response) {
+          // network error
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.data.message)
+          this.error = error.response.data.error
+        }
       }
     }
   }

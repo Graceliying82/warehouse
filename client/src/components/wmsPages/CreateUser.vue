@@ -2,6 +2,14 @@
   <div v-if="$store.state.isUserLoggedIn">
     <v-content>
       <v-container v-if= "!this.submited">
+        <v-flex>
+          <v-alert type="error"
+            outline
+            :value="error"
+            dismissible>
+            {{ error }}
+          </v-alert>
+        </v-flex>
         <panel title = "Create New User">
           <v-form ref="form" v-model="valid">
             <v-layout row wrap>
@@ -82,10 +90,10 @@ export default {
   data () {
     return {
       valid: true,
+      error: null,
       name: '',
       email: '',
       password: '',
-      error: null,
       selectOrg: null,
       selectRole: null,
       pwv: false,
@@ -162,8 +170,13 @@ export default {
         })
         this.submited = true
       } catch (error) {
-        console.log(error)
-        console.log('error:' + error.response.data.error)
+        if (!error.response) {
+          // network error
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.error = error.response.data.error
+        }
       }
     },
     createAnother () {
@@ -174,7 +187,13 @@ export default {
     try {
       this.orgs = (await AuthenticationService.getOrgName()).data
     } catch (error) {
-      console.log('error: ' + error)
+      if (!error.response) {
+        // network error
+        this.error = 'Network Error: Fail to connet to server'
+      } else {
+        console.log('error ' + error.response.status + ' : ' + error.response.data.error)
+        this.error = error.response.data.error
+      }
     }
     for (var i in this.orgs) {
       this.orgNames.push(this.orgs[i].orgNm)

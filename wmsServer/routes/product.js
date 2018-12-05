@@ -8,6 +8,7 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Get User error: " + error);
+      error.message = 'Fail to access database! Try again'
       next(error);
     }
   },
@@ -25,6 +26,7 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
+      error.message = 'Fail to access database! Try again'
       next(error);
     }
   },
@@ -82,6 +84,7 @@ module.exports = {
 
     } catch (error) {
       console.log("Create Product error: " + error);
+      error.message = 'Fail to access database! Try again'
       next(error);
     }
   }

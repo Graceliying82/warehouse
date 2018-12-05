@@ -81,7 +81,12 @@ export default {
             token: response.data.token})
         this.$router.push('/')
       } catch (error) {
-        this.error = error
+        if (!error.response) {
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.error = error.response.data.error
+        }
       }
     }
   }

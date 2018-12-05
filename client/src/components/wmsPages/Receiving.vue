@@ -15,7 +15,8 @@
           <v-tab-item>
             <v-alert
             v-show = showAlert1
-            :type = alertType1>
+            :type = alertType1
+            outline>
               {{message1}}
             </v-alert>
             <v-text-field
@@ -55,7 +56,8 @@
           <v-tab-item>
           <v-alert
           v-show = showAlert2
-          :type = alertType2>
+          :type = alertType2
+          outline>
             {{message2}}
           </v-alert>
           <v-text-field
@@ -266,8 +268,13 @@ export default {
         this.receiveItems1 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
         this.changeFocusToOrgName1()
       } catch (error) {
-        this.message1 = error
-        console.log(error)
+        if (!error.response) {
+          // network error
+          this.message1 = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.message1 = error.response.data.error
+        }
         this.alertType1 = 'error'
         this.showAlert1 = true
       }
@@ -307,8 +314,13 @@ export default {
         this.receiveItems2 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
         this.changeFocusToOrgName2()
       } catch (error) {
-        this.message2 = error
-        console.log(error)
+        if (!error.response) {
+          // network error
+          this.message2 = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.message2 = error.response.data.error
+        }
         this.alertType2 = 'error'
         this.showAlert2 = true
       }

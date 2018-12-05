@@ -61,7 +61,13 @@ export default {
           password: this.password
         })
       } catch (error) {
-        this.error = error.response.data.error
+        if (!error.response) {
+          // network error
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.error = error.response.data.error
+        }
       }
     }
   }
