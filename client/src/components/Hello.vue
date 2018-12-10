@@ -6,8 +6,10 @@
           <v-img
             src="https://cdn.vuetifyjs.com/images/cards/desert.jpg"
             aspect-ratio="2.75"
+            @click="navigateTo({name: 'login'})"
           ></v-img>
-          <v-card-title primary-title>
+          <v-card-title primary-title
+            @click="navigateTo({name: 'login'})">
               <h3 class="headline mb-0">{{ msg }}</h3>
           </v-card-title>
         </v-card>
@@ -22,6 +24,11 @@ export default {
   data () {
     return {
       msg: 'Welcome! Please Login.'
+    }
+  },
+  methods: {
+    navigateTo (route) {
+      this.$router.push(route)
     }
   }
 }
