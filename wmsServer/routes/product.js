@@ -1,3 +1,4 @@
+var ObjectId = require('mongodb').ObjectID
 module.exports = {
   //  Get Products
   async get(req, res, next) {
@@ -64,7 +65,10 @@ module.exports = {
         {
           $set: {
             "rcIts.$.price" : parseInt(req.body.price),
-            "note" : req.body.note
+            "rcIts.$.qn" : req.body.qn,
+            "note" : req.body.note,
+            "orgNm" : req.body.orgNm
+          //todo add logic to change seller inventory if orgnm changed.
           }
         }
 
@@ -82,6 +86,25 @@ module.exports = {
       //TODO ste status code 
       res.end();
 
+    } catch (error) {
+      console.log("Create Product error: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
+  },
+
+  // Delete a receiving records information
+  async deleteProduct(req, res, next) {
+    const invReceivecollection = req.db.collection("inventoryReceive");
+    try {
+      let o_id = ObjectId(req.body._id);
+      let result = await invReceivecollection.deleteOne(
+        {
+          "_id": o_id
+        } //query
+      );
+      res.send(result)
+      res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
       error.message = 'Fail to access database! Try again'

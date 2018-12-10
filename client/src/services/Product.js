@@ -9,5 +9,8 @@ export default {
   },
   updateProduct (data) {
     return Api().post('/receiveUpdate', data)
+  },
+  deleteProduct (data) {
+    return Api().post('/receiveDelete', data)
   }
 }

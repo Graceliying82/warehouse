@@ -6,6 +6,7 @@ function makeFlat(invResult) {
   for (let i = 0; i < invResult.length; i++) {
     for (let j = 0; j < invResult[i].rcIts.length; j++) {
       items.push({
+        _id: invResult[i]._id,
         createTime: invResult[i].crtTm,
         trackingNo: invResult[i].trNo,
         orgName: invResult[i].orgNm,

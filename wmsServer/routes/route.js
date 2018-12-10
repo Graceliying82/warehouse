@@ -25,6 +25,7 @@ module.exports = (app) => {
   app.get('/products', Product.get)
 
   app.post('/receiveUpdate', Product.updateProduct)
+  app.post('/receiveDelete', Product.deleteProduct)
 
   // from inventory
   app.post('/inventory', Inventory.post)

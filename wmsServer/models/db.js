@@ -1,6 +1,6 @@
 const Config = require('../config/config')
 const MongoClient = require('mongodb').MongoClient
-const assert = require('assert');
+const assert = require('assert')
 
 function connect(url) {
   return MongoClient.connect(url,  { useNewUrlParser: true }).then(client => client.db(Config.dbname))

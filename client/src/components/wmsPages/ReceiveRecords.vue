@@ -83,7 +83,7 @@
               ></v-text-field>
           </v-flex>
         </v-layout>
-          <v-dialog v-model="dialog" max-width="500px">
+          <v-dialog v-model="dialog1" max-width="500px">
             <v-card>
               <v-card-text>
                   <h1 pt-8>Modify Record</h1>
@@ -91,18 +91,18 @@
                   <v-layout column>
                     <v-flex>
                       <v-text-field label="TrackingNo"
-                      readonly
-                      hint="Readonly"
-                      box
-                      v-model="editedItem.trackingNo">
+                        readonly
+                        hint="Readonly"
+                        box
+                        v-model="editedItem.trackingNo">
                       </v-text-field>
                     </v-flex>
                     <v-flex xs12 sm12 md8>
                       <v-text-field label="UPC"
-                      readonly
-                      hint="Readonly"
-                      box
-                      v-model="editedItem.UPC">
+                        readonly
+                        hint="Readonly"
+                        box
+                        v-model="editedItem.UPC">
                       </v-text-field>
                     </v-flex>
                     <v-flex>
@@ -117,17 +117,11 @@
                   <v-layout row>
                     <v-flex xs12 sm12 md4>
                       <v-text-field label="OrgName"
-                      readonly
-                      hint="Readonly"
-                      box
                       v-model="editedItem.orgName">
                       </v-text-field>
                     </v-flex>
                     <v-flex xs12 sm12 md4>
                       <v-text-field label="Quantity"
-                      readonly
-                      hint="Readonly"
-                      box
                       v-model="editedItem.qn">
                     </v-text-field>
                     </v-flex>
@@ -156,8 +150,22 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" flat @click.native="close">Cancel</v-btn>
-                <v-btn color="blue darken-1" flat @click.native="save">Save</v-btn>
+                <v-btn color="blue darken-1" flat @click.native="closeDialog1">Cancel</v-btn>
+                <v-btn color="blue darken-1" flat @click.native="saveDialog1">Save</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="dialog2" max-width="500px">
+            <v-card>
+              <v-card-text>
+                  <h1 pt-8>Delete Confirmation</h1>
+                  <h3>You will delete tracking :</h3>
+                  <h3>{{deleteTracking}}</h3>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" flat @click.native="closeDialog2">Cancel</v-btn>
+                <v-btn color="blue darken-1" flat @click.native="deleteDialog2">Confirm</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -214,6 +222,9 @@
                 <v-btn icon class="mx-0" @click="editItem(props.item)">
                   <v-icon color="teal">edit</v-icon>
                 </v-btn>
+                <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+                  <v-icon color="teal">delete_forever</v-icon>
+                </v-btn>
               </td>
             </template>
           </v-data-table>
@@ -230,13 +241,15 @@ export default {
     return {
       error: null,
       orgName: 'All',
+      deleteTracking: '',
       downloadName: 'InventoryReceive.xls',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       endDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       menu: false,
       slider: 1,
-      dialog: false,
+      dialog1: false,
+      dialog2: false,
       search: '',
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       headers: [
@@ -288,8 +301,8 @@ export default {
     }
   },
   watch: {
-    dialog (val) {
-      val || this.close()
+    dialog1 (val) {
+      val || this.closeDialog1()
     }
   },
   created () {
@@ -302,10 +315,10 @@ export default {
     editItem (item) {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
-      this.dialog = true
+      this.dialog1 = true
     },
-    async close () {
-      this.dialog = false
+    async closeDialog1 () {
+      this.dialog1 = false
       try {
         this.editedItem = await Object.assign({}, this.defaultItem)
         this.editedIndex = -1
@@ -314,12 +327,47 @@ export default {
         this.error = error
       }
     },
-    async save () {
+    closeDialog2 () {
+      this.dialog2 = false
+      try {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      } catch (error) {
+        console.log('error  : ' + error)
+        this.error = error
+      }
+    },
+    async deleteItem (item) {
+      this.editedIndex = this.items.indexOf(item)
+      // Object.assign(this.items[this.editedIndex], this.editedItem)
+      this.deleteTracking = this.items[this.editedIndex].trackingNo
+      this.dialog2 = true
+    },
+    async deleteDialog2 () {
+      this.dialog2 = false
+      try {
+        await Product.deleteProduct({
+          '_id': this.items[this.editedIndex]._id
+        })
+        this.changeFilter()
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.error = error.response.data.error
+        }
+      }
+    },
+    async saveDialog1 () {
       try {
         Object.assign(this.items[this.editedIndex], this.editedItem)
         await Product.updateProduct({
           'UPC': this.items[this.editedIndex].UPC,
           'trNo': this.items[this.editedIndex].trackingNo,
+          'orgNm': this.items[this.editedIndex].orgName,
+          'qn': this.items[this.editedIndex].qn,
           'note': this.items[this.editedIndex].note,
           'prdNm': this.items[this.editedIndex].productName,
           'price': this.items[this.editedIndex].price * 100
@@ -334,7 +382,7 @@ export default {
           this.error = error.response.data.error
         }
       }
-      this.close()
+      this.closeDialog1()
     },
     async changeFilter () {
       this.error = null
