@@ -119,6 +119,13 @@
               color="cyan darken-2">
               <v-icon>videocam_off</v-icon>
             </v-btn>
+            <v-flex ml-2 lg8>
+            <v-select
+              :items="cameraLabels"
+              v-model="selectCamera1"
+              label="Select Camera1"
+              @change="changeCamera1(selectCamera1)"></v-select>
+            </v-flex>
           </v-flex>
         </v-layout>
         <v-layout align-start row>
@@ -143,6 +150,13 @@
               color="cyan darken-2">
               <v-icon >videocam_off</v-icon>
             </v-btn>
+            <v-flex ml-2 lg8>
+            <v-select
+              :items="cameraLabels"
+              v-model="selectCamera2"
+              label="Select Camera2"
+              @change="changeCamera2(selectCamera2)"></v-select>
+            </v-flex>
           </v-flex>
         </v-layout>
       </v-layout>
@@ -181,6 +195,13 @@ export default {
       canvas1: null,
       canvas2: null,
       cameras: [],
+      cameraLabels: [],
+      selectCamera1: null,
+      selectCamera2: null,
+      // index of camera selected for video1
+      camera1Selected: 0,
+      // index of camera selected for video1
+      camera2Selected: 1,
       camerasListEmitted: false,
       deviceId1: null,
       deviceId2: null,
@@ -375,12 +396,6 @@ export default {
       }
     },
     setupMedia () {
-      // if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      //   this.testMediaAccess()
-      // } else {
-      //   console.log('navigator.mediaDevices :' + navigator.mediaDevices)
-      //   console.log('navigator.mediaDevices.getUserMedia :' + navigator.mediaDevices.getUserMedia)
-      // }
       let constraints = { audio: false, video: true }
       if (navigator.mediaDevices === undefined) {
         console.log('navigator.mediaDevices undefined')
@@ -400,29 +415,28 @@ export default {
       this.testMediaAccess(constraints)
     },
     loadCameras () {
-      console.log('In loadCameras')
       navigator.mediaDevices
         .enumerateDevices()
         .then(
           deviceInfos => {
-            console.log('In deviceInfos')
             for (var i = 0; i !== deviceInfos.length; ++i) {
               var deviceInfo = deviceInfos[i]
               if (deviceInfo.kind === 'videoinput') {
                 this.cameras.push(deviceInfo)
+                this.cameraLabels.push(deviceInfo.label.slice(0, 10))
               }
             }
           }
         )
         .then(
           () => {
-            console.log(this.cameras.length)
-            if (this.cameras.length === 1) {
-              this.cam1NotFound = false
-            }
-            if (this.cameras.length === 2) {
-              this.cam1NotFound = false
-              this.cam2NotFound = false
+            if (this.cameras.length > 0) {
+              if (this.cameras.length === 1) {
+                this.cam1NotFound = false
+              } else {
+                this.cam1NotFound = false
+                this.cam2NotFound = false
+              }
             }
           }
         )
@@ -435,25 +449,15 @@ export default {
       }
     },
     testMediaAccess (constraints) {
-      console.log('In testMediaAccess')
       navigator.mediaDevices
         .getUserMedia(constraints)
         .then(stream => {
-          console.log('In getUserMedia.then. Call ')
           this.loadCameras()
         })
         .catch(function (err) { console.log(err.name + ': ' + err.message) })
     },
     startCamera1 () {
-      console.log('initCamera1')
-      if (this.cameras === null) {
-        console.log('No camera found!')
-      } else {
-        if (this.cameras[0].deviceId) {
-          console.log('Camera 1 deviceId：  ' + this.cameras[0].deviceId)
-          this.deviceId1 = this.cameras[0].deviceId
-        }
-      }
+      this.deviceId1 = this.cameras[this.camera1Selected].deviceId
       navigator.mediaDevices
         .getUserMedia({
           video: { deviceId: { exact: this.deviceId1 } }
@@ -465,15 +469,7 @@ export default {
         .catch(error => console.log(error))
     },
     startCamera2 () {
-      console.log('initCamera2')
-      if (this.cameras === null) {
-        console.log('No camera found!')
-      } else {
-        if (this.cameras[1].deviceId) {
-          console.log('Camera 2 deviceId：  ' + this.cameras[1].deviceId)
-          this.deviceId2 = this.cameras[1].deviceId
-        }
-      }
+      this.deviceId2 = this.cameras[this.camera2Selected].deviceId
       navigator.mediaDevices
         .getUserMedia({
           video: { deviceId: { exact: this.deviceId2 } }
@@ -505,6 +501,22 @@ export default {
           this.source2 = null
         })
       }
+    },
+    changeCamera1 (cameraSelected) {
+      // stop first
+      this.stopCamera1()
+      // get the index of selected camera
+      this.camera1Selected = this.cameraLabels.indexOf(cameraSelected)
+      // start it on Camera1
+      this.startCamera1()
+    },
+    changeCamera2 (cameraSelected) {
+      // stop first
+      this.stopCamera2()
+      // get the index of selected camera
+      this.camera2Selected = this.cameraLabels.indexOf(cameraSelected)
+      // start it on Camera1
+      this.startCamera2()
     }
   },
   mounted () {
