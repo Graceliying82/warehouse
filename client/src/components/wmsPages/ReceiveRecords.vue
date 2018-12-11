@@ -270,7 +270,7 @@ export default {
       json_fields: {
         'Create Time': 'createTime',
         'Tracking No': 'trackingNo',
-        'Orgization Name': 'orgName',
+        'Organization Name': 'orgName',
         'Product Name': 'productName',
         'UPC': 'UPC',
         'Price': 'price',
