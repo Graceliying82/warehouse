@@ -7,10 +7,13 @@
           dark
           slider-color = "cyan darken-4">
           <v-tab ripple>
-            Lazy Mode
+            Lazy
           </v-tab>
           <v-tab ripple>
-            Number Mode
+            Number
+          </v-tab>
+          <v-tab ripple>
+            Batch
           </v-tab>
           <v-tab-item>
             <v-alert
@@ -94,6 +97,50 @@
           </v-layout >
           <v-btn dark class="cyan darken-2" @click.prevent="submit2()">Submit</v-btn>
           </v-tab-item>
+          <v-tab-item>
+          <v-alert
+          v-show = showAlert3
+          :type = alertType3
+          outline>
+            {{message3}}
+          </v-alert>
+          <v-layout>
+            <v-flex >
+              <v-text-field
+                label="UPC"
+                v-model="UPC3"
+                ref="UPC3"
+                v-bind:autofocus= "true"
+                v-on:keydown.enter="changeFocusToQuantity3()"
+                required
+                ></v-text-field>
+            </v-flex>
+            <v-flex offset-lg2>
+              <v-text-field
+                label = "Quantity"
+                ref="Quantity3"
+                v-model.number="qn3"
+                :rules="[rules.qnRule1, rules.qnRule2]"
+                v-on:keydown.enter="changeFocusToOrgName3()"
+                type="number"
+                ></v-text-field>
+            </v-flex>
+          </v-layout>
+          <v-text-field
+            label="Org Name"
+            ref="orgName3"
+            v-model="orgName3"
+            v-on:keydown.enter="changeFocusToTracking3()"
+          ></v-text-field>
+          <v-text-field
+            label="Tracking Number"
+            ref='tracking3'
+            v-model="trackingNumber3"
+            v-on:keydown.enter="submit3()"
+          ></v-text-field>
+          <h3>Batch model will automatically submit after tracking input.</h3>
+          <v-btn dark class="cyan darken-2" @click.prevent="clear()">Clear</v-btn>
+          </v-tab-item>
         </v-tabs>
       </panel>
       <v-layout align-start justify-start justify-space-around ml-5 column>
@@ -175,8 +222,12 @@ export default {
       },
       trackingNumber1: '', // tracking Number
       trackingNumber2: '', // tracking Number
+      trackingNumber3: '',
       orgName1: '', // orgName
       orgName2: '', // orgName
+      orgName3: '',
+      UPC3: '',
+      qn3: 0,
       receiveItems1: [// receiveItems
         { UPC: '', qn: 0, prdNm: '', price: 0 }
       ],
@@ -187,8 +238,11 @@ export default {
       showAlert1: false,
       alertType2: 'success',
       showAlert2: false,
+      alertType3: 'success',
+      showAlert3: false,
       message1: '',
       message2: '',
+      message3: '',
       // camera related codes
       source1: null,
       source2: null,
@@ -216,6 +270,9 @@ export default {
     changeFocusToOrgName2 () {
       this.$refs.orgName2.focus()
     },
+    changeFocusToOrgName3 () {
+      this.$refs.orgName3.focus()
+    },
     changeFocusToTracking1 () {
       this.showAlert1 = false
       this.$refs.tracking1.focus()
@@ -224,17 +281,28 @@ export default {
       this.showAlert2 = false
       this.$refs.tracking2.focus()
     },
+    changeFocusToTracking3 () {
+      this.$refs.tracking3.focus()
+    },
     changeFocusToUPC1 (i) {
       this.$refs.UPC1[i].focus()
     },
     changeFocusToUPC2 (i) {
       this.$refs.UPC2[i].focus()
     },
+    changeFocusToUPC3 () {
+      this.showAlert3 = false
+      this.$refs.UPC3.focus()
+    },
     changeFocusToQuantity (i) {
       this.$refs.Quantity1[i].focus()
     },
     changeFocusToQuantity2 (i) {
       this.$refs.Quantity2[i].focus()
+    },
+    changeFocusToQuantity3 () {
+      this.showAlert3 = false
+      this.$refs.Quantity3.focus()
     },
     addNewReceiveItem1 (i) {
       if (i === (this.receiveItems1.length - 1)) {
@@ -317,6 +385,7 @@ export default {
         }
         // Send data to server
         await Inventory.post({
+
           // tracking No
           'trNo': this.trackingNumber2,
           // OrgName
@@ -345,6 +414,50 @@ export default {
         this.alertType2 = 'error'
         this.showAlert2 = true
       }
+    },
+    async submit3 () {
+      try {
+        if (this.UPC3 === '') {
+          this.message3 = 'UPC is needed! Not a valid receive.'
+          this.alertType3 = 'error'
+          this.showAlert3 = true
+          return
+        }
+        // Send data to server
+        await Inventory.post({
+          // tracking No
+          'trNo': this.trackingNumber3,
+          // OrgName
+          'orgNm': this.orgName3,
+          'note': '',
+          // receiveItems:
+          'rcIts': [{ UPC: this.UPC3, qn: this.qn3, prdNm: '', price: 0 }],
+          'usrID': this.$store.state.email
+        })
+        this.message3 = 'Successfully Added a new Package: ' + this.trackingNumber3
+        this.alertType3 = 'success'
+        this.showAlert3 = true
+        // clean up data
+        this.trackingNumber3 = ''
+        this.changeFocusToTracking3()
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.message3 = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.message = error.response.data.error
+        }
+        this.alertType3 = 'error'
+        this.showAlert3 = true
+      }
+    },
+    clear () {
+      this.showAlert3 = false
+      this.UPC3 = ''
+      this.qn3 = 0
+      this.orgName3 = ''
+      this.trackingNumber3 = ''
     },
     handleUPCInput1 (i) {
       if (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {

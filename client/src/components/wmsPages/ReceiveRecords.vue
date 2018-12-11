@@ -364,6 +364,7 @@ export default {
       try {
         Object.assign(this.items[this.editedIndex], this.editedItem)
         await Product.updateProduct({
+          '_id': this.items[this.editedIndex]._id,
           'UPC': this.items[this.editedIndex].UPC,
           'trNo': this.items[this.editedIndex].trackingNo,
           'orgNm': this.items[this.editedIndex].orgName,

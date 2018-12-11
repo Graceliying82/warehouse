@@ -40,6 +40,7 @@ module.exports = {
       let modifyTime = new Date();
       let mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
       let mdfStmp = modifyTime.getTime();
+      let o_id = ObjectId(req.body._id);
 
       //update inventory receive
       //find one inventory receive by trancing NO
@@ -57,9 +58,10 @@ module.exports = {
           // $set: { "prdNm": req.body.prdNm }
         }
       );
-      await invReceivecollection.updateMany(
+      await invReceivecollection.updateOne(
         {
-          "trNo": req.body.trNo,
+          // "trNo": req.body.trNo,
+          "_id": o_id,
           "rcIts.UPC": req.body.UPC
         },
         {
