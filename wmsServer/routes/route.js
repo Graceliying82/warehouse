@@ -5,6 +5,7 @@ const Org = require('./org')
 const User = require('./user')
 const Product = require('./product')
 const Inventory = require('./inventory')
+const Location = require('./location')
 
 module.exports = (app) => {
   // from Login
@@ -30,6 +31,10 @@ module.exports = (app) => {
   // from inventory
   app.post('/inventory', Inventory.post)
   app.get('/inventory', Inventory.get)
+
+  // from locations
+  app.post('/locations', Location.post)
+  app.get('/locations', Location.get)
 
   //auth with google
   // app.get('/auth/google', (req, res, next) => {

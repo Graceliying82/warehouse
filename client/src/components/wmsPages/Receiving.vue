@@ -446,7 +446,7 @@ export default {
           this.message3 = 'Network Error: Fail to connet to server'
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message = error.response.data.error
+          this.message3 = error.response.data.error
         }
         this.alertType3 = 'error'
         this.showAlert3 = true
