@@ -40,7 +40,6 @@
               :rows-per-page-items="rowsPerPageItems"
             >
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.name }}</td>
                 <td >{{ props.item.locID }}</td>
                 <td >{{ props.item.dspt }}</td>
                 <td class="layout px-0">
@@ -58,7 +57,7 @@
             </v-data-table>
         </panel>
       </v-flex>
-    </v-layout>LocationNickName
+    </v-layout>
   </div>
 </template>
 
