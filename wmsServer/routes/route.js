@@ -1,5 +1,3 @@
-const passport = require('passport')
-const passportSetup = require('../config/passport-setup')
 const Login = require('./login')
 const Org = require('./org')
 const User = require('./user')
@@ -9,8 +7,7 @@ const Location = require('./location')
 
 module.exports = (app) => {
   // from Login
-  app.post('/login', Login.post) 
-  app.post('/login/checkEmail', Login.checkEmail)
+  app.post('/login', Login.post)
 
   // from org
   app.post('/orgs', Org.post)
@@ -35,30 +32,4 @@ module.exports = (app) => {
   // from locations
   app.post('/locations', Location.post)
   app.get('/locations', Location.get)
-
-  //auth with google
-  // app.get('/auth/google', (req, res, next) => {
-  //   passport.authenticate('google', {scope: ['profile']})
-  //   console.log(res);
-  //   res.set('obj',res.get("Location"));
-  //   if (res.status === 302) {
-  //     res.status(200);
-  //   }
-  //   res.end();
-  // })
-
-  app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile']
-    })
-  )
-
-  //callback route for google to redirect to
-  app.get('/auth/google/redirect', passport.authenticate('google', { session: false}), (req, res) => {
-    console.log(req.user);
-    //todo, response put jwt token
-    //todo viewa load method to handle jwt
-    res.set("data", req.user);
-    res.redirect("http://localhost:8080/#/login?token=" +  req.user);
-    res.end()
-  })
 }

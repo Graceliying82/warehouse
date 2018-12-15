@@ -5,6 +5,7 @@ var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
 const initDatabase = require('./models/db')
+const isAuthenticated = require('./policies/isAuthenticated')
 
 var logger = require('morgan');
 var app = express();
@@ -19,17 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
-app.use(cors())
-app.use(function (req, res, next) {
-  let allowedOrigins = ['*'];  // list of url-s
-  let origin = req.headers.origin;
-  if (allowedOrigins.indexOf(origin) > -1) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header('Access-Control-Expose-Headers', 'Content-Disposition');
-  next();
-});
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
@@ -38,7 +29,9 @@ app.use(function(req, res, next) {
       req.db = app.db;
       next()
     // })
-})
+});
+
+app.use(isAuthenticated)
 
 require('./routes/route')(app)
 
@@ -54,4 +47,3 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
-9102805213683062522920

@@ -14,7 +14,8 @@ export default new Vuex.Store({
     isSupervisor: false,
     isWmsUser: false,
     isBuyer: false,
-    isSeller: false
+    isSeller: false,
+    sessionExpired: false
   },
   getters: {
     getSupervisor: state => {
@@ -28,6 +29,9 @@ export default new Vuex.Store({
     },
     getSeller: state => {
       return state.isSeller
+    },
+    getSessionExpire: state => {
+      return state.sessionExpired
     }
   },
   mutations: {
@@ -40,6 +44,9 @@ export default new Vuex.Store({
     setEmail (state, email) {
       state.email = email
     },
+    setSessionExpired (state, expired) {
+      state.sessionExpired = expired
+    },
     setUserInfo (state, payload) {
       state.userName = payload.userName
       state.email = payload.email
@@ -51,7 +58,7 @@ export default new Vuex.Store({
       state.isSeller = payload.isSeller
       state.isUserLoggedIn = true
     },
-    resetUserInfo (state) {
+    resetUserInfo (state, expired) {
       state.userName = ''
       state.email = ''
       state.token = ''
@@ -61,6 +68,7 @@ export default new Vuex.Store({
       state.isBuyer = false
       state.isSeller = false
       state.isUserLoggedIn = false
+      state.sessionExpired = expired
     }
   },
   actions: {
@@ -79,8 +87,11 @@ export default new Vuex.Store({
     setUserInfo (context, payload) {
       context.commit('setUserInfo', payload)
     },
-    resetUserInfo (context) {
-      context.commit('resetUserInfo')
+    resetUserInfo (context, expired) {
+      context.commit('resetUserInfo', expired)
+    },
+    setSessionExpired (context, expired) {
+      context.commit('setSessionExpired', expired)
     }
   }
 })

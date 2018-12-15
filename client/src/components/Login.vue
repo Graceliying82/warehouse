@@ -89,6 +89,12 @@ export default {
         }
       }
     }
+  },
+  created () {
+    if (this.$store.state.sessionExpired === true) {
+      this.error = 'Session Expired. Please Log in again!'
+      this.$store.dispatch('setSessionExpired', false)
+    }
   }
 }
 </script>

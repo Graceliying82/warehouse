@@ -105,7 +105,7 @@ export default {
   methods: {
     changeFocusToOrgName1 () {
       this.$refs.orgName1.focus()
-    },
+    }
   }
 }
 </script>

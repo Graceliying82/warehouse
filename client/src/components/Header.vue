@@ -167,7 +167,7 @@ export default {
       this.$router.push(route)
     },
     signOut () {
-      this.$store.dispatch('resetUserInfo')
+      this.$store.dispatch('resetUserInfo', false)
       this.$router.push({
         name: 'Hello'
       })

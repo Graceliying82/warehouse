@@ -1,11 +1,9 @@
 const jwt = require('jsonwebtoken')
-const passport = require('passport')
-const passportSetup = require('../config/passport-setup')
 
-function jwtSignUser (user) {
-  return jwt.sign(user,'warehousemanagement', {
-    expiresIn: '7d'
-  })
+function jwtSignUser (payload) {
+  return jwt.sign(payload,'warehousemanagement'
+  // { expiresIn: 7d } 
+  )
 }
 
 /* GET home page. */

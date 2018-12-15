@@ -354,6 +354,10 @@ export default {
         if (!error.response) {
           // network error
           this.error = 'Network Error: Fail to connet to server'
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
           this.error = error.response.data.error
@@ -378,6 +382,10 @@ export default {
         if (!error.response) {
           // network error
           this.error = 'Network Error: Fail to connet to server'
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
           this.error = error.response.data.error
@@ -398,6 +406,10 @@ export default {
         if (!error.response) {
           // network error
           this.error = 'Network Error: Fail to connet to server'
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.data.message)
           this.error = error.response.data.error
