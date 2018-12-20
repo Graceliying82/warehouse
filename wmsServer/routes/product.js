@@ -35,6 +35,7 @@ module.exports = {
   async updateProduct(req, res, next) {
     const prdCollection = req.db.collection("product");
     const invReceivecollection = req.db.collection("inventoryReceive");
+    const sellerInvCollection = req.db.collection("sellerInv");
     try {
       //update product find by upc
       let modifyTime = new Date();
@@ -58,6 +59,38 @@ module.exports = {
           // $set: { "prdNm": req.body.prdNm }
         }
       );
+
+      let invReceive = await invReceivecollection.findOne({_id: o_id, "rcIts.UPC": req.body.UPC},{orgNm:1,"rcIts.$.qn":1});
+      let origOrgName = invReceive.orgNm;
+      let origQuanity = invReceive.rcIts[0].qn;
+      if (!req.body.qn){
+        req.body.qn = origQuanity;
+      }
+
+      if ((req.body.orgNm) && (req.body.orgNm !== origOrgName)){
+        await sellerInvCollection.findOneAndUpdate(
+          {
+            _id: { UPC: req.body.UPC, org: origOrgName }
+          }, //query
+          {
+            $dec: { qty: origQuanity},
+            $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+          }
+        );
+
+        await sellerInvCollection.findOneAndUpdate(
+          {
+            _id: { UPC: req.body.UPC, org: req.body.orgNm }
+          }, //query
+          {
+            $inc: { qty: req.body.qn},
+            $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+          },
+          { upsert: true }
+        );
+
+      }
+
       await invReceivecollection.updateOne(
         {
           // "trNo": req.body.trNo,
@@ -70,7 +103,6 @@ module.exports = {
             "rcIts.$.qn" : req.body.qn,
             "note" : req.body.note,
             "orgNm" : req.body.orgNm
-          //todo add logic to change seller inventory if orgnm changed.
           }
         }
 
@@ -89,7 +121,7 @@ module.exports = {
       res.end();
 
     } catch (error) {
-      console.log("Create Product error: " + error);
+      console.log("Update Product error: " + error);
       error.message = 'Fail to access database! Try again'
       next(error);
     }
@@ -98,13 +130,37 @@ module.exports = {
   // Delete a receiving records information
   async deleteProduct(req, res, next) {
     const invReceivecollection = req.db.collection("inventoryReceive");
+    const sellerInvCollection = req.db.collection("sellerInv");
     try {
+      let modifyTime = new Date();
+      let mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
+      let mdfStmp = modifyTime.getTime();
       let o_id = ObjectId(req.body._id);
+      let invReceive = await invReceivecollection.findOne({_id: o_id},{orgNm:1,"rcIts.$.UPC":1,"rcIts.$.qn":1});
+      let rcIts = invReceive.rcIts;
+      let orgName = invReceive.orgNm;
+
+      for (let i = 0; i < rcIts.length; i++){
+        await sellerInvCollection.findOneAndUpdate(
+          {
+            _id: { UPC: rcIts[i].UPC, org: orgName }
+          }, //query
+          {
+            $dec: { qty: rcIts[i].qn},
+            $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+          }
+        );
+      }
+//todo how to handle location inventory
+
       let result = await invReceivecollection.deleteOne(
         {
           "_id": o_id
         } //query
       );
+
+
+
       res.send(result)
       res.end();
     } catch (error) {
