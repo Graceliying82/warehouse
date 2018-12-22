@@ -36,6 +36,9 @@ module.exports = {
     const prdCollection = req.db.collection("product");
     const invReceivecollection = req.db.collection("inventoryReceive");
     const sellerInvCollection = req.db.collection("sellerInv");
+    const localInvCollection = req.db.collection("locationInv");
+    const invCollection = req.db.collection("inventory");
+    
     try {
       //update product find by upc
       let modifyTime = new Date();
@@ -63,10 +66,33 @@ module.exports = {
       let invReceive = await invReceivecollection.findOne({_id: o_id, "rcIts.UPC": req.body.UPC},{orgNm:1,"rcIts.$.qn":1});
       let origOrgName = invReceive.orgNm;
       let origQuanity = invReceive.rcIts[0].qn;
+
+      if (req.body.qn && req.body.qn !== origQuanity){
+        let invLocOId = ObjectId({UPC:req.body.UPC, loc:"WMS"});
+        let invLocation = await localInvCollection.findOne({_id:invLocOId},{qty:1});
+        
+        //todo think more about the logic - quantity change 
+
+        if (origQuanity > req.body.qn){
+
+        } else if (origQuanity < req.body.qn){
+
+
+        }
+        if (origQuanity > invLocation.qty){
+          //error, need move thigns back to wms location
+          const error = new Error('Product moved out of WMS');
+          error.status = 400;
+          return next(error);
+        }
+
+        //todo update inventory collection
+      }
       if (!req.body.qn){
         req.body.qn = origQuanity;
       }
 
+      //org change
       if ((req.body.orgNm) && (req.body.orgNm !== origOrgName)){
         await sellerInvCollection.findOneAndUpdate(
           {
@@ -91,6 +117,7 @@ module.exports = {
 
       }
 
+// update price, quanity
       await invReceivecollection.updateOne(
         {
           // "trNo": req.body.trNo,
@@ -107,6 +134,8 @@ module.exports = {
         }
 
       )
+
+      //update product name
       await invReceivecollection.updateMany(
         {
           "rcIts.UPC": req.body.UPC
