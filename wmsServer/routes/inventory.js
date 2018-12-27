@@ -98,18 +98,18 @@ module.exports = {
         invReceive.mdfTm = req.body.crtTm;
         invReceive.mdfStmp = req.body.crtStmp;
         const origrcIts = invReceive.rcIts;
-        for (let i = 0; i < req.body.rcIts; i++){
-          let newUpc = rcIts[i].UPC;
+        for (let i = 0; i < req.body.rcIts.length; i++){
+          let newUpc = req.body.rcIts[i].UPC;
           let found = false;
-          for (let j = 0; j < invReceive.rcIts; j++){
+          for (let j = 0; j < invReceive.rcIts.length; j++){
             if (newUpc === invReceive.rcIts[j].UPC){
-              invReceive.rcIts[j].qn = invReceive.rcIts[j].qn + rcIts[i].qn;
+              invReceive.rcIts[j].qn = invReceive.rcIts[j].qn + req.body.rcIts[i].qn;
               found = true;
               break;
             } 
           }
           if (!found){
-            invReceive.rcIts.push(rcIts[i]);
+            invReceive.rcIts.push(req.body.rcIts[i]);
           }
         }
         result = await invReceivecollection.update({_id:invReceive._id}, invReceive);
