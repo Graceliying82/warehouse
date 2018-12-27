@@ -32,7 +32,7 @@
               label="Tracking Number"
               v-model="trackingNumber1"
               ref='tracking1'
-              v-on:keydown.enter="changeFocusToUPC1(0)"></v-text-field>
+              v-on:keydown.enter="checkTracking1()"></v-text-field>
             <v-layout v-for = "(receiveItem1, i) in receiveItems1" :key = "i">
               <v-flex >
                 <v-text-field
@@ -73,7 +73,7 @@
             label="Tracking Number"
             v-model="trackingNumber2"
             ref='tracking2'
-            v-on:keydown.enter="changeFocusToUPC2(0)"></v-text-field>
+            v-on:keydown.enter="checkTracking2()"></v-text-field>
           <v-layout v-for = "(receiveItem2, i) in receiveItems2" :key = "i">
             <v-flex >
               <v-text-field
@@ -136,13 +136,36 @@
             label="Tracking Number"
             ref='tracking3'
             v-model="trackingNumber3"
-            v-on:keydown.enter="submit3()"
+            v-on:keydown.enter="checkTracking3()"
           ></v-text-field>
           <h3>Batch model will automatically submit after tracking input.</h3>
           <v-btn dark class="cyan darken-2" @click.prevent="clear()">Clear</v-btn>
           </v-tab-item>
         </v-tabs>
       </panel>
+      <v-dialog v-model="trackingExisted" max-width="500px">
+            <v-card>
+              <v-card-text>
+                <v-container grid-list-md>
+                  <v-layout column>
+                  <v-flex xs12 sm6 md4>
+                   <h1 style="color:red;">Warning: Tracking Existed! </h1>
+                   <h3></h3>
+                   <h3>Organization Name: {{existedOrgNm}}</h3>
+                   <h3>Cancel: use another tracking number</h3>
+                   <h3>Confirm: OrgName will be changed to {{existedOrgNm}}! </h3>
+                   <h3>Append to existed record!</h3>
+                  </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" autofocus flat @click.native="closeDialog">Confirm</v-btn>
+                <v-btn color="blue darken-1" flat @click.native="cancelDialog">Cancel</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
       <v-layout align-start justify-start justify-space-around ml-5 column>
         <v-layout align-start row>
           <v-flex>
@@ -234,6 +257,10 @@ export default {
       receiveItems2: [// receiveItems
         { UPC: '', qn: 0, prdNm: '', price: 0 }
       ],
+      existedTracking: [],
+      trackingExisted: false,
+      existedOrgNm: '',
+      currentTab: 0,
       alertType1: 'success',
       showAlert1: false,
       alertType2: 'success',
@@ -287,12 +314,29 @@ export default {
     changeFocusToUPC1 (i) {
       this.$refs.UPC1[i].focus()
     },
+    checkTracking1 () {
+      this.currentTab = 1
+      this.checkTrackingExisted(this.trackingNumber1)
+      this.changeFocusToUPC1(0)
+    },
     changeFocusToUPC2 (i) {
       this.$refs.UPC2[i].focus()
+    },
+    checkTracking2 () {
+      this.currentTab = 2
+      this.checkTrackingExisted(this.trackingNumber2)
+      this.changeFocusToUPC2(0)
     },
     changeFocusToUPC3 () {
       this.showAlert3 = false
       this.$refs.UPC3.focus()
+    },
+    async checkTracking3 () {
+      this.currentTab = 3
+      await this.checkTrackingExisted(this.trackingNumber3)
+      if (!this.trackingExisted) {
+        this.submit3()
+      }
     },
     changeFocusToQuantity (i) {
       this.$refs.Quantity1[i].focus()
@@ -464,6 +508,27 @@ export default {
         this.showAlert3 = true
       }
     },
+    async checkTrackingExisted (tracking) {
+      try {
+        this.existedTracking = await Inventory.checkTrackingExisted(tracking)
+        if (this.existedTracking.data[0] !== undefined) {
+          this.trackingExisted = true
+          this.existedOrgNm = this.existedTracking.data[0].orgNm
+        }
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.message3 = 'Network Error: Fail to connet to server'
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.message3 = error.response.data.error
+        }
+      }
+    },
     clear () {
       this.showAlert3 = false
       this.UPC3 = ''
@@ -538,6 +603,32 @@ export default {
         }
       }
       this.testMediaAccess(constraints)
+    },
+    closeDialog () {
+      if (this.currentTab === 1) {
+        this.orgName1 = this.existedOrgNm
+        this.trackingExisted = false
+        this.changeFocusToUPC1(0)
+      } else if (this.currentTab === 2) {
+        this.orgName2 = this.existedOrgNm
+        this.trackingExisted = false
+        this.changeFocusToUPC2(0)
+      } else {
+        this.orgName3 = this.existedOrgNm
+        this.submit3()
+        this.trackingExisted = false
+      }
+      this.existedOrgNm = ''
+    },
+    cancelDialog () {
+      if (this.currentTab === 1) {
+        this.trackingNumber1 = ''
+      } else if (this.currentTab === 2) {
+        this.trackingNumber2 = ''
+      } else {
+        this.trackingNumber3 = ''
+      }
+      this.trackingExisted = false
     },
     loadCameras () {
       navigator.mediaDevices

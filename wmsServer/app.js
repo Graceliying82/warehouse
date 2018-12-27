@@ -31,7 +31,7 @@ app.use(function(req, res, next) {
     // })
 });
 
-app.use(isAuthenticated)
+// app.use(isAuthenticated)
 
 require('./routes/route')(app)
 

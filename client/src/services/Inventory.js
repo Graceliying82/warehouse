@@ -16,5 +16,8 @@ export default {
       startDate + ' 00:00:00' + '&endDate=' + endDate + ' 23:59:59' +
       '&orgNm=' + orgName)
     }
+  },
+  checkTrackingExisted (trackingNo) {
+    return Api().get('/inventory' + '?trackingNo=' + trackingNo)
   }
 }

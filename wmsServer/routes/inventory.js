@@ -105,6 +105,7 @@ module.exports = {
   async get(req, res, next) {
     let invCollection = req.db.collection("inventoryReceive");
     if ((req.query.startDate !== undefined) && (req.query.endDate !== undefined)) {
+      // Handle logic of get data by startDate and endDate
       var startDate = new Date(req.query.startDate).getTime() 
       var endDate = new Date(req.query.endDate).getTime()
       if (req.query.orgNm == undefined) {
@@ -139,6 +140,13 @@ module.exports = {
           next(error)
         }
       }
+    } else if ((req.query.trackingNo !== undefined)) {
+      // Handle logic of checking tracking number existed or not
+      let invResult = await invCollection.find({
+        trNo: req.query.trackingNo
+      }).toArray()
+      res.send(invResult)
+      res.end()
     } else {
       try {
         let invResult = await invCollection.find().toArray()
