@@ -4,6 +4,7 @@ const User = require('./user')
 const Product = require('./product')
 const Inventory = require('./inventory')
 const Location = require('./location')
+const ProductInv = require('./productInv')
 
 module.exports = (app) => {
   // from Login
