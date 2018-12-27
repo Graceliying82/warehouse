@@ -23,7 +23,7 @@ function makeFlat(invResult) {
 
 module.exports = {
   async post(req, res, next) {
-    const dbcollection = req.db.collection("inventoryReceive");
+    const invReceivecollection = req.db.collection("inventoryReceive");
     const invCollection = req.db.collection("inventory");
     const sellerInvCollection = req.db.collection("sellerInv");
     const locInvCollection = req.db.collection("locationInv");
@@ -91,8 +91,32 @@ module.exports = {
         
       }
 
-      result = await dbcollection.insertOne(req.body);
-      
+      let invReceive = await invReceivecollection.findOne({trNo:req.body.trNo,orgNm:req.body.orgNm});
+      //req.body.rcIts contain all information
+      if (invReceive){
+        invReceive.usrID = req.body.usrID;
+        invReceive.mdfTm = req.body.crtTm;
+        invReceive.mdfStmp = req.body.crtStmp;
+        const origrcIts = invReceive.rcIts;
+        for (let i = 0; i < req.body.rcIts; i++){
+          let newUpc = rcIts[i].UPC;
+          let found = false;
+          for (let j = 0; j < invReceive.rcIts; j++){
+            if (newUpc === invReceive.rcIts[j].UPC){
+              invReceive.rcIts[j].qn = invReceive.rcIts[j].qn + rcIts[i].qn;
+              found = true;
+              break;
+            } 
+          }
+          if (!found){
+            invReceive.rcIts.push(rcIts[i]);
+          }
+        }
+        result = await invReceivecollection.update({_id:invReceive._id}, invReceive);
+      } else {
+        result = await invReceivecollection.insertOne(req.body);
+      }
+
       res.send(result);
       res.end();
     } catch (error) {
