@@ -157,8 +157,9 @@
             <v-card>
               <v-card-text>
                   <h1 pt-8>Delete Confirmation</h1>
-                  <h3>You will delete tracking :</h3>
-                  <h3>{{deleteTracking}}</h3>
+                  <h3>You will delete UPC</h3>
+                  <h3 style="color:red;">{{deleteUPC}} </h3>
+                  <h3>In Tracking No :{{deleteTracking}}</h3>
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -239,6 +240,7 @@ export default {
       error: null,
       orgName: 'All',
       deleteTracking: '',
+      deleteUPC: '',
       downloadName: 'InventoryReceive.xls',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
@@ -313,6 +315,7 @@ export default {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog1 = true
+      this.error = ''
     },
     async closeDialog1 () {
       this.dialog1 = false
@@ -338,13 +341,16 @@ export default {
       this.editedIndex = this.items.indexOf(item)
       // Object.assign(this.items[this.editedIndex], this.editedItem)
       this.deleteTracking = this.items[this.editedIndex].trackingNo
+      this.deleteUPC = this.items[this.editedIndex].UPC
       this.dialog2 = true
+      this.error = ''
     },
     async deleteDialog2 () {
       this.dialog2 = false
       try {
         await Product.deleteProduct({
-          '_id': this.items[this.editedIndex]._id
+          '_id': this.items[this.editedIndex]._id,
+          UPC: this.items[this.editedIndex].UPC
         })
         this.changeFilter()
       } catch (error) {
