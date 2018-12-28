@@ -36,7 +36,7 @@ module.exports = {
     const prdCollection = req.db.collection("product");
     const invReceivecollection = req.db.collection("inventoryReceive");
     const sellerInvCollection = req.db.collection("sellerInv");
-    const localInvCollection = req.db.collection("locationInv");
+    const locInvCollection = req.db.collection("locationInv");
     const invCollection = req.db.collection("inventory");
     
     try {
@@ -50,8 +50,83 @@ module.exports = {
       //find one inventory receive by trancing NO
       //set price, set product name
       //update inventory receive recersive (for past 1 month)
-      //update condition past 1 month,
+      //update condition past 1 month,      
 
+      // Updating quantity
+      let invReceive = await invReceivecollection.findOne({_id: o_id, "rcIts.UPC": req.body.UPC},{orgNm:1,"rcIts.$.qn":1, trNo:1});
+      let origOrgName = invReceive.orgNm;
+      let origQuantity = invReceive.rcIts[0].qn;
+      if (invReceive.trNo !== req.body.trNo) {
+        let existedTracking = await invReceivecollection.findOne({trNo: req.body.trNo}, {});
+        if (existedTracking !== null) {
+          const error = new Error('Tracking No existed! Change another one!');
+          error.status = 400;
+          return next(error);
+        }
+      }
+      if (req.body.qn && req.body.qn !== origQuantity){
+        // let invLocOId = ObjectId({UPC: req.body.UPC, loc:"WMS"});
+        // let invLocation = await locInvCollection.findOne({_id:invLocOId},{qty:1});
+        // _id: { UPC: req.body.UPC, org: origOrgName }
+        let invLocation = await locInvCollection.findOne({_id:{ UPC: req.body.UPC, loc:"WMS"}},{qty:1});
+        let qnDelt = req.body.qn - origQuantity;
+        
+        //todo think more about the logic - quantity change 
+
+        if (qnDelt !== 0){
+          //Delete some items
+          //invLocation.qty(wms) < origQuantity - req.body.qn  error: Not enough items.
+          if ( (invLocation.qty + qnDelt) < 0) {
+            const error = new Error('Products moved out of WMS');
+            error.status = 400;
+            return next(error);
+          } else {
+            // Make quantity change on locationInventory, inventoryReceive and inventory
+            await locInvCollection.findOneAndUpdate(
+              {
+                _id: { UPC: req.body.UPC, loc:"WMS"}
+              }, //query
+              {
+                $inc: { qty: qnDelt},
+                $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+              }
+            )
+            await invCollection.findOneAndUpdate(
+              {
+                _id: req.body.UPC
+              }, //query
+              {
+                $inc: { qty: qnDelt},
+                $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+              }
+            )
+            await invReceivecollection.findOneAndUpdate(
+              {
+                _id: o_id,
+                "rcIts.UPC": req.body.UPC
+              }, //query
+              {
+                $inc: { "rcIts.$.qn" : qnDelt},
+                $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+              }
+            )
+          };
+        }
+        //todo update inventory collection
+      }
+      if (!req.body.qn){
+        req.body.qn = origQuantity;
+      }
+      // Todo: update tracking No
+      await invReceivecollection.findOneAndUpdate(
+        {
+          _id: o_id
+        }, //query
+        {
+          $set: {"mdfTm": mdfTm, "mdfStmp": mdfStmp,"trNo": req.body.trNo}
+        }
+      )
+      // update product Name
       await prdCollection.findOneAndUpdate(
         {
           _id: req.body.UPC
@@ -63,35 +138,6 @@ module.exports = {
         }
       );
 
-      let invReceive = await invReceivecollection.findOne({_id: o_id, "rcIts.UPC": req.body.UPC},{orgNm:1,"rcIts.$.qn":1});
-      let origOrgName = invReceive.orgNm;
-      let origQuanity = invReceive.rcIts[0].qn;
-
-      if (req.body.qn && req.body.qn !== origQuanity){
-        let invLocOId = ObjectId({UPC:req.body.UPC, loc:"WMS"});
-        let invLocation = await localInvCollection.findOne({_id:invLocOId},{qty:1});
-        
-        //todo think more about the logic - quantity change 
-
-        if (origQuanity > req.body.qn){
-
-        } else if (origQuanity < req.body.qn){
-
-
-        }
-        if (origQuanity > invLocation.qty){
-          //error, need move thigns back to wms location
-          const error = new Error('Product moved out of WMS');
-          error.status = 400;
-          return next(error);
-        }
-
-        //todo update inventory collection
-      }
-      if (!req.body.qn){
-        req.body.qn = origQuanity;
-      }
-
       //org change
       if ((req.body.orgNm) && (req.body.orgNm !== origOrgName)){
         await sellerInvCollection.findOneAndUpdate(
@@ -99,7 +145,7 @@ module.exports = {
             _id: { UPC: req.body.UPC, org: origOrgName }
           }, //query
           {
-            $dec: { qty: origQuanity},
+            $inc: { qty: -origQuantity},
             $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
           }
         );
@@ -117,7 +163,7 @@ module.exports = {
 
       }
 
-// update price, quanity
+// update price
       await invReceivecollection.updateOne(
         {
           // "trNo": req.body.trNo,
@@ -127,7 +173,6 @@ module.exports = {
         {
           $set: {
             "rcIts.$.price" : parseInt(req.body.price),
-            "rcIts.$.qn" : req.body.qn,
             "note" : req.body.note,
             "orgNm" : req.body.orgNm
           }

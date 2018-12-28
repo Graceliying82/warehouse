@@ -91,9 +91,6 @@
                   <v-layout column>
                     <v-flex>
                       <v-text-field label="TrackingNo"
-                        readonly
-                        hint="Readonly"
-                        box
                         v-model="editedItem.trackingNo">
                       </v-text-field>
                     </v-flex>
@@ -122,7 +119,8 @@
                     </v-flex>
                     <v-flex xs12 sm12 md4>
                       <v-text-field label="Quantity"
-                      v-model="editedItem.qn">
+                      type="number"
+                      v-model.number="editedItem.qn">
                     </v-text-field>
                     </v-flex>
                   </v-layout>
@@ -172,8 +170,7 @@
           <v-flex>
           <v-alert type="error"
             outline
-            :value="error"
-            dismissible>
+            :value="error">
             {{ error }}
           </v-alert>
           </v-flex>
@@ -366,16 +363,26 @@ export default {
     },
     async saveDialog1 () {
       try {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
+        // Object.assign(this.items[this.editedIndex], this.editedItem)
+        // await Product.updateProduct({
+        //   '_id': this.items[this.editedIndex]._id,
+        //   'UPC': this.items[this.editedIndex].UPC,
+        //   'trNo': this.items[this.editedIndex].trackingNo,
+        //   'orgNm': this.items[this.editedIndex].orgName,
+        //   'qn': this.items[this.editedIndex].qn,
+        //   'note': this.items[this.editedIndex].note,
+        //   'prdNm': this.items[this.editedIndex].productName,
+        //   'price': this.items[this.editedIndex].price * 100
+        // })
         await Product.updateProduct({
-          '_id': this.items[this.editedIndex]._id,
-          'UPC': this.items[this.editedIndex].UPC,
-          'trNo': this.items[this.editedIndex].trackingNo,
-          'orgNm': this.items[this.editedIndex].orgName,
-          'qn': this.items[this.editedIndex].qn,
-          'note': this.items[this.editedIndex].note,
-          'prdNm': this.items[this.editedIndex].productName,
-          'price': this.items[this.editedIndex].price * 100
+          '_id': this.editedItem._id,
+          'UPC': this.editedItem.UPC,
+          'trNo': this.editedItem.trackingNo,
+          'orgNm': this.editedItem.orgName,
+          'qn': this.editedItem.qn,
+          'note': this.editedItem.note,
+          'prdNm': this.editedItem.productName,
+          'price': this.editedItem.price * 100
         })
         this.changeFilter()
       } catch (error) {
