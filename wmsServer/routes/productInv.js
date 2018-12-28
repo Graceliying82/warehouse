@@ -11,73 +11,62 @@
  * Query result - total seller inventory (and segment), total loc inventory (and segment)
  */
   
+ //get inventory info for list of UPC - UPC are separated by ,
   module.exports = {
-    async post(req, res, next) {
-      const dbcollection = req.db.collection("inventoryReceive");
+    async getByUPC(req, res, next){
+      let UPCs = req.params.UPC.split(",");
+      const prodCollection = req.db.collection("product");
       const invCollection = req.db.collection("inventory");
       const sellerInvCollection = req.db.collection("sellerInv");
       const locInvCollection = req.db.collection("locationInv");
-      const prodCollection = req.db.collection("product");
-      try {
-       
-        
+      //if admin of wms org, return all seller inventory + location inv
+      //if seller org, return seller inventory only
+      //TODO add condition for admin or seller, now it's default... admin
+      let result = [];
+      try{
+        let productList = await prodCollection.find({ _id : { $in : UPCs}},{_id:1,prdNm:1}).toArray();
+        let invList = await invCollection.find({ _id : { $in : UPCs}},{_id:1,qty:1}).toArray();
+        let sellerInvList = await sellerInvCollection.find({ "_id.UPC" : { $in : UPCs}},{_id:1,qty:1}).toArray();
+        let locInvList = await locInvCollection.find({ "_id.UPC" : { $in : UPCs}},{_id:1,qty:1}).toArray();
+
+        for (var aUPC of UPCs){
+          const aProInv = {};
+          aProInv.UPC = aUPC;
+          for (var aProd of productList){
+            if (aProd._id === aUPC){
+              aProInv.prdNm = aProd.UPC;
+              break;
+            }
+          }
+          for (var aInv of invList){
+            if (aInv._id === aUPC) {
+              aProInv.qty = aInv.qty;
+            }
+          }
+          aProInv.sellerInventory = [];
+          for (var aSellInv of sellerInvList){
+            if (aSellInv._id.UPC === aUPC) {
+              aProInv.sellerInventory.push({org:aSellInv._id.org, qty:aSellInv.qty});
+            }
+          }
+          aProInv.locationInventory = [];
+          for (var aLocInv of locInvList){
+            if (aLocInv._id.UPC === aUPC){
+              aProInv.locationInventory.push({loc:aLocInv._id.loc, qty:aLocInv.qty});
+            }
+          }
+          result.push(aProInv);
+        }
         res.send(result);
         res.end();
       } catch (error) {
-        console.log("receive error: " + error);
+        console.log("query product inventory: " + error);
         error.message = 'Fail to access database! Try again'
         next(error);
       }
     },
-  
-    async get(req, res, next) {
-      let invCollection = req.db.collection("inventoryReceive");
-      if ((req.query.startDate !== undefined) && (req.query.endDate !== undefined)) {
-        var startDate = new Date(req.query.startDate).getTime() 
-        var endDate = new Date(req.query.endDate).getTime()
-        if (req.query.orgNm == undefined) {
-          try {
-            let invResult = await invCollection.find({
-              crtStmp: {
-                $lte: endDate,
-                $gte: startDate,
-              }
-            }).toArray();
-            res.send(makeFlat(invResult))
-            res.end()
-          } catch (error) {
-            console.log("Get Org by dates error: " + error)
-            error.message = 'Fail to access database! Try again'
-            next(error)
-          }
-        } else {
-          try {
-            let invResult = await invCollection.find({
-              crtStmp: {
-                $lte: endDate,
-                $gte: startDate
-              },
-              orgNm : req.query.orgNm
-            }).toArray();
-            res.send(makeFlat(invResult));
-            res.end()
-          } catch (error) {
-            console.log("Get Org by dates error: " + error)
-            error.message = 'Fail to access database! Try again'
-            next(error)
-          }
-        }
-      } else {
-        try {
-          let invResult = await invCollection.find().toArray()
-          res.send(makeFlat(invResult))
-          res.end()
-        } catch (error) {
-          console.log("Get Org error: " + error)
-          error.message = 'Fail to access database! Try again'
-          next(error)
-        }
-     }
-    }
+    async postInvUpdateAbsolute(req, res, next){
+
+    },
   };
   
