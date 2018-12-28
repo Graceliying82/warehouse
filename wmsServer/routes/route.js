@@ -15,6 +15,8 @@ module.exports = (app) => {
   app.get('/orgs', Org.get)
   app.get('/orgs/:name', Org.getByName)
 
+  app.get('/prodInv/:UPC', ProductInv.getByUPC)
+
   // from user
   app.post('/users', User.post)
   app.get('/users', User.get)
