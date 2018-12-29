@@ -16,6 +16,7 @@ module.exports = (app) => {
   app.get('/orgs/:name', Org.getByName)
 
   app.get('/prodInv/:UPC', ProductInv.getByUPC)
+  app.get('/sellerInv/:UPC',ProductInv.getSellerInvByUPC)
   app.post('/prodInvAdjust', ProductInv.postInvUpdate)
 
   // from user

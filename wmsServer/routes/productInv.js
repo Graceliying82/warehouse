@@ -14,6 +14,12 @@
 //get inventory info for list of UPC - UPC are separated by ,
 module.exports = {
   async getByUPC(req, res, next) {
+    //comment out temporarily
+    // if (req.decoded.orgNm !== "WMS") {
+    //   const error = new Error('A seller can not call this api!');
+    //   error.status = 400;
+    //   return next(error);
+    // }
     let UPCs = req.params.UPC.split(",");
     const prodCollection = req.db.collection("product");
     const invCollection = req.db.collection("inventory");
@@ -34,7 +40,56 @@ module.exports = {
         aProInv.UPC = aUPC;
         for (var aProd of productList) {
           if (aProd._id === aUPC) {
-            aProInv.prdNm = aProd.UPC;
+            aProInv.prdNm = aProd.prdNm;
+            break;
+          }
+        }
+        for (var aInv of invList) {
+          if (aInv._id === aUPC) {
+            aProInv.qty = aInv.qty;
+          }
+        }
+        aProInv.sellerInventory = [];
+        for (var aSellInv of sellerInvList) {
+          if (aSellInv._id.UPC === aUPC) {
+            aProInv.sellerInventory.push({ org: aSellInv._id.org, qty: aSellInv.qty });
+          }
+        }
+        aProInv.locationInventory = [];
+        for (var aLocInv of locInvList) {
+          if (aLocInv._id.UPC === aUPC) {
+            aProInv.locationInventory.push({ loc: aLocInv._id.loc, qty: aLocInv.qty });
+          }
+        }
+        result.push(aProInv);
+      }
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("query product inventory: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
+  },
+
+  async getSellerInvByUPC(req, res, next) {
+    let UPCs = req.params.UPC.split(",");
+    const prodCollection = req.db.collection("product");
+    const sellerInvCollection = req.db.collection("sellerInv");
+    //if admin of wms org, return all seller inventory + location inv
+    //if seller org, return seller inventory only
+    //TODO add condition for admin or seller, now it's default... admin
+    let result = [];
+    try {
+      let productList = await prodCollection.find({ _id: { $in: UPCs } }, { _id: 1, prdNm: 1 }).toArray();
+      let sellerInvList = await sellerInvCollection.find({ "_id.UPC": { $in: UPCs }, "_id.org":req.decoded.orgNm }, { _id: 1, qty: 1 }).toArray();
+
+      for (var aUPC of UPCs) {
+        const aProInv = {};
+        aProInv.UPC = aUPC;
+        for (var aProd of productList) {
+          if (aProd._id === aUPC) {
+            aProInv.prdNm = aProd.prdNm;
             break;
           }
         }
