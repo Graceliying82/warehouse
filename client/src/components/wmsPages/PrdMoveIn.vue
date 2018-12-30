@@ -12,7 +12,7 @@
             {{message1}}
           </v-alert>
         <v-card>
-          <panel title="Scan Items by UPC ">
+          <panel title="Scan Items">
             <v-text-field
             v-model="miLoc1"
             v-bind:autofocus= "true"
@@ -81,11 +81,8 @@ export default {
       this.$refs.qty1.focus()
     },
     handleUPCInput1 (i) {
-      console.log('Here')
       if (this.miItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {
-        // some code to pass data to server
-        // this.submit()
-        console.log('call to submit')
+        this.submit1()
       } else {
         let idx = -1
         for (let j = 0; j < this.miItems1.length; j++) {
