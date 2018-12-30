@@ -19,7 +19,7 @@ module.exports = (app) => {
   app.get('/prodInv/:UPC', ProductInv.getByUPC)
   app.get('/sellerInv/:UPC',ProductInv.getSellerInvByUPC)
   app.post('/prodInvAdjustBatch', ProductInv.postInvUpdate)
-  app.post('/locInvMove', ProductInv.moveInv) //move inventory
+  app.post('/locInvMoveBatch', ProductInv.moveInvBatch) //move inventory
 
   // from user
   app.post('/users', User.post)
