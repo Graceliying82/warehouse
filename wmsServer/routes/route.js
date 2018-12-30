@@ -15,9 +15,11 @@ module.exports = (app) => {
   app.get('/orgs', Org.get)
   app.get('/orgs/:name', Org.getByName)
 
+  //from production inventory
   app.get('/prodInv/:UPC', ProductInv.getByUPC)
   app.get('/sellerInv/:UPC',ProductInv.getSellerInvByUPC)
-  app.post('/prodInvAdjust', ProductInv.postInvUpdate)
+  app.post('/prodInvAdjustBatch', ProductInv.postInvUpdate)
+  app.post('/locInvMove', ProductInv.moveInv) //move inventory
 
   // from user
   app.post('/users', User.post)
@@ -37,4 +39,5 @@ module.exports = (app) => {
   // from locations
   app.post('/locations', Location.post)
   app.get('/locations', Location.get)
+
 }

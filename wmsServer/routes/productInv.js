@@ -82,7 +82,7 @@ module.exports = {
     let result = [];
     try {
       let productList = await prodCollection.find({ _id: { $in: UPCs } }, { _id: 1, prdNm: 1 }).toArray();
-      let sellerInvList = await sellerInvCollection.find({ "_id.UPC": { $in: UPCs }, "_id.org":req.decoded.orgNm }, { _id: 1, qty: 1 }).toArray();
+      let sellerInvList = await sellerInvCollection.find({ "_id.UPC": { $in: UPCs }, "_id.org": req.decoded.orgNm }, { _id: 1, qty: 1 }).toArray();
 
       for (var aUPC of UPCs) {
         const aProInv = {};
@@ -257,5 +257,64 @@ note:"this is a inventory change"
       next(error);
     }
 
+  },
+  /**
+{
+  UPC:"123456",
+  qty:123,
+  locFrom:"WMS",
+  locTo:"LOC1",
+  note:"this is a inventory move"  
+}
+   */
+  async moveInv(req, res, next) {
+    try {
+      const invMoveCollection = req.db.collection("invMove");
+      const locInvCollection = req.db.collection("locationInv");
+      req.body.email = req.decoded.email;   
+      let createTime = new Date();
+      req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      req.body.crtStmp = createTime.getTime();
+
+      let fromInventoryLocation = await locInvCollection.findOne({ _id : {UPC:req.body.UPC,loc:req.body.locFrom}},{qty:1});
+      let fromQty = fromInventoryLocation.qty;
+      if (!fromQty) {
+        const error = new Error('no record found for UPC and loc');
+        error.status = 400;
+        return next(error);
+      } else if (fromQty < req.body.qty){
+        const error = new Error('not enough inv in loc, you may need manual adjust inv');
+        error.status = 400;
+        return next(error);
+      }
+
+      //decrease inv
+      await locInvCollection.findOneAndUpdate(
+        {
+          _id: { UPC: req.body.UPC, loc: req.body.locFrom }
+        }, //query
+        {
+          $inc: { qty: - req.body.qty},
+          $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+        },
+      );
+
+      await locInvCollection.findOneAndUpdate(
+        {
+          _id: { UPC: req.body.UPC, loc: req.body.locTo }
+        }, //query
+        {
+          $inc: { qty: req.body.qty},
+          $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+        },
+      );
+
+      await invMoveCollection.insertOne(req.body);
+
+    } catch (error) {
+      console.log("move location inventory: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
   },
 };
