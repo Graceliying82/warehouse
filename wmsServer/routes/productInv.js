@@ -310,7 +310,7 @@ note:"this is a inventory change"
       );
 
       await invMoveCollection.insertOne(req.body);
-
+      res.end();
     } catch (error) {
       console.log("move location inventory: " + error);
       error.message = 'Fail to access database! Try again'
