@@ -13,6 +13,103 @@
 
 //get inventory info for list of UPC - UPC are separated by ,
 module.exports = {
+  async getAllProductInventory(req, res, next) {
+    const prodCollection = req.db.collection("product");
+    const invCollection = req.db.collection("inventory");
+    const result = [];
+    try {
+      const productArray = await prodCollection.find({}, { _id: 1, prdNm: 1 }).toArray();
+      const inventoryArray = await invCollection.find({}, { _id: 1, qty: 1 }).toArray();
+      for (let prod of productArray) {
+        let qty = 0;
+        for (let inv of inventoryArray) {
+          if (inv._id === prod._id) {
+            qty = inv.qty;
+            break;
+          }
+        }
+        let prodInv = { UPC: prod._id, prdNm: prod.prdNm, qty: qty };
+        result.push(prodInv);
+      }
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("query all product inventory: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
+
+  },
+  async getProdInvByLoc(req, res, next) {
+    let locIDArray = [];
+    const locCollection = req.db.collection("location");
+    let locationArray = [];
+    try {
+      locationArray = await locCollection.find({}, { locID: 1, dspt: 1 }).toArray();
+    } catch (error) {
+      console.log("query product inventory for location: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
+    if (req.params.loc === "all") {
+      for (let aloc of locationArray) {
+        locIDArray.push(aloc.locID);
+      }
+    } else {
+      locIDArray = req.params.loc.split(",");
+    }
+
+    const prodCollection = req.db.collection("product");
+
+    const locInvCollection = req.db.collection("locationInv");
+    try {
+      let locInvArray = await locInvCollection.find({ "_id.loc": { $in: locIDArray } }, { _id: 1, qty: 1 }).toArray();
+
+      let UPCSet = [];
+      for (let anLocInv of locInvArray) {
+        UPCSet.push(anLocInv._id.UPC);
+      }
+      let prodArray = await prodCollection.find({ _id: { $in: UPCSet } }, { _id: 1, prdNm: 1 }).toArray();
+      let result = [];
+      for (let locInv of locInvArray) {
+        let locID = locInv._id.loc;
+        let locRecord = null;
+        for (let entry of result) {
+          if (entry.loc === locID) {
+            //found
+            locRecord = entry;
+            break;
+          }
+        }
+        if (!locRecord) {
+          let locName = '';
+          for (let aloc of locationArray) {
+            if (locID === aloc.locID) {
+              locName = aloc.dspt;
+              break;
+            }
+          }
+          locRecord = { loc: locID, locName: locName, inventory: [] };
+          result.push(locRecord);
+        }
+
+        let prodName = '';
+        for (let aProduct of prodArray) {
+          if (locInv._id.UPC === aProduct._id) {
+            prodName = aProduct.prdNm;
+            break;
+          }
+        }
+        locRecord.inventory.push({ UPC: locInv._id.UPC, prdNm: prodName, qty: locInv.qty });
+      }
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("query product inventory for location: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
+  },
   async getByUPC(req, res, next) {
     //comment out temporarily
     // if (req.decoded.orgNm !== "WMS") {
