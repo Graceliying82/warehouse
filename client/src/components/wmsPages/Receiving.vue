@@ -538,8 +538,6 @@ export default {
     },
     handleUPCInput1 (i) {
       if (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {
-        // submit current input
-        console.log('Calling to wrote pass data to server')
         // some code to pass data to server
         this.submit1()
       } else {

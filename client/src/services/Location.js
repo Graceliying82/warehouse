@@ -8,6 +8,6 @@ export default {
     return Api().get('/locations')
   },
   checkLocationExisted (locID) {
-    return Api().get('/locations'+ '?locID=' + locID)
+    return Api().get('/locations' + '?locID=' + locID)
   }
 }
