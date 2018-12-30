@@ -24,8 +24,13 @@ module.exports = {
   //  Get Location
   async get (req, res, next) {
     const dbcollection = req.db.collection("location");
+    let result = []
     try {
-      var result = await dbcollection.find().toArray()
+      if (req.query.locID !== undefined) {
+        result = await dbcollection.find({'locID':req.query.locID}).toArray()
+      } else {
+        result = await dbcollection.find().toArray()
+      }
       res.send(result)
       res.end()
     } catch (error) {
