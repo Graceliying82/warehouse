@@ -18,6 +18,8 @@ module.exports = (app) => {
   //from production inventory
   app.get('/prodInv/:UPC', ProductInv.getByUPC)
   app.get('/sellerInv/:UPC',ProductInv.getSellerInvByUPC)
+  app.get('/prodInvAll', ProductInv.getAllProductInventory) //get all product inventory todo -pagination support
+  app.get('/prodInvByLoc/:loc', ProductInv.getProdInvByLoc) //get product by locations, seprated by ,
   app.post('/prodInvAdjustBatch', ProductInv.postInvUpdate)
   app.post('/locInvMoveBatch', ProductInv.moveInvBatch) //move inventory
 
@@ -39,5 +41,7 @@ module.exports = (app) => {
   // from locations
   app.post('/locations', Location.post)
   app.get('/locations', Location.get)
+  app.post('/changeLocDesc', Location.changeLocationDescription)
+  app.post('/deleteLoc/:locID', Location.deleteLocation)
 
 }
