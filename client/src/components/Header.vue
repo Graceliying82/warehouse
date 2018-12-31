@@ -92,6 +92,7 @@ export default {
         { icon: 'business', text: 'Locations Management', name: 'invtLocMg' },
         { icon: 'last_page', text: 'Product Move In', name: 'PrdMoveIn' },
         { icon: 'first_page', text: 'Product Move Out', name: 'PrdMoveOut' },
+        { icon: 'border_color', text: 'Edit Locations', name: 'invtLocEdit' },
         { divider: true },
         { heading: 'Shipping' },
         { icon: 'local_shipping', text: 'Shipping', name: 'shipping' },

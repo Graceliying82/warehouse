@@ -18,6 +18,7 @@ import CreateUser from '@/components/wmsPages/CreateUser'
 import DeleteUser from '@/components/wmsPages/DeleteUser'
 import ReceiveRecords from '@/components/wmsPages/ReceiveRecords'
 import InvtLocMg from '@/components/wmsPages/InvtLocMg'
+import InvtLocEidt from '@/components/wmsPages/InvtLocEdit'
 
 Vue.use(Router)
 
@@ -112,6 +113,11 @@ export default new Router({
       path: '/invtLocMg',
       name: 'invtLocMg',
       component: InvtLocMg
+    },
+    {
+      path: '/invtLocEdit',
+      name: 'invtLocEdit',
+      component: InvtLocEidt
     }
   ]
 })
