@@ -41,5 +41,7 @@ module.exports = (app) => {
   // from locations
   app.post('/locations', Location.post)
   app.get('/locations', Location.get)
+  app.post('/changeLocDesc', Location.changeLocationDescription)
+  app.post('/deleteLoc/:locID', Location.deleteLocation)
 
 }
