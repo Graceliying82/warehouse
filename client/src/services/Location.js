@@ -9,5 +9,8 @@ export default {
   },
   checkLocationExisted (locID) {
     return Api().get('/locations' + '?locID=' + locID)
+  },
+  getProdInvByLoc (loc) {
+    return Api().get('/prodInvByLoc/' + loc)
   }
 }

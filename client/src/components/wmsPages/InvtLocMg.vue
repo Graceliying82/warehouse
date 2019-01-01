@@ -1,19 +1,31 @@
 <template>
   <div  v-if="$store.state.isUserLoggedIn">
     <v-layout justify-center>
-      <h1>Location Map</h1>
+      <h1>Location Inventory</h1>
+        <v-alert type="error"
+          outline
+          :value="error"
+          >
+          {{ error }}
+        </v-alert>
     </v-layout>
-    <v-layout v-for = "(location, i) in locIDs" :key = i>
-      <panel :title = location>
+    <v-layout justify-center v-for = "(location, i) in locInv" :key = i>
+      <panel :title = location.loc>
+        <v-layout>
+        <v-subheader>{{location.locName}}</v-subheader>
+        <v-spacer></v-spacer>
+        <v-btn>More</v-btn>
+        </v-layout>
         <v-data-table
-              :items="items"
+              :items = location.inventory
               class="elevation-1"
-              hide-headers
+              :headers = "headers"
               :rows-per-page-items="rowsPerPageItems"
             >
           <template slot="items" slot-scope="props">
-            <td >{{ props.item.UPC }}</td>
-            <td >{{ props.item.qty}}</td>
+            <td class="text-xs-left">{{ props.item.UPC }}</td>
+            <td class="text-xs-left">{{ props.item.prdNm }}</td>
+            <td class="text-xs-left">{{ props.item.qty}}</td>
           </template>
         </v-data-table>
       </panel>
@@ -26,14 +38,21 @@ import Location from '@/services/Location'
 export default {
   data () {
     return {
+      // The original json for locations
       locations: [],
-      locIDs: [],
-      items: [{ UPC: "123", qty:3 },
-        { UPC: "123", qty:3 },
-        { UPC: "123", qty:3 },
-        { UPC: "123", qty:3 },
-        { UPC: "123", qty:3 },
-        { UPC: "123", qty:3 },
+      // The loc ID and description for locations
+      locs: [],
+      // location and inventory information
+      locInv: [],
+      error: '',
+      headers: [
+        {
+          text: 'UPC',
+          align: 'left',
+          value: 'UPC'
+        },
+        { text: 'Product Name', value: 'prdNm' },
+        { text: 'Quantity', value: 'qty' }
       ],
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
@@ -45,9 +64,24 @@ export default {
         let locResult = await Location.get()
         this.locations = locResult.data
         for (let i = 0; i < this.locations.length; i++) {
-          this.locIDs.push(this.locations[i].locID)
+          this.locs.push({ 'locID': this.locations[i].locID, 'dspt': this.locations[i].dspt })
         }
         console.log(this.locIDs)
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.error = 'Network Error: Fail to connet to server'
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.data.message)
+          this.error = error.response.data.error
+        }
+      }
+    },
+    async getProdInvByLoc (loc) {
+      try {
+        let locInvRes = await Location.getProdInvByLoc(loc)
+        this.locInv = locInvRes.data
+        console.log(this.locInv)
       } catch (error) {
         if (!error.response) {
           // network error
@@ -60,7 +94,8 @@ export default {
     }
   },
   created () {
-    this.getLocInfo()
+    this.getProdInvByLoc('all')
+    // await this.$nextTick()
   }
 }
 </script>

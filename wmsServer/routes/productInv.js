@@ -63,7 +63,7 @@ module.exports = {
 
     const locInvCollection = req.db.collection("locationInv");
     try {
-      let locInvArray = await locInvCollection.find({ "_id.loc": { $in: locIDArray } }, { _id: 1, qty: 1 }).toArray();
+      let locInvArray = await locInvCollection.find({ "_id.loc": { $in: locIDArray }, qty: {$gt:0} }, { _id: 1, qty: 1 }).toArray();
 
       let UPCSet = [];
       for (let anLocInv of locInvArray) {
