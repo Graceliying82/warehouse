@@ -14,7 +14,7 @@
         <v-layout>
         <v-subheader>{{location.locName}}</v-subheader>
         <v-spacer></v-spacer>
-        <v-btn>More</v-btn>
+        <v-btn @click='showDetail(location.loc)'>More</v-btn>
         </v-layout>
         <v-data-table
               :items = location.inventory
@@ -81,6 +81,7 @@ export default {
       try {
         let locInvRes = await Location.getProdInvByLoc(loc)
         this.locInv = locInvRes.data
+        console.log(this.locInv)
       } catch (error) {
         if (!error.response) {
           // network error
@@ -90,6 +91,9 @@ export default {
           this.error = error.response.data.error
         }
       }
+    },
+    showDetail (locID) {
+
     }
   },
   created () {

@@ -89,7 +89,7 @@ export default {
         { icon: 'library_books', text: 'Receiving Records', name: 'receiveRecords' },
         { divider: true },
         { heading: 'Location' },
-        { icon: 'business', text: 'Locations Management', name: 'invtLocMg' },
+        { icon: 'business', text: 'Locations Inventory', name: 'invtLocMg' },
         { icon: 'last_page', text: 'Product Move In', name: 'PrdMoveIn' },
         { icon: 'first_page', text: 'Product Move Out', name: 'PrdMoveOut' },
         { icon: 'border_color', text: 'Edit Locations', name: 'invtLocEdit' },

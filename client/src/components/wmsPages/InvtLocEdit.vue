@@ -141,6 +141,8 @@ export default {
     async submit () {
       this.message1 = ''
       this.showAlert1 = false
+      this.message2 = ''
+      this.showAlert2 = false
       if (this.locationID === '') {
         this.message1 = 'Location ID is required!'
         this.alertType1 = 'error'

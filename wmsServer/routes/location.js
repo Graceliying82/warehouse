@@ -54,17 +54,17 @@ module.exports = {
     try {
       let locInv = await locInvCollection.find({"_id.loc":locID, qty: {$gt:0}},{_id:1}).toArray();
       if (locInv.length > 0){
-        const error = new Error("There's inventory in the location, can not delete");
+        const error = new Error("There's inventory in the location. Can not delete");
         error.status = 400;
         return next(error);
       } else {
         await locCollection.deleteOne({locID:locID});
       };
-      res.end()
+      res.end();
     } catch (error) {
-      console.log("Delete Location error: " + error)
-      error.message = 'Fail to access database! Try again'
-      next(error)
+      console.log("Delete Location error: " + error);
+      error.message = 'Fail to access database! Try again';
+      next(error);
     }
   },
   //  Get Location
