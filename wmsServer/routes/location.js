@@ -59,7 +59,8 @@ module.exports = {
         return next(error);
       } else {
         await locCollection.deleteOne({locID:locID});
-      }
+      };
+      res.end()
     } catch (error) {
       console.log("Delete Location error: " + error)
       error.message = 'Fail to access database! Try again'

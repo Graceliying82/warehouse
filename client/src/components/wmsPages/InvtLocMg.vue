@@ -81,7 +81,6 @@ export default {
       try {
         let locInvRes = await Location.getProdInvByLoc(loc)
         this.locInv = locInvRes.data
-        console.log(this.locInv)
       } catch (error) {
         if (!error.response) {
           // network error
@@ -95,7 +94,6 @@ export default {
   },
   created () {
     this.getProdInvByLoc('all')
-    // await this.$nextTick()
   }
 }
 </script>

@@ -337,7 +337,7 @@ export default {
         this.error = error
       }
     },
-    async deleteItem (item) {
+    deleteItem (item) {
       this.editedIndex = this.items.indexOf(item)
       // Object.assign(this.items[this.editedIndex], this.editedItem)
       this.deleteTracking = this.items[this.editedIndex].trackingNo

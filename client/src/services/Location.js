@@ -12,5 +12,11 @@ export default {
   },
   getProdInvByLoc (loc) {
     return Api().get('/prodInvByLoc/' + loc)
+  },
+  changeLocationDescription (data) {
+    return Api().post('/changeLocDesc', data)
+  },
+  deleteLocation (locID) {
+    return Api().post('/deleteLoc/' + locID)
   }
 }
