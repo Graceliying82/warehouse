@@ -34,7 +34,7 @@
           </v-flex>
         </v-layout>
       </v-flex>
-      <v-flex ma-5>
+      <v-flex ma-5 v-if = false>
         <v-layout justify-center  column>
           <v-flex>
             <v-alert type="error"

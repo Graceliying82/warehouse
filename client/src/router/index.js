@@ -5,6 +5,7 @@ import Login from '@/components/Login'
 import Receiving from '@/components/wmsPages/Receiving'
 import Shipping from '@/components/wmsPages/Shipping'
 import ShippingRecords from '@/components/wmsPages/ShippingRecords'
+import ShippingPrint from '@/components/wmsPages/ShippingPrint'
 import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
 import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
 import InventoryLocations from '@/components/wmsPages/InventoryLocations'
@@ -48,6 +49,11 @@ export default new Router({
       path: '/shippingRecords',
       name: 'shippingRecords',
       component: ShippingRecords
+    },
+    {
+      path: '/ShippingPrint',
+      name: 'shippingPrint',
+      component: ShippingPrint
     },
     {
       path: '/PrdMoveIn',
