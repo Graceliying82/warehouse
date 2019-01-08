@@ -5,7 +5,6 @@ const Product = require('./product')
 const Inventory = require('./inventory')
 const Location = require('./location')
 const ProductInv = require('./productInv')
-const Amazon = require('../services/amazon')
 
 module.exports = (app) => {
   // from Login
@@ -44,8 +43,5 @@ module.exports = (app) => {
   app.get('/locations', Location.get)
   app.post('/changeLocDesc', Location.changeLocationDescription)
   app.post('/deleteLoc/:locID', Location.deleteLocation)
-
-  //from amazon
-  app.get('/amazon/listOrders', Amazon.listOrders)
 
 }
