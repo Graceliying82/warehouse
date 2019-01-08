@@ -77,6 +77,7 @@ export default {
       let atrbName = ''
       for (let i = 0; i < this.barcodes.length; i++) {
         atrbName = '#barcode' + i
+        // eslint-disable-next-line
         JsBarcode(atrbName, this.barcodes[i])
       }
       console.log(this.barcodes)

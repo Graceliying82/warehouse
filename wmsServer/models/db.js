@@ -1,4 +1,4 @@
-const Config = require('../config/config')
+const Config = require('../config/configNew')
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
 

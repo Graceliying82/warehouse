@@ -5,7 +5,7 @@ var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
 const initDatabase = require('./models/db')
-const isAuthenticated = require('./policies/isAuthenticated')
+const isAuthenticated = require('./services/isAuthenticated')
 
 var logger = require('morgan');
 var app = express();
