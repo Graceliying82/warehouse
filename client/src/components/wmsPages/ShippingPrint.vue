@@ -60,7 +60,6 @@
 </template>
 
 <script>
-// var JsBarcode = require('jsbarcode')
 export default {
   data () {
     return {

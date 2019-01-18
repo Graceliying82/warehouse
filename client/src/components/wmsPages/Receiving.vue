@@ -33,13 +33,16 @@
               v-model="trackingNumber1"
               ref='tracking1'
               v-on:keydown.enter="checkTracking1()"></v-text-field>
-            <v-layout v-for = "(receiveItem1, i) in receiveItems1" :key = "i">
+            <v-layout v-for = "(receiveItem1, i) in receiveItems1" 
+              v-bind:id = "receiveItem1.ID"
+              v-bind:receiveItem1 = "receiveItem1[i]"
+              :key = "i">
               <v-flex >
                 <v-text-field
                   label="UPC"
                   ref="UPC1"
                   v-model="receiveItem1.UPC"
-                  v-on:keydown.enter="handleUPCInput1(i)"
+                  v-on:keyup.enter="handleUPCInput1(i)"
                   required
                   ></v-text-field>
               </v-flex>
@@ -252,7 +255,7 @@ export default {
       UPC3: '',
       qn3: 0,
       receiveItems1: [// receiveItems
-        { UPC: '', qn: 0, prdNm: '', price: 0 }
+        { UPC: '', qn: 0, prdNm: '', price: 0 , ID: upc0}
       ],
       receiveItems2: [// receiveItems
         { UPC: '', qn: 0, prdNm: '', price: 0 }
@@ -537,6 +540,7 @@ export default {
       this.trackingNumber3 = ''
     },
     handleUPCInput1 (i) {
+      console.log('In handelUPCInput1')
       if (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {
         // some code to pass data to server
         this.submit1()
@@ -545,20 +549,29 @@ export default {
         for (let j = 0; j <= this.receiveItems1.length - 1; j++) {
           if ((this.receiveItems1[j].UPC === this.receiveItems1[i].UPC) && (i !== j)) {
             idx = j
+            break
           }
         }
         if (idx === -1) {
-          this.receiveItems1[i].qn = 1
+          // this.receiveItems1[i].qn = 1
+          this.$set(this.receiveItems1[i], 'qn', 1)
           if (i === (this.receiveItems1.length - 1)) {
             // Add a line only if reach to the buttom of the lines
-            this.receiveItems1.push({ UPC: '', qn: 0, prdNm: '', price: 0 })
+            let id = 'upc' + i
+            console.log(id)
+            this.receiveItems1.push({ UPC: '', qn: 0, prdNm: '', price: 0, ID: id })
           }
           this.$nextTick(() => {
             this.$refs.UPC1[i + 1].focus()
           })
         } else {
-          this.receiveItems1[idx].qn++
-          this.receiveItems1[i].UPC = ''
+          //this.receiveItems1[idx].qn++
+          // this.receiveItems1[i].UPC = ''
+          this.$set(this.receiveItems1[idx], 'qn', (this.receiveItems1[idx].qn + 1))
+          this.$set(this.receiveItems1[i], 'UPC', '')
+          this.$nextTick(() => {
+            this.$refs.UPC1[i].focus()
+          })
         }
       }
     },
