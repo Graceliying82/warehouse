@@ -9,12 +9,6 @@
           <v-tab ripple>
             Lazy
           </v-tab>
-          <v-tab ripple>
-            Number
-          </v-tab>
-          <v-tab ripple>
-            Batch
-          </v-tab>
           <v-tab-item>
             <v-alert
             v-show = showAlert1
@@ -24,125 +18,29 @@
             </v-alert>
             <v-text-field
               label="Organization Name"
-              ref="orgName1"
-              v-model="orgName1"
+              ref="orgNameLazy"
+              v-model="orgNameLazy"
               v-bind:autofocus= "true"
-              v-on:keydown.enter="changeFocusToTracking1()"></v-text-field>
+              v-on:keydown.enter="changeFocusToTrackingLazy()"></v-text-field>
             <v-text-field
               label="Tracking Number"
-              v-model="trackingNumber1"
-              ref='tracking1'
-              v-on:keydown.enter="checkTracking1()"></v-text-field>
-            <v-layout v-for = "(receiveItem1, i) in receiveItems1" 
-              v-bind:id = "receiveItem1.ID"
-              v-bind:receiveItem1 = "receiveItem1[i]"
-              :key = "i">
-              <v-flex >
-                <v-text-field
-                  label="UPC"
-                  ref="UPC1"
-                  v-model="receiveItem1.UPC"
-                  v-on:keyup.enter="handleUPCInput1(i)"
-                  required
-                  ></v-text-field>
-              </v-flex>
-              <v-flex offset-lg2>
-                <v-text-field
-                  label = "Quantity"
-                  ref="Quantity1"
-                  :rules="[rules.qnRule1, rules.qnRule2]"
-                  v-model.number="receiveItem1.qn"
-                  v-on:keydown.enter="addNewReceiveItem1(i)"
-                  type="number"
-                  ></v-text-field>
-              </v-flex>
-            </v-layout >
-          <v-btn dark class="cyan darken-2" @click.prevent="submit1()">Submit</v-btn>
-          </v-tab-item>
-          <v-tab-item>
-          <v-alert
-          v-show = showAlert2
-          :type = alertType2
-          outline>
-            {{message2}}
-          </v-alert>
-          <v-text-field
-            label="Organization Name"
-            ref="orgName2"
-            v-model="orgName2"
-            v-bind:autofocus= "true"
-            v-on:keydown.enter="changeFocusToTracking2()"></v-text-field>
-          <v-text-field
-            label="Tracking Number"
-            v-model="trackingNumber2"
-            ref='tracking2'
-            v-on:keydown.enter="checkTracking2()"></v-text-field>
-          <v-layout v-for = "(receiveItem2, i) in receiveItems2" :key = "i">
-            <v-flex >
-              <v-text-field
-                label="UPC"
-                ref="UPC2"
-                v-model="receiveItem2.UPC"
-                v-on:keydown.enter="handleUPCInput2(i)"
-                required
-                ></v-text-field>
-            </v-flex>
-            <v-flex offset-lg2>
-              <v-text-field
-                label = "Quantity"
-                ref="Quantity2"
-                :rules="[rules.qnRule1, rules.qnRule2]"
-                v-model.number="receiveItem2.qn"
-                v-on:keydown.enter="addNewReceiveItem2(i)"
-                type="number"
-                ></v-text-field>
-            </v-flex>
-          </v-layout >
-          <v-btn dark class="cyan darken-2" @click.prevent="submit2()">Submit</v-btn>
-          </v-tab-item>
-          <v-tab-item>
-          <v-alert
-          v-show = showAlert3
-          :type = alertType3
-          outline>
-            {{message3}}
-          </v-alert>
-          <v-layout>
-            <v-flex >
-              <v-text-field
-                label="UPC"
-                v-model="UPC3"
-                ref="UPC3"
-                v-bind:autofocus= "true"
-                v-on:keydown.enter="changeFocusToQuantity3()"
-                required
-                ></v-text-field>
-            </v-flex>
-            <v-flex offset-lg2>
-              <v-text-field
-                label = "Quantity"
-                ref="Quantity3"
-                v-model.number="qn3"
-                :rules="[rules.qnRule1, rules.qnRule2]"
-                v-on:keydown.enter="changeFocusToOrgName3()"
-                type="number"
-                ></v-text-field>
-            </v-flex>
-          </v-layout>
-          <v-text-field
-            label="Org Name"
-            ref="orgName3"
-            v-model="orgName3"
-            v-on:keydown.enter="changeFocusToTracking3()"
-          ></v-text-field>
-          <v-text-field
-            label="Tracking Number"
-            ref='tracking3'
-            v-model="trackingNumber3"
-            v-on:keydown.enter="checkTracking3()"
-          ></v-text-field>
-          <h3>Batch model will automatically submit after tracking input.</h3>
-          <v-btn dark class="cyan darken-2" @click.prevent="clear()">Clear</v-btn>
+              v-model="trackingLazy"
+              ref='trackingLazy'
+              v-on:keydown.enter="checkTrackingLazy()"></v-text-field>
+            <v-text-field
+              label="UPC"
+              ref='UPCLazyRef'
+              v-bind:value="UPCLazy"
+              v-on:keydown.enter="handleUPCLazy">
+            </v-text-field>
+            <v-layout v-for = "(item, i) in receiveItems"
+              v-bind:item="item"
+              :key = i>
+                <li>{{item.UPC}}</li>
+                <li>{{item.qn}}</li>
+            </v-layout>
+          <v-btn dark class="cyan darken-2" @click.prevent="submitLazy()">Submit</v-btn>
+          <v-btn dark class="cyan darken-2" @click.prevent="clearLazy()">clear</v-btn>
           </v-tab-item>
         </v-tabs>
       </panel>
@@ -246,20 +144,11 @@ export default {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
       },
-      trackingNumber1: '', // tracking Number
-      trackingNumber2: '', // tracking Number
-      trackingNumber3: '',
-      orgName1: '', // orgName
-      orgName2: '', // orgName
-      orgName3: '',
-      UPC3: '',
-      qn3: 0,
-      receiveItems1: [// receiveItems
-        { UPC: '', qn: 0, prdNm: '', price: 0 , ID: upc0}
-      ],
-      receiveItems2: [// receiveItems
-        { UPC: '', qn: 0, prdNm: '', price: 0 }
-      ],
+      orgNameLazy: '',
+      trackingLazy: '',
+      UPCLazy: '',
+      qtyLazy: '',
+      receiveItems: [],
       existedTracking: [],
       trackingExisted: false,
       existedOrgNm: '',
@@ -294,222 +183,25 @@ export default {
     }
   },
   methods: {
-    changeFocusToOrgName1 () {
-      this.$refs.orgName1.focus()
-    },
-    changeFocusToOrgName2 () {
-      this.$refs.orgName2.focus()
-    },
-    changeFocusToOrgName3 () {
-      this.$refs.orgName3.focus()
-    },
-    changeFocusToTracking1 () {
+    clearAlert () {
       this.showAlert1 = false
-      this.$refs.tracking1.focus()
-    },
-    changeFocusToTracking2 () {
       this.showAlert2 = false
-      this.$refs.tracking2.focus()
+      this.showAlert3 = false
+      this.message1 = ''
+      this.message2 = ''
+      this.message3 = ''
     },
-    changeFocusToTracking3 () {
-      this.$refs.tracking3.focus()
+    changeFocusToTrackingLazy () {
+      this.clearAlert()
+      this.$refs.trackingLazy.focus()
     },
-    changeFocusToUPC1 (i) {
-      this.$refs.UPC1[i].focus()
+    changeFocusToUPCLazy () {
+      this.$refs.UPCLazyRef.focus()
     },
-    checkTracking1 () {
+    async checkTrackingLazy () {
       this.currentTab = 1
-      this.checkTrackingExisted(this.trackingNumber1)
-      this.changeFocusToUPC1(0)
-    },
-    changeFocusToUPC2 (i) {
-      this.$refs.UPC2[i].focus()
-    },
-    checkTracking2 () {
-      this.currentTab = 2
-      this.checkTrackingExisted(this.trackingNumber2)
-      this.changeFocusToUPC2(0)
-    },
-    changeFocusToUPC3 () {
-      this.showAlert3 = false
-      this.$refs.UPC3.focus()
-    },
-    async checkTracking3 () {
-      this.currentTab = 3
-      await this.checkTrackingExisted(this.trackingNumber3)
-      if (!this.trackingExisted) {
-        this.submit3()
-      }
-    },
-    changeFocusToQuantity (i) {
-      this.$refs.Quantity1[i].focus()
-    },
-    changeFocusToQuantity2 (i) {
-      this.$refs.Quantity2[i].focus()
-    },
-    changeFocusToQuantity3 () {
-      this.showAlert3 = false
-      this.$refs.Quantity3.focus()
-    },
-    addNewReceiveItem1 (i) {
-      if (i === (this.receiveItems1.length - 1)) {
-        // Add a line only if reach to the buttom of the lines
-        this.receiveItems1.push({ UPC: '', qn: 0, prdNm: '', price: 0 })
-      }
-      this.$nextTick(() => {
-        this.$refs.UPC1[i + 1].focus()
-      })
-    },
-    addNewReceiveItem2 (i) {
-      if (i === (this.receiveItems2.length - 1)) {
-        // Add a line only if reach to the buttom of the lines
-        this.receiveItems2.push({ UPC: '', qn: 0, prdNm: '', price: 0 })
-      }
-      this.$nextTick(() => {
-        this.$refs.UPC2[i + 1].focus()
-      })
-    },
-    async submit1 () {
-      try {
-        // need to delete empty lines in receiveItems
-        for (var i = this.receiveItems1.length - 1; i >= 0; i--) {
-          if ((this.receiveItems1[i].UPC === '') || (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT')) {
-            this.receiveItems1.splice(i, 1)
-          }
-        }
-        if (this.receiveItems1.length === 0) {
-          this.receiveItems1 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
-          this.message1 = 'UPC is needed! Not a valid receive.'
-          this.alertType1 = 'error'
-          this.showAlert1 = true
-          return
-        }
-        // Send data to server
-        await Inventory.post({
-          // tracking No
-          'trNo': this.trackingNumber1,
-          // OrgName
-          'orgNm': this.orgName1,
-          'note': '',
-          // receiveItems:
-          'rcIts': this.receiveItems1,
-          'usrID': this.$store.state.email
-        })
-        this.message1 = 'Successfully Added a new Package'
-        this.alertType1 = 'success'
-        this.showAlert1 = true
-        // clean up data
-        this.trackingNumber1 = ''
-        this.orgName1 = ''
-        this.receiveItems1 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
-        this.changeFocusToOrgName1()
-      } catch (error) {
-        if (!error.response) {
-          // network error
-          this.message1 = 'Network Error: Fail to connet to server'
-        } else if (error.response.data.error.includes('jwt')) {
-          console.log('jwt error')
-          this.$store.dispatch('resetUserInfo', true)
-          this.$router.push('/login')
-        } else {
-          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message1 = error.response.data.error
-        }
-        this.alertType1 = 'error'
-        this.showAlert1 = true
-      }
-    },
-    async submit2 () {
-      try {
-        // need to delete empty lines in receiveItems
-        for (var i = this.receiveItems2.length - 1; i >= 0; i--) {
-          if ((this.receiveItems2[i].UPC === '') || (this.receiveItems2[i].UPC === 'WMS-RECEIVING-SUBMIT')) {
-            this.receiveItems2.splice(i, 1)
-          }
-        }
-        if (this.receiveItems2.length === 0) {
-          this.receiveItems2 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
-          this.message2 = 'UPC is needed! Not a valid receive.'
-          this.alertType2 = 'error'
-          this.showAlert2 = true
-          return
-        }
-        // Send data to server
-        await Inventory.post({
-
-          // tracking No
-          'trNo': this.trackingNumber2,
-          // OrgName
-          'orgNm': this.orgName2,
-          'note': '',
-          // receiveItems:
-          'rcIts': this.receiveItems2,
-          'usrID': this.$store.state.email
-        })
-        this.message2 = 'Successfully Added a new Package'
-        this.alertType2 = 'success'
-        this.showAlert2 = true
-        // clean up data
-        this.trackingNumber2 = ''
-        this.orgName2 = ''
-        this.receiveItems2 = [{ UPC: '', qn: 0, prdNm: '', price: 0 }]
-        this.changeFocusToOrgName2()
-      } catch (error) {
-        if (!error.response) {
-          // network error
-          this.message2 = 'Network Error: Fail to connet to server'
-        } else if (error.response.data.error.includes('jwt')) {
-          console.log('jwt error')
-          this.$store.dispatch('resetUserInfo', true)
-          this.$router.push('/login')
-        } else {
-          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message2 = error.response.data.error
-        }
-        this.alertType2 = 'error'
-        this.showAlert2 = true
-      }
-    },
-    async submit3 () {
-      try {
-        if (this.UPC3 === '') {
-          this.message3 = 'UPC is needed! Not a valid receive.'
-          this.alertType3 = 'error'
-          this.showAlert3 = true
-          return
-        }
-        // Send data to server
-        await Inventory.post({
-          // tracking No
-          'trNo': this.trackingNumber3,
-          // OrgName
-          'orgNm': this.orgName3,
-          'note': '',
-          // receiveItems:
-          'rcIts': [{ UPC: this.UPC3, qn: this.qn3, prdNm: '', price: 0 }],
-          'usrID': this.$store.state.email
-        })
-        this.message3 = 'Successfully Added a new Package: ' + this.trackingNumber3
-        this.alertType3 = 'success'
-        this.showAlert3 = true
-        // clean up data
-        this.trackingNumber3 = ''
-        this.changeFocusToTracking3()
-      } catch (error) {
-        if (!error.response) {
-          // network error
-          this.message3 = 'Network Error: Fail to connet to server'
-        } else if (error.response.data.error.includes('jwt')) {
-          console.log('jwt error')
-          this.$store.dispatch('resetUserInfo', true)
-          this.$router.push('/login')
-        } else {
-          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message3 = error.response.data.error
-        }
-        this.alertType3 = 'error'
-        this.showAlert3 = true
-      }
+      await this.checkTrackingExisted(this.trackingLazy)
+      this.changeFocusToUPCLazy()
     },
     async checkTrackingExisted (tracking) {
       try {
@@ -532,69 +224,35 @@ export default {
         }
       }
     },
-    clear () {
-      this.showAlert3 = false
-      this.UPC3 = ''
-      this.qn3 = 0
-      this.orgName3 = ''
-      this.trackingNumber3 = ''
-    },
-    handleUPCInput1 (i) {
-      console.log('In handelUPCInput1')
-      if (this.receiveItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {
-        // some code to pass data to server
-        this.submit1()
-      } else {
-        let idx = -1
-        for (let j = 0; j <= this.receiveItems1.length - 1; j++) {
-          if ((this.receiveItems1[j].UPC === this.receiveItems1[i].UPC) && (i !== j)) {
-            idx = j
-            break
-          }
-        }
-        if (idx === -1) {
-          // this.receiveItems1[i].qn = 1
-          this.$set(this.receiveItems1[i], 'qn', 1)
-          if (i === (this.receiveItems1.length - 1)) {
-            // Add a line only if reach to the buttom of the lines
-            let id = 'upc' + i
-            console.log(id)
-            this.receiveItems1.push({ UPC: '', qn: 0, prdNm: '', price: 0, ID: id })
-          }
-          this.$nextTick(() => {
-            this.$refs.UPC1[i + 1].focus()
-          })
-        } else {
-          //this.receiveItems1[idx].qn++
-          // this.receiveItems1[i].UPC = ''
-          this.$set(this.receiveItems1[idx], 'qn', (this.receiveItems1[idx].qn + 1))
-          this.$set(this.receiveItems1[i], 'UPC', '')
-          this.$nextTick(() => {
-            this.$refs.UPC1[i].focus()
-          })
+    handleUPCLazy (event) {
+      let found = false
+      this.UPCLazy = event.target.value
+      for (let i = 0; i < this.receiveItems.length; i++) {
+        if (this.UPCLazy === this.receiveItems[i].UPC) {
+          // this.$set( receiveItems, i, {'qn' : (receiveItems[i].qn + 1)} )
+          this.receiveItems[i].qn++
+          found = true
+          break
         }
       }
-    },
-    handleUPCInput2 (i) {
-      if (this.receiveItems2[i].UPC === 'WMS-RECEIVING-SUBMIT') {
-        // some code to pass data to server
-        this.submit2()
-      } else {
-        let idx = -1
-        // If this UPC has already been scanned. Just add up the quantity. Otherwise Change focus to qn and make
-        // user input
-        for (let j = 0; j <= this.receiveItems2.length - 1; j++) {
-          if ((this.receiveItems2[j].UPC === this.receiveItems2[i].UPC) && (i !== j)) {
-            idx = j
-          }
-        }
-        if (idx === -1) {
-          this.changeFocusToQuantity2(i)
-        } else {
-          this.receiveItems2[idx].qn++
-          this.receiveItems2[i].UPC = ''
-        }
+      if (!found) {
+        this.receiveItems.push({ UPC: this.UPCLazy, qn: 1, prdNm: '', price: 0 })
       }
+      this.UPCLazy = ''
+      this.forceUpdate()
+    },
+    submitLazy () {
+      console.log('Org Name:' + this.orgNameLazy)
+      console.log('tracking :' + this.trackingLazy)
+      console.log('Received Items: ' + this.receiveItems[0].UPC + this.receiveItems[0].qn)
+      // to do... call the database
+    },
+    clearLazy () {
+      this.orgNameLazy = ''
+      this.trackingLazy = ''
+      this.UPCLazy = ''
+      this.qtyLazy = ''
+      this.receiveItems = []
     },
     setupMedia () {
       let constraints = { audio: false, video: true }
@@ -617,27 +275,23 @@ export default {
     },
     closeDialog () {
       if (this.currentTab === 1) {
-        this.orgName1 = this.existedOrgNm
+        this.orgNameLazy = this.existedOrgNm
         this.trackingExisted = false
-        this.changeFocusToUPC1(0)
+        this.changeFocusToUPCLazy()
       } else if (this.currentTab === 2) {
-        this.orgName2 = this.existedOrgNm
-        this.trackingExisted = false
-        this.changeFocusToUPC2(0)
+        // to do ...
       } else {
-        this.orgName3 = this.existedOrgNm
-        this.submit3()
-        this.trackingExisted = false
+        // to do ...
       }
       this.existedOrgNm = ''
     },
     cancelDialog () {
       if (this.currentTab === 1) {
-        this.trackingNumber1 = ''
+        this.trackingLazy = ''
       } else if (this.currentTab === 2) {
-        this.trackingNumber2 = ''
+        // to do ...
       } else {
-        this.trackingNumber3 = ''
+        // to do ...
       }
       this.trackingExisted = false
     },
