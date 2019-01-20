@@ -20,7 +20,7 @@ module.exports = {
       let UPC = req.body.UPC;
       // req.body.createTime = new Date().toLocaleString();
       let createTime = new Date();
-      req.body.crtTm =  new Date(createTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
+      req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       req.body.crtStmp = createTime.getTime();
       result2 = await dbcollection.insertOne(req.body);
       res.send(result2);
@@ -38,45 +38,104 @@ module.exports = {
     const sellerInvCollection = req.db.collection("sellerInv");
     const locInvCollection = req.db.collection("locationInv");
     const invCollection = req.db.collection("inventory");
-    
+
     try {
       //update product find by upc
       let modifyTime = new Date();
-      let mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
+      let mdfTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       let mdfStmp = modifyTime.getTime();
       let o_id = ObjectId(req.body._id);
 
-      //update inventory receive
-      //find one inventory receive by trancing NO
+      //will compare whether track, price, product name, note changed, if not... do
+      //update tracking, update product name, update price  --req.body.UPC is always passed in
       //set price, set product name
       //update inventory receive recersive (for past 1 month)
-      //update condition past 1 month,      
+      //update condition past 1 month,   
 
-      // Updating quantity
-      let invReceive = await invReceivecollection.findOne({_id: o_id, "rcIts.UPC": req.body.UPC},{orgNm:1,"rcIts.$.qn":1, trNo:1});
+      //check quantity change or not, if quantity changed, need update quantity - inventory receive, seller inventory, location env and total inventory
+      //check whether org change or not, if org changed, need chang receive inventory, seller inventory,
+
+      let invReceive = await invReceivecollection.findOne({ _id: o_id });
+
+      //receive level
       let origOrgName = invReceive.orgNm;
-      let origQuantity = invReceive.rcIts[0].qn;
-      if (invReceive.trNo !== req.body.trNo) {
-        let existedTracking = await invReceivecollection.findOne({trNo: req.body.trNo});
+      let origTrack = invReceive.trNo;
+      let origNote = invReceive.note;
+
+      let newOrgName = origOrgName;
+      let newTrack = origTrack;
+      let newNote = origNote;
+      //item level
+      let origPirce = 0;
+      let origQn = 0;
+      let origPrdNm = '';
+
+      //receive level
+      let orgChanged = false;
+      let trChanged = false;
+      let noteChanged = false;
+      //item level
+      let priceChanged = false;
+      let qtyChanged = false;
+      let prdNmChanged = false;
+
+      //get item level thing
+      let found = false;
+      for (let item of invReceive.rcIts) {
+        if (item.UPC === req.body.UPC) {
+          origPirce = item.price;
+          origQn = item.qn;
+          origPrdNm = item.prdNm;
+          found = true;
+          break;
+        }
+      }
+      if (!found) { // should not happen
+        const error = new Error('UPC is wrong! should never happen');
+        error.status = 400;
+        return next(error);
+      }
+      if ((req.body.orgNm) && (req.body.orgNm !== origOrgName)) {
+        orgChanged = true;
+        newOrgName = req.body.orgNm;
+      }
+      if ((req.body.trNo && req.body.trNo !== origTrack)) {
+        trChanged = true;
+        newTrack = req.body.trNo
+      }
+      if ((req.body.note) && req.body.note !== origNote) {
+        noteChanged = true;
+        newNote = req.body.note;
+      }
+
+      if ((req.body.price) && req.body.price !== oriPrice) {
+        priceChanged = true;
+      }
+      if ((req.body.qn) && req.body.qn !== origQn) {
+        qtyChanged = true;
+      }
+      if ((req.body.prdNm) && req.body.prdNm !== origPrdNm) {
+        prdNmChanged = true;
+      }
+
+      if (trChanged) {
+        let existedTracking = await invReceivecollection.findOne({ trNo: req.body.trNo });
         if (existedTracking !== null) {
           const error = new Error('Tracking No existed! Change another one!');
           error.status = 400;
           return next(error);
         }
       }
-      if (req.body.qn && req.body.qn !== origQuantity){
-        // let invLocOId = ObjectId({UPC: req.body.UPC, loc:"WMS"});
-        // let invLocation = await locInvCollection.findOne({_id:invLocOId},{qty:1});
-        // _id: { UPC: req.body.UPC, org: origOrgName }
-        let invLocation = await locInvCollection.findOne({_id:{ UPC: req.body.UPC, loc:"WMS"}},{qty:1});
-        let qnDelt = req.body.qn - origQuantity;
-        
-        //todo think more about the logic - quantity change 
+      
+      // handle quantity change
+      if (qtyChanged) {
+        let invLocation = await locInvCollection.findOne({ _id: { UPC: req.body.UPC, loc: "WMS" } }, { qty: 1 });
+        let qnDelt = req.body.qn - origQn;
 
-        if (qnDelt !== 0){
+        if (qnDelt !== 0) {
           //Delete some items
           //invLocation.qty(wms) < origQuantity - req.body.qn  error: Not enough items.
-          if ( (invLocation.qty + qnDelt) < 0) {
+          if ((invLocation.qty + qnDelt) < 0) {
             const error = new Error('Products has been moved out of WMS');
             error.status = 400;
             return next(error);
@@ -84,122 +143,126 @@ module.exports = {
             // Make quantity change on locationInventory, inventoryReceive and inventory
             await locInvCollection.findOneAndUpdate(
               {
-                _id: { UPC: req.body.UPC, loc:"WMS"}
+                _id: { UPC: req.body.UPC, loc: "WMS" }
               }, //query
               {
-                $inc: { qty: qnDelt},
+                $inc: { qty: qnDelt },
                 $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
               }
-            )
+            );
             await invCollection.findOneAndUpdate(
               {
                 _id: req.body.UPC
               }, //query
               {
-                $inc: { qty: qnDelt},
+                $inc: { qty: qnDelt },
                 $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
               }
-            )
+            );
             await invReceivecollection.findOneAndUpdate(
               {
                 _id: o_id,
                 "rcIts.UPC": req.body.UPC
               }, //query
               {
-                $inc: { "rcIts.$.qn" : qnDelt},
+                $inc: { "rcIts.$.qn": qnDelt },
+                $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+              }
+            );
+            await sellerInvCollection.findOneAndUpdate(
+              {
+                _id: { UPC: req.body.UPC, org: origOrgName }
+              }, //query
+              {
+                $inc: { qty: qnDelt },
                 $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
               }
             )
           };
-        }
-        //todo update inventory collection
-      }
-      if (!req.body.qn){
-        req.body.qn = origQuantity;
-      }
-      // Todo: update tracking No
-      await invReceivecollection.findOneAndUpdate(
-        {
-          _id: o_id
-        }, //query
-        {
-          $set: {"mdfTm": mdfTm, "mdfStmp": mdfStmp,"trNo": req.body.trNo}
-        }
-      )
-      // update product Name
-      await prdCollection.findOneAndUpdate(
-        {
-          _id: req.body.UPC
-        }, //query
-        {
-          $set: { "mdfTm": mdfTm, "mdfStmp": mdfStmp, "prdNm": req.body.prdNm }
-          // $set: { "mdfStmp": mdfStmp},
-          // $set: { "prdNm": req.body.prdNm }
-        }
-      );
-
+        };
+      };
       //org change
-      if ((req.body.orgNm) && (req.body.orgNm !== origOrgName)){
-        await sellerInvCollection.findOneAndUpdate(
+      if (orgChanged) {
+        //receive inventory will be upated together with note, track
+        let anInvReceive = await invReceivecollection.findOne({ _id: o_id });
+        for (let anItem of anInvReceive.rcIts){
+          let itemUPC = anItem.UPC;
+          let itemQn = anItem.qn;
+          await sellerInvCollection.findOneAndUpdate(
+            {
+              _id: { UPC: itemUPC, org: origOrgName }
+            }, //query
+            {
+              $inc: { qty: -itemQn },
+              $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+            }
+          );
+  
+          await sellerInvCollection.findOneAndUpdate(
+            {
+              _id: { UPC: itemUPC, org: req.body.orgNm }
+            }, //query
+            {
+              $inc: { qty: itemQn },
+              $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+            },
+            { upsert: true }
+          );
+        }
+      }
+
+      if (prdNmChanged){
+        await prdCollection.findOneAndUpdate(
           {
-            _id: { UPC: req.body.UPC, org: origOrgName }
+            _id: req.body.UPC
           }, //query
           {
-            $inc: { qty: -origQuantity},
-            $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+            $set: { "mdfTm": mdfTm, "mdfStmp": mdfStmp, "prdNm": req.body.prdNm }
+           }
+        );
+  
+        //update product name
+        await invReceivecollection.updateMany(
+          {
+            "rcIts.UPC": req.body.UPC
+          },
+          {
+            $set: {
+              "rcIts.$.prdNm": req.body.prdNm
+            }
           }
         );
-
-        await sellerInvCollection.findOneAndUpdate(
+      }
+      
+      // update price
+      if (priceChanged) {
+        await invReceivecollection.updateOne(
           {
-            _id: { UPC: req.body.UPC, org: req.body.orgNm }
-          }, //query
-          {
-            $inc: { qty: req.body.qn},
-            $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+            // "trNo": req.body.trNo,
+            "_id": o_id,
+            "rcIts.UPC": req.body.UPC
           },
-          { upsert: true }
-        );
+          {
+            $set: {
+              "rcIts.$.price": parseInt(req.body.price),
+              mdfTm: mdfTm, 
+              mdfStmp: mdfStmp
+            }
+          }
+        )
+      }
+      
+      if (noteChanged || orgChanged || trChanged){
         await invReceivecollection.findOneAndUpdate(
           {
             _id: o_id
           }, //query
           {
-            $set: {"mdfTm": mdfTm, "mdfStmp": mdfStmp,"orgNm": req.body.orgNm}
+            $set: { "mdfTm": mdfTm, "mdfStmp": mdfStmp, "orgNm": newOrgName, "trNo": newTrack, "note": newNote}
           }
-        )
-
+        );
       }
 
-// update price
-      await invReceivecollection.updateOne(
-        {
-          // "trNo": req.body.trNo,
-          "_id": o_id,
-          "rcIts.UPC": req.body.UPC
-        },
-        {
-          $set: {
-            "rcIts.$.price" : parseInt(req.body.price),
-            "note" : req.body.note,
-            "orgNm" : req.body.orgNm
-          }
-        }
-
-      )
-
-      //update product name
-      await invReceivecollection.updateMany(
-        {
-          "rcIts.UPC": req.body.UPC
-        },
-        {
-          $set: {
-            "rcIts.$.prdNm" : req.body.prdNm
-          }
-        }
-      )
-      //TODO ste status code 
       res.end();
 
     } catch (error) {
@@ -217,18 +280,18 @@ module.exports = {
     const invCollection = req.db.collection("inventory");
     try {
       let modifyTime = new Date();
-      let mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST';
+      let mdfTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       let mdfStmp = modifyTime.getTime();
       // must have enough items in wms. Otherwise can't delete! 
       let o_id = ObjectId(req.body._id);
-      let invRecive = await invReceivecollection.findOne({"_id": o_id});
-      let locInv = await locInvCollection.findOne({_id:{ UPC: req.body.UPC, loc:"WMS"}})
+      let invRecive = await invReceivecollection.findOne({ "_id": o_id });
+      let locInv = await locInvCollection.findOne({ _id: { UPC: req.body.UPC, loc: "WMS" } })
       let qtyFromInvRec = 0;
       let orgName = "";
-      if (invRecive){
+      if (invRecive) {
         orgName = invRecive.orgNm;
-        for (var item of invRecive.rcIts){
-          if (item.UPC === req.body.UPC){
+        for (var item of invRecive.rcIts) {
+          if (item.UPC === req.body.UPC) {
             qtyFromInvRec = item.qn;
             break;
           }
@@ -239,7 +302,7 @@ module.exports = {
         error.status = 400;
         return next(error);
       }
-      
+
       if (invRecive.rcIts.length === 1) {
         // Last Item in tracking. Delete directly
         let result = await invReceivecollection.deleteOne(
@@ -253,7 +316,7 @@ module.exports = {
             "_id": o_id,
           },
           {
-             $pull: {rcIts : {UPC: req.body.UPC}}
+            $pull: { rcIts: { UPC: req.body.UPC } }
           }
         )
       }
@@ -263,7 +326,7 @@ module.exports = {
           _id: { UPC: req.body.UPC, org: orgName }
         },
         {
-          $inc: { qty: - qtyFromInvRec},
+          $inc: { qty: - qtyFromInvRec },
           $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
         }
       );
@@ -272,8 +335,8 @@ module.exports = {
           _id: { UPC: req.body.UPC, loc: "WMS" }
         },
         {
-          $inc: { qty: - qtyFromInvRec},
-          $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }  
+          $inc: { qty: - qtyFromInvRec },
+          $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
         }
       );
       await invCollection.findOneAndUpdate(
@@ -281,38 +344,38 @@ module.exports = {
           _id: req.body.UPC
         },
         {
-          $inc: { qty: - qtyFromInvRec},
-          $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }  
+          $inc: { qty: - qtyFromInvRec },
+          $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
         }
       );
       //update location inventory
       //       let o_id = ObjectId(req.body._id);
-//       let invReceive = await invReceivecollection.findOne({_id: o_id},{orgNm:1,"rcIts.$.UPC":1,"rcIts.$.qn":1});
-//       let rcIts = invReceive.rcIts;
-//       let orgName = invReceive.orgNm;
+      //       let invReceive = await invReceivecollection.findOne({_id: o_id},{orgNm:1,"rcIts.$.UPC":1,"rcIts.$.qn":1});
+      //       let rcIts = invReceive.rcIts;
+      //       let orgName = invReceive.orgNm;
 
-//       for (let i = 0; i < rcIts.length; i++){
-//         await sellerInvCollection.findOneAndUpdate(
-//           {
-//             _id: { UPC: rcIts[i].UPC, org: orgName }
-//           }, //query
-//           {
-//             $dec: { qty: rcIts[i].qn},
-//             $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
-//           }
-//         );
-//       }
-// //todo how to handle location inventory
+      //       for (let i = 0; i < rcIts.length; i++){
+      //         await sellerInvCollection.findOneAndUpdate(
+      //           {
+      //             _id: { UPC: rcIts[i].UPC, org: orgName }
+      //           }, //query
+      //           {
+      //             $dec: { qty: rcIts[i].qn},
+      //             $set: { mdfTm: mdfTm, mdfStmp: mdfStmp }
+      //           }
+      //         );
+      //       }
+      // //todo how to handle location inventory
 
-//       let result = await invReceivecollection.deleteOne(
-//         {
-//           "_id": o_id
-//         } //query
-//       );
+      //       let result = await invReceivecollection.deleteOne(
+      //         {
+      //           "_id": o_id
+      //         } //query
+      //       );
 
 
 
-    //  res.send(result)
+      //  res.send(result)
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
