@@ -66,7 +66,7 @@ module.exports = {
       let newTrack = origTrack;
       let newNote = origNote;
       //item level
-      let origPirce = 0;
+      let origPrice = 0;
       let origQn = 0;
       let origPrdNm = '';
 
@@ -83,7 +83,7 @@ module.exports = {
       let found = false;
       for (let item of invReceive.rcIts) {
         if (item.UPC === req.body.UPC) {
-          origPirce = item.price;
+          origPrice = item.price;
           origQn = item.qn;
           origPrdNm = item.prdNm;
           found = true;
@@ -108,7 +108,7 @@ module.exports = {
         newNote = req.body.note;
       }
 
-      if ((req.body.price) && req.body.price !== oriPrice) {
+      if ((req.body.price) && req.body.price !== origPrice) {
         priceChanged = true;
       }
       if ((req.body.qn) && req.body.qn !== origQn) {
