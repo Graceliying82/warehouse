@@ -1,61 +1,98 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-layout row>
-      <panel title = "Scan Package">
-        <v-tabs
-          color = "cyan"
-          dark
-          slider-color = "cyan darken-4">
-          <v-tab ripple>
-            Lazy
-          </v-tab>
-          <v-tab-item>
-            <v-alert
-            v-show = showAlert1
-            :type = alertType1
-            outline>
-              {{message1}}
-            </v-alert>
-            <v-text-field
-              label="Organization Name"
-              ref="orgNameLazy"
-              v-model="orgNameLazy"
-              v-bind:autofocus= "true"
-              v-on:keydown.enter="changeFocusToTrackingLazy()"></v-text-field>
-            <v-text-field
-              label="Tracking Number"
-              v-model="trackingLazy"
-              ref='trackingLazy'
-              v-on:keydown.enter="checkTrackingLazy()"></v-text-field>
-            <v-text-field
-              label="UPC"
-              ref='UPCLazyRef'
-              v-bind:value="UPCLazy"
-              v-on:keydown.enter="handleUPCLazy">
-            </v-text-field>
-            <v-layout v-for = "(item, i) in receiveItems"
-              v-bind:item="item"
-              :key = i>
-                <li>{{item.UPC}}</li>
-                <li>{{item.qn}}</li>
-            </v-layout>
-          <v-btn dark class="cyan darken-2" @click.prevent="submitLazy()">Submit</v-btn>
-          <v-btn dark class="cyan darken-2" @click.prevent="clearLazy()">clear</v-btn>
-          </v-tab-item>
-        </v-tabs>
-      </panel>
-      <v-dialog v-model="trackingExisted" max-width="500px">
+      <v-layout column lg6>
+        <v-layout>
+          <v-flex lg6>
+            <v-tabs
+              color = "cyan"
+              dark
+              slider-color = "cyan darken-4">
+              <v-tab ripple>
+                Lazy
+              </v-tab>
+              <v-tab-item>
+                <v-alert
+                v-show = showAlert1
+                :type = alertType1
+                outline>
+                  {{message1}}
+                </v-alert>
+                <h2>Please Scan {{currentScan}}</h2>
+                <br>
+                <h3 align='left'>OrgName: {{orgNameLazy}}</h3>
+                <h3 align='left'>Tracking: {{trackingLazy}}</h3>
+                <br>
+                <v-layout>
+                  <v-data-table
+                  :headers="lazyHeaders"
+                  :items="receiveItems"
+                  class="elevation-1">
+                    <template v-for = "it in receiveItems" slot="items" slot-scope="props">
+                      <td
+                        :key="it.UPC + '-UPC'"
+                        class="text-xs-left">{{ props.item.UPC }}</td>
+                      <td
+                        :key="it.qn + '-qn'"
+                        class="text-xs-left">
+                        {{ props.item.qn }}
+                      </td>
+                    </template>
+                  </v-data-table>
+                </v-layout>
+                <br>
+                <br>
+              <v-btn dark @click.prevent="submitLazy()">Submit</v-btn>
+              <v-btn dark @click.prevent="clearLazy()">Reset</v-btn>
+              </v-tab-item>
+            </v-tabs>
+            <v-card >
+              <v-card-title primary-title >
+                <div>
+                  <div class="headline" >Manual Input</div>
+                </div>
+              </v-card-title>
+              <v-layout>
+                <v-text-field
+                  label="Organization Name"
+                  ref="orgNameLazy"
+                  id="orgNameLazy"
+                  ></v-text-field>
+                <v-btn @click.prevent=setValueOrgLZ>Change</v-btn>
+              </v-layout>
+              <v-layout row>
+                <v-text-field
+                  label="Tracking Number"
+                  ref='trackingLazy'
+                  id='trackingLazy'
+                  ></v-text-field>
+                <v-btn @click.prevent=setValueTrLZ>Change</v-btn>
+              </v-layout>
+              <v-layout row>
+                <v-text-field
+                  label="UPC"
+                  ref='UPCLazy'
+                  id='UPCLazy'
+                  >
+                </v-text-field>
+                <v-btn @click.prevent = 'addUPCLazy'>Add</v-btn>
+              </v-layout>
+            </v-card>
+          </v-flex>
+        </v-layout>
+        <v-layout>
+          <v-dialog v-model="trackingExisted" max-width="500px">
             <v-card>
               <v-card-text>
                 <v-container grid-list-md>
                   <v-layout column>
                   <v-flex xs12 sm6 md4>
-                   <h1 style="color:red;">Warning: Tracking Existed! </h1>
-                   <h3></h3>
-                   <h3>Organization Name: {{existedOrgNm}}</h3>
-                   <h3>Cancel: use another tracking number</h3>
-                   <h3>Confirm: OrgName will be changed to {{existedOrgNm}}! </h3>
-                   <h3>Append to existed record!</h3>
+                    <h1 style="color:red;">Warning: Tracking Existed! </h1>
+                    <h3></h3>
+                    <h3>Organization Name: {{existedOrgNm}}</h3>
+                    <h3>Cancel: use another tracking number</h3>
+                    <h3>Confirm: OrgName will be changed to {{existedOrgNm}}! </h3>
+                    <h3>Append to existed record!</h3>
                   </v-flex>
                   </v-layout>
                 </v-container>
@@ -67,6 +104,8 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+        </v-layout>
+      </v-layout>
       <v-layout align-start justify-start justify-space-around ml-5 column>
         <v-layout align-start row>
           <v-flex>
@@ -144,6 +183,15 @@ export default {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
       },
+      lazyHeaders: [
+        {
+          text: 'UPC',
+          align: 'left',
+          value: 'UPC'
+        },
+        { text: 'Quantity', value: 'qn' }
+      ],
+      currentScan: 'Organization Name',
       orgNameLazy: '',
       trackingLazy: '',
       UPCLazy: '',
@@ -191,13 +239,13 @@ export default {
       this.message2 = ''
       this.message3 = ''
     },
-    changeFocusToTrackingLazy () {
-      this.clearAlert()
-      this.$refs.trackingLazy.focus()
-    },
-    changeFocusToUPCLazy () {
-      this.$refs.UPCLazyRef.focus()
-    },
+    // changeFocusToTrackingLazy () {
+    //   this.clearAlert()
+    //   this.$refs.trackingLazy.focus()
+    // },
+    // changeFocusToUPCLazy () {
+    //   this.$refs.UPCLazyRef.focus()
+    // },
     async checkTrackingLazy () {
       this.currentTab = 1
       await this.checkTrackingExisted(this.trackingLazy)
@@ -224,11 +272,11 @@ export default {
         }
       }
     },
-    handleUPCLazy (event) {
+    handleUPCLazy (upc) {
+      console.log('call handleUPCLazy')
       let found = false
-      this.UPCLazy = event.target.value
       for (let i = 0; i < this.receiveItems.length; i++) {
-        if (this.UPCLazy === this.receiveItems[i].UPC) {
+        if (upc === this.receiveItems[i].UPC) {
           // this.$set( receiveItems, i, {'qn' : (receiveItems[i].qn + 1)} )
           this.receiveItems[i].qn++
           found = true
@@ -236,10 +284,36 @@ export default {
         }
       }
       if (!found) {
-        this.receiveItems.push({ UPC: this.UPCLazy, qn: 1, prdNm: '', price: 0 })
+        this.receiveItems.push({ UPC: upc, qn: 1, prdNm: '', price: 0 })
       }
       this.UPCLazy = ''
-      this.forceUpdate()
+    },
+    onBarcodeScanned (barcode) {
+      console.log('in onBarcodeScanned')
+      if ((document.activeElement.id === 'orgNameLazy') ||
+          (document.activeElement.id === 'trackingLazy') ||
+          (document.activeElement.id === 'UPCLazy')) {
+        console.log('Do nothing in Manual mode.')
+      } else {
+        if (this.currentScan === 'Organization Name') {
+          this.orgNameLazy = barcode
+          this.currentScan = 'Tracking No'
+        } else if (this.currentScan === 'Tracking No') {
+          this.trackingLazy = barcode
+          this.currentScan = 'UPC'
+        } else if (this.currentScan === 'UPC') {
+          this.handleUPCLazy(barcode)
+        }
+      }
+    },
+    setValueOrgLZ () {
+      this.orgNameLazy = document.getElementById('orgNameLazy').value
+    },
+    setValueTrLZ () {
+      this.trackingLazy = document.getElementById('trackingLazy').value
+    },
+    addUPCLazy () {
+      this.handleUPCLazy(document.getElementById('UPCLazy').value)
     },
     submitLazy () {
       console.log('Org Name:' + this.orgNameLazy)
@@ -251,7 +325,7 @@ export default {
       this.orgNameLazy = ''
       this.trackingLazy = ''
       this.UPCLazy = ''
-      this.qtyLazy = ''
+      this.currentScan = 'Organization Name'
       this.receiveItems = []
     },
     setupMedia () {
@@ -384,24 +458,34 @@ export default {
       }
     },
     changeCamera1 (cameraSelected) {
-      // stop first
-      this.stopCamera1()
-      // get the index of selected camera
-      this.camera1Selected = this.cameraLabels.indexOf(cameraSelected)
-      // start it on Camera1
-      this.startCamera1()
+      if (!this.cam1NotFound) {
+        // stop first
+        this.stopCamera1()
+        // get the index of selected camera
+        this.camera1Selected = this.cameraLabels.indexOf(cameraSelected)
+        // start it on Camera1
+        this.startCamera1()
+      }
     },
     changeCamera2 (cameraSelected) {
-      // stop first
-      this.stopCamera2()
-      // get the index of selected camera
-      this.camera2Selected = this.cameraLabels.indexOf(cameraSelected)
-      // start it on Camera1
-      this.startCamera2()
+      if (!this.cam2NotFound) {
+        // stop first
+        this.stopCamera2()
+        // get the index of selected camera
+        this.camera2Selected = this.cameraLabels.indexOf(cameraSelected)
+        // start it on Camera1
+        this.startCamera2()
+      }
     }
   },
   mounted () {
     this.setupMedia()
+  },
+  created () {
+    this.$barcodeScanner.init(this.onBarcodeScanned)
+  },
+  destroyed () {
+    this.$barcodeScanner.destroy()
   }
 }
 </script>
