@@ -18,17 +18,17 @@
                 outline>
                   {{message1}}
                 </v-alert>
-                <h2>Please Scan {{currentScan}}</h2>
+                <h3>Please Scan</h3>
+                <h2 style="color:red;">{{currentScanLazy}}</h2>
                 <br>
                 <h3 align='left'>OrgName: {{orgNameLazy}}</h3>
                 <h3 align='left'>Tracking: {{trackingLazy}}</h3>
-                <br>
                 <v-layout>
                   <v-data-table
                   :headers="lazyHeaders"
-                  :items="receiveItems"
+                  :items="receiveItemsLazy"
                   class="elevation-1">
-                    <template v-for = "it in receiveItems" slot="items" slot-scope="props">
+                    <template v-for = "it in receiveItemsLazy" slot="items" slot-scope="props">
                       <td
                         :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
@@ -55,27 +55,29 @@
               <v-layout>
                 <v-text-field
                   label="Organization Name"
-                  ref="orgNameLazy"
-                  id="orgNameLazy"
+                  ref="orgNameMan"
+                  id="orgNameMan"
+                  clearable
                   ></v-text-field>
-                <v-btn @click.prevent=setValueOrgLZ>Change</v-btn>
+                <v-btn @click.prevent=setValueOrgMan>Change</v-btn>
               </v-layout>
               <v-layout row>
                 <v-text-field
                   label="Tracking Number"
-                  ref='trackingLazy'
-                  id='trackingLazy'
+                  ref='trackingMan'
+                  id='trackingMan'
+                  clearable
                   ></v-text-field>
-                <v-btn @click.prevent=setValueTrLZ>Change</v-btn>
+                <v-btn @click.prevent=setValueTrMan>Change</v-btn>
               </v-layout>
               <v-layout row>
                 <v-text-field
                   label="UPC"
-                  ref='UPCLazy'
-                  id='UPCLazy'
-                  >
-                </v-text-field>
-                <v-btn @click.prevent = 'addUPCLazy'>Add</v-btn>
+                  ref='UPCMan'
+                  id='UPCMan'
+                  clearable
+                  ></v-text-field>
+                <v-btn @click.prevent = 'addUPCLazyMan'>Add</v-btn>
               </v-layout>
             </v-card>
           </v-flex>
@@ -99,7 +101,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" autofocus flat @click.native="closeDialog">Confirm</v-btn>
+                <v-btn color="blue darken-1" autofocus flat @click.native="confirmDialog">Confirm</v-btn>
                 <v-btn color="blue darken-1" flat @click.native="cancelDialog">Cancel</v-btn>
               </v-card-actions>
             </v-card>
@@ -183,6 +185,7 @@ export default {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
       },
+      // Data for Lazy mode
       lazyHeaders: [
         {
           text: 'UPC',
@@ -191,12 +194,15 @@ export default {
         },
         { text: 'Quantity', value: 'qn' }
       ],
-      currentScan: 'Organization Name',
+      currentScanLazy: 'Organization Name',
+      // currentScanLazy: 'Organization Name' ; 'Tracking No'; 'UPC'
       orgNameLazy: '',
       trackingLazy: '',
       UPCLazy: '',
       qtyLazy: '',
-      receiveItems: [],
+      receiveItemsLazy: [],
+      // Data for number mode
+      // Data for batch mode
       existedTracking: [],
       trackingExisted: false,
       existedOrgNm: '',
@@ -239,18 +245,22 @@ export default {
       this.message2 = ''
       this.message3 = ''
     },
-    // changeFocusToTrackingLazy () {
-    //   this.clearAlert()
-    //   this.$refs.trackingLazy.focus()
-    // },
-    // changeFocusToUPCLazy () {
-    //   this.$refs.UPCLazyRef.focus()
-    // },
-    async checkTrackingLazy () {
-      this.currentTab = 1
-      await this.checkTrackingExisted(this.trackingLazy)
-      this.changeFocusToUPCLazy()
+    clearLazy () {
+      this.orgNameLazy = ''
+      this.trackingLazy = ''
+      this.UPCLazy = ''
+      this.currentScanLazy = 'Organization Name'
+      this.receiveItemsLazy = []
     },
+    cleanup () {
+      this.clearAlert()
+      this.clearLazy()
+    },
+    // async checkTrackingLazy () {
+    //   this.currentTab = 0
+    //   await this.checkTrackingExisted(this.trackingLazy)
+    //   this.changeFocusToUPCLazy()
+    // },
     async checkTrackingExisted (tracking) {
       try {
         this.existedTracking = await Inventory.checkTrackingExisted(tracking)
@@ -272,61 +282,134 @@ export default {
         }
       }
     },
-    handleUPCLazy (upc) {
+    handleUPC (receiveItems, upc, qn) {
       console.log('call handleUPCLazy')
+      if (upc === 'WMS-RECEIVING-SUBMIT') {
+        this.submit()
+        return
+      }
       let found = false
-      for (let i = 0; i < this.receiveItems.length; i++) {
-        if (upc === this.receiveItems[i].UPC) {
-          // this.$set( receiveItems, i, {'qn' : (receiveItems[i].qn + 1)} )
-          this.receiveItems[i].qn++
+      for (let i = 0; i < receiveItems.length; i++) {
+        if (upc === receiveItems[i].UPC) {
+          receiveItems[i].qn = receiveItems[i].qn + qn
           found = true
           break
         }
       }
       if (!found) {
-        this.receiveItems.push({ UPC: upc, qn: 1, prdNm: '', price: 0 })
+        receiveItems.push({ UPC: upc, qn: qn, prdNm: '', price: 0 })
       }
-      this.UPCLazy = ''
     },
-    onBarcodeScanned (barcode) {
+    async onBarcodeScanned (barcode) {
       console.log('in onBarcodeScanned')
-      if ((document.activeElement.id === 'orgNameLazy') ||
-          (document.activeElement.id === 'trackingLazy') ||
-          (document.activeElement.id === 'UPCLazy')) {
+      if ((document.activeElement.id === 'orgNameMan') ||
+          (document.activeElement.id === 'trackingMan') ||
+          (document.activeElement.id === 'UPCMan')) {
         console.log('Do nothing in Manual mode.')
       } else {
-        if (this.currentScan === 'Organization Name') {
-          this.orgNameLazy = barcode
-          this.currentScan = 'Tracking No'
-        } else if (this.currentScan === 'Tracking No') {
-          this.trackingLazy = barcode
-          this.currentScan = 'UPC'
-        } else if (this.currentScan === 'UPC') {
-          this.handleUPCLazy(barcode)
+        if (this.currentTab === 0) {
+          if (this.currentScanLazy === 'Organization Name') {
+            this.orgNameLazy = barcode
+            this.currentScanLazy = 'Tracking No'
+          } else if (this.currentScanLazy === 'Tracking No') {
+            await this.checkTrackingExisted(barcode)
+            this.trackingLazy = barcode
+            this.currentScanLazy = 'UPC'
+          } else if (this.currentScanLazy === 'UPC') {
+            this.handleUPC(this.receiveItemsLazy, barcode, 1)
+          }
+        } else if (this.currentTab === 1) {
+        // to do ...
+        } else if (this.currentTab === 2) {
+        // to do ...
         }
       }
     },
-    setValueOrgLZ () {
-      this.orgNameLazy = document.getElementById('orgNameLazy').value
+    setValueOrgMan () {
+      if (this.currentTab === 0) {
+        // Lazy Mode
+        this.orgNameLazy = document.getElementById('orgNameMan').value
+        this.currentScanLazy = 'Tracking No'
+      } else if (this.currentTab === 1) {
+      // to do ...
+      } else if (this.currentTab === 2) {
+      // to do ...
+      }
     },
-    setValueTrLZ () {
-      this.trackingLazy = document.getElementById('trackingLazy').value
+    async setValueTrMan () {
+      if (this.currentTab === 0) {
+        // Lazy Mode
+        await this.checkTrackingExisted(document.getElementById('trackingMan').value)
+        this.trackingLazy = document.getElementById('trackingMan').value
+        this.currentScanLazy = 'UPC'
+      } else if (this.currentTab === 1) {
+      // to do ...
+      } else if (this.currentTab === 2) {
+      // to do ...
+      }
     },
-    addUPCLazy () {
-      this.handleUPCLazy(document.getElementById('UPCLazy').value)
+    addUPCMan () {
+      if (this.currentTab === 0) {
+        // Lazy Mode
+        this.handleUPC(this.receiveItemsLazy, document.getElementById('UPCMan').value, 1)
+      } else if (this.currentTab === 1) {
+      // to do ...
+      } else if (this.currentTab === 2) {
+      // to do ...
+      }
     },
-    submitLazy () {
-      console.log('Org Name:' + this.orgNameLazy)
-      console.log('tracking :' + this.trackingLazy)
-      console.log('Received Items: ' + this.receiveItems[0].UPC + this.receiveItems[0].qn)
-      // to do... call the database
-    },
-    clearLazy () {
-      this.orgNameLazy = ''
-      this.trackingLazy = ''
-      this.UPCLazy = ''
-      this.currentScan = 'Organization Name'
-      this.receiveItems = []
+    async submit () {
+      try {
+        let trNo = ''
+        let orgNm = ''
+        let receiveItems = []
+        // find which tab to submit
+        if (this.currentTab === 0) {
+          trNo = this.trackingLazy
+          orgNm = this.orgNameLazy
+          receiveItems = this.receiveItemsLazy
+        } else if (this.currentTab === 1) {
+        // to do ...
+        } else if (this.currentTab === 2) {
+        // to do ...
+        }
+        // UPC is required!
+        if (receiveItems.length === 0) {
+          this.message1 = 'UPC is needed! Not a valid receive.'
+          this.alertType1 = 'error'
+          this.showAlert1 = true
+          return
+        }
+        // Send data to server
+        await Inventory.post({
+          // tracking No
+          'trNo': trNo,
+          // OrgName
+          'orgNm': orgNm,
+          'note': '',
+          // receiveItems:
+          'rcIts': receiveItems,
+          'usrID': this.$store.state.email
+        })
+        this.message1 = 'Successfully Added a new Package'
+        this.alertType1 = 'success'
+        this.showAlert1 = true
+        this.clearLazy()
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.message1 = 'Network Error: Fail to connet to server'
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.message1 = error.response.data.error
+        }
+        this.alertType1 = 'error'
+        this.showAlert1 = true
+      }
     },
     setupMedia () {
       let constraints = { audio: false, video: true }
@@ -347,12 +430,11 @@ export default {
       }
       this.testMediaAccess(constraints)
     },
-    closeDialog () {
-      if (this.currentTab === 1) {
+    confirmDialog () {
+      if (this.currentTab === 0) {
         this.orgNameLazy = this.existedOrgNm
         this.trackingExisted = false
-        this.changeFocusToUPCLazy()
-      } else if (this.currentTab === 2) {
+      } else if (this.currentTab === 1) {
         // to do ...
       } else {
         // to do ...
@@ -360,9 +442,10 @@ export default {
       this.existedOrgNm = ''
     },
     cancelDialog () {
-      if (this.currentTab === 1) {
+      if (this.currentTab === 0) {
         this.trackingLazy = ''
-      } else if (this.currentTab === 2) {
+        this.currentScanLazy = 'Tracking No'
+      } else if (this.currentTab === 1) {
         // to do ...
       } else {
         // to do ...
