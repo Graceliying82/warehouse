@@ -27,6 +27,7 @@
                   <v-data-table
                   :headers="lazyHeaders"
                   :items="receiveItemsLazy"
+                  :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
                     <template v-for = "it in receiveItemsLazy" slot="items" slot-scope="props">
                       <td
@@ -191,13 +192,14 @@ export default {
           text: 'UPC',
           align: 'left',
           value: 'UPC',
-          sortable: true
+          sortable: false
         },
         { text: 'Quantity',
           align: 'left',
-          sortable: false, 
+          sortable: false,
           value: 'qn' }
       ],
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       currentScanLazy: 'Organization Name',
       // currentScanLazy: 'Organization Name' ; 'Tracking No'; 'UPC'
       orgNameLazy: '',

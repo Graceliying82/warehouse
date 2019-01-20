@@ -160,6 +160,14 @@ module.exports = {
           },
           { upsert: true }
         );
+        await invReceivecollection.findOneAndUpdate(
+          {
+            _id: o_id
+          }, //query
+          {
+            $set: {"mdfTm": mdfTm, "mdfStmp": mdfStmp,"orgNm": req.body.orgNm}
+          }
+        )
 
       }
 

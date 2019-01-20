@@ -369,17 +369,6 @@ export default {
     },
     async saveDialog1 () {
       try {
-        // Object.assign(this.items[this.editedIndex], this.editedItem)
-        // await Product.updateProduct({
-        //   '_id': this.items[this.editedIndex]._id,
-        //   'UPC': this.items[this.editedIndex].UPC,
-        //   'trNo': this.items[this.editedIndex].trackingNo,
-        //   'orgNm': this.items[this.editedIndex].orgName,
-        //   'qn': this.items[this.editedIndex].qn,
-        //   'note': this.items[this.editedIndex].note,
-        //   'prdNm': this.items[this.editedIndex].productName,
-        //   'price': this.items[this.editedIndex].price * 100
-        // })
         await Product.updateProduct({
           '_id': this.editedItem._id,
           'UPC': this.editedItem.UPC,
