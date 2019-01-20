@@ -4,6 +4,12 @@
       <v-layout column lg6>
         <v-layout>
           <v-flex lg6>
+            <v-alert
+              v-show = showAlert1
+              :type = alertType1
+              outline>
+              {{message1}}
+            </v-alert>
             <v-tabs
               color = "cyan"
               dark
@@ -11,16 +17,13 @@
               <v-tab ripple>
                 Lazy
               </v-tab>
+              <v-tab ripple>
+                Number
+              </v-tab>
+              <!-- tab for Lazy mode -->
               <v-tab-item>
-                <v-alert
-                v-show = showAlert1
-                :type = alertType1
-                outline>
-                  {{message1}}
-                </v-alert>
                 <h3>Please Scan</h3>
                 <h2 style="color:red;">{{currentScanLazy}}</h2>
-                <br>
                 <h3 align='left'>OrgName: {{orgNameLazy}}</h3>
                 <h3 align='left'>Tracking: {{trackingLazy}}</h3>
                 <v-layout>
@@ -41,12 +44,37 @@
                     </template>
                   </v-data-table>
                 </v-layout>
-                <br>
-                <br>
-              <v-btn dark @click.prevent="submitLazy()">Submit</v-btn>
-              <v-btn dark @click.prevent="clearLazy()">Reset</v-btn>
+              </v-tab-item>
+              <!-- tab for Number mode -->
+              <v-tab-item>
+                <h3>Please Scan</h3>
+                <h2 style="color:red;">{{currentScanLazy}}</h2>
+                <h3 align='left'>OrgName: {{orgNameLazy}}</h3>
+                <h3 align='left'>Tracking: {{trackingLazy}}</h3>
+                <v-layout>
+                  <v-data-table
+                  :headers="lazyHeaders"
+                  :items="receiveItemsLazy"
+                  :rows-per-page-items="rowsPerPageItems"
+                  class="elevation-1">
+                    <template v-for = "it in receiveItemsLazy" slot="items" slot-scope="props">
+                      <td
+                        :key="it.UPC + '-UPC'"
+                        class="text-xs-left">{{ props.item.UPC }}</td>
+                      <td
+                        :key="it.qn + '-qn'"
+                        class="text-xs-left">
+                        {{ props.item.qn }}
+                      </td>
+                    </template>
+                  </v-data-table>
+                </v-layout>
               </v-tab-item>
             </v-tabs>
+            <v-btn dark @click.prevent="submit()">Submit</v-btn>
+            <v-btn dark @click.prevent="clear()">Reset</v-btn>
+            <br>
+            <br>
             <v-card >
               <v-card-title primary-title >
                 <div>
@@ -208,6 +236,25 @@ export default {
       qtyLazy: '',
       receiveItemsLazy: [],
       // Data for number mode
+      numberHeaders: [
+        {
+          text: 'UPC',
+          align: 'left',
+          value: 'UPC',
+          sortable: false
+        },
+        { text: 'Quantity',
+          align: 'left',
+          sortable: false,
+          value: 'qn' }
+      ],
+      currentScanNumber: 'Organization Name',
+      // currentScanLazy: 'Organization Name' ; 'Tracking No'; 'UPC'; 'Quantity'
+      orgNameNumber: '',
+      trackingNumber: '',
+      UPCNumber: '',
+      qtyNumber: '',
+      receiveItemsNumber: [],
       // Data for batch mode
       existedTracking: [],
       trackingExisted: false,
@@ -258,7 +305,7 @@ export default {
       this.currentScanLazy = 'Organization Name'
       this.receiveItemsLazy = []
     },
-    cleanup () {
+    clear () {
       this.clearAlert()
       this.clearLazy()
     },
@@ -325,7 +372,24 @@ export default {
             this.handleUPC(this.receiveItemsLazy, barcode, 1)
           }
         } else if (this.currentTab === 1) {
-        // to do ...
+          if (this.currentScanNumber === 'Organization Name') {
+            this.orgNameNumber = barcode
+            this.currentScanNumber = 'Tracking No'
+          } else if (this.currentNumber === 'Tracking No') {
+            await this.checkTrackingExisted(barcode)
+            this.trackingNumber = barcode
+            this.currentScanNumber = 'UPC'
+          } else if (this.currentScanNumber === 'UPC') {
+            if (barcode === 'WMS-RECEIVING-SUBMIT') {
+              this.submit()
+              return
+            }
+            this.UPCNumber = barcode
+            this.currentScanNumber = 'Quantity'
+          } else if (this.currentScanNumber === 'Quantity') {
+            this.handleUPC(this.receiveItemsNumber, barcode, this.qtyNumber)
+            this.currentScanNumber = 'UPC'
+          }
         } else if (this.currentTab === 2) {
         // to do ...
         }
@@ -372,10 +436,20 @@ export default {
         // find which tab to submit
         if (this.currentTab === 0) {
           trNo = this.trackingLazy
-          orgNm = this.orgNameLazy
+          if (this.orgNameLazy === '') {
+            orgNm = 'WMS'
+          } else {
+            orgNm = this.orgNameLazy
+          }
           receiveItems = this.receiveItemsLazy
         } else if (this.currentTab === 1) {
-        // to do ...
+          trNo = this.trackingNumber
+          if (this.orgNameLazy === '') {
+            orgNm = 'WMS'
+          } else {
+            orgNm = this.orgNameNumber
+          }
+          receiveItems = this.receiveItemsNumber
         } else if (this.currentTab === 2) {
         // to do ...
         }

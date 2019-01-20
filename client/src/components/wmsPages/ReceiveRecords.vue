@@ -140,7 +140,7 @@
                     <v-textarea
                       label="Note"
                       v-model="editedItem.note"
-                      counter =  50>
+                      counter =  500>
                     </v-textarea>
                   </v-flex>
                   </v-layout>
