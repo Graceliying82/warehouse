@@ -77,7 +77,7 @@
                   id='UPCMan'
                   clearable
                   ></v-text-field>
-                <v-btn @click.prevent = 'addUPCLazyMan'>Add</v-btn>
+                <v-btn @click.prevent = 'addUPCMan'>Add</v-btn>
               </v-layout>
             </v-card>
           </v-flex>
@@ -190,9 +190,13 @@ export default {
         {
           text: 'UPC',
           align: 'left',
-          value: 'UPC'
+          value: 'UPC',
+          sortable: true
         },
-        { text: 'Quantity', value: 'qn' }
+        { text: 'Quantity',
+          align: 'left',
+          sortable: false, 
+          value: 'qn' }
       ],
       currentScanLazy: 'Organization Name',
       // currentScanLazy: 'Organization Name' ; 'Tracking No'; 'UPC'
