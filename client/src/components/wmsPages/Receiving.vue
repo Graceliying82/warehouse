@@ -654,7 +654,7 @@ export default {
         this.trackingNumber = this.existedTracking.data[0].trNo
         this.currentScanNumber = 'UPC'
       } else {
-        this.orgNameNumber = this.existedOrgNm
+        this.orgNameBatch = this.existedOrgNm
         this.trackingBatch = this.existedTracking.data[0].trNo
         this.updateReceiveItemsBatch()
         this.submit()
