@@ -3,7 +3,7 @@
     <v-layout row>
       <v-layout column>
         <v-layout>
-          <v-flex lg12>
+          <v-flex lg8>
             <v-alert
               v-show = showAlert1
               :type = alertType1
