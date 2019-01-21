@@ -1,9 +1,9 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-layout row>
-      <v-layout column lg6>
+      <v-layout column>
         <v-layout>
-          <v-flex lg6>
+          <v-flex lg12>
             <v-alert
               v-show = showAlert1
               :type = alertType1
@@ -13,6 +13,7 @@
             <v-tabs
               color = "cyan"
               dark
+              v-model="currentTab"
               slider-color = "cyan darken-4">
               <v-tab ripple>
                 Lazy
@@ -20,8 +21,11 @@
               <v-tab ripple>
                 Number
               </v-tab>
+              <v-tab ripple>
+                Batch
+              </v-tab>
               <!-- tab for Lazy mode -->
-              <v-tab-item>
+              <v-tab-item id='lazyTab'>
                 <h3>Please Scan</h3>
                 <h2 style="color:red;">{{currentScanLazy}}</h2>
                 <h3 align='left'>OrgName: {{orgNameLazy}}</h3>
@@ -44,20 +48,23 @@
                     </template>
                   </v-data-table>
                 </v-layout>
+                <v-btn dark @click.prevent="submit()">Submit</v-btn>
+                <v-btn dark @click.prevent="clear()">Reset</v-btn>
               </v-tab-item>
               <!-- tab for Number mode -->
-              <v-tab-item>
+              <v-tab-item id='numberTab'>
                 <h3>Please Scan</h3>
-                <h2 style="color:red;">{{currentScanLazy}}</h2>
-                <h3 align='left'>OrgName: {{orgNameLazy}}</h3>
-                <h3 align='left'>Tracking: {{trackingLazy}}</h3>
+                <h2 style="color:red;">{{currentScanNumber}}</h2>
+                <h3 align='left'>OrgName: {{orgNameNumber}}</h3>
+                <h3 align='left'>Tracking: {{trackingNumber}}</h3>
+                <h3 align='left'>UPC: {{UPCNumber}}</h3>
                 <v-layout>
                   <v-data-table
-                  :headers="lazyHeaders"
-                  :items="receiveItemsLazy"
+                  :headers="numberHeaders"
+                  :items="receiveItemsNumber"
                   :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
-                    <template v-for = "it in receiveItemsLazy" slot="items" slot-scope="props">
+                    <template v-for = "it in receiveItemsNumber" slot="items" slot-scope="props">
                       <td
                         :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
@@ -69,12 +76,52 @@
                     </template>
                   </v-data-table>
                 </v-layout>
+                <v-btn dark @click.prevent="submit()">Submit</v-btn>
+                <v-btn dark @click.prevent="clear()">Reset</v-btn>
+              </v-tab-item>
+               <!-- tab for Batch mode -->
+               <v-tab-item id='numberTab'>
+                <h3>Please Scan</h3>
+                <h2 style="color:red;">{{currentScanBatch}}</h2>
+                <h3 align='left'>OrgName: {{orgNameBatch}}</h3>
+                <h3 align='left'>UPC: {{UPCBatch}}</h3>
+                <h3 align='left'>Quantity: {{qtyBatch}}</h3>
+                <h3 align='left'>Tracking: {{trackingBatch}}</h3>
+                <v-layout>
+                  <v-data-table
+                  :headers="batchHeaders"
+                  :items="receiveItemsBatch"
+                  :rows-per-page-items="rowsPerPageItems"
+                  class="elevation-1">
+                    <template v-for = "it in receiveItemsBatch" slot="items" slot-scope="props">
+                      <td
+                        :key="it.trNo + '-trNo'"
+                        class="text-xs-left">{{ props.item.trNo }}</td>
+                      <td
+                      :key="it.orgNm + '-orgNm'"
+                      class="text-xs-left">{{ props.item.orgNm }}</td>
+                      <td
+                        :key="it.UPC + '-UPC'"
+                        class="text-xs-left">{{ props.item.UPC }}</td>
+                      <td
+                        :key="it.qn + '-qn'"
+                        class="text-xs-left">
+                        {{ props.item.qn }}
+                      </td>
+                    </template>
+                  </v-data-table>
+                </v-layout>
+                <v-btn dark @click.prevent="clear()">Reset</v-btn>
               </v-tab-item>
             </v-tabs>
-            <v-btn dark @click.prevent="submit()">Submit</v-btn>
-            <v-btn dark @click.prevent="clear()">Reset</v-btn>
             <br>
             <br>
+            <v-alert
+              v-show = showAlert2
+              :type = alertType2
+              outline>
+              {{message2}}
+            </v-alert>
             <v-card >
               <v-card-title primary-title >
                 <div>
@@ -117,7 +164,7 @@
               <v-card-text>
                 <v-container grid-list-md>
                   <v-layout column>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs12 sm6 md6>
                     <h1 style="color:red;">Warning: Tracking Existed! </h1>
                     <h3></h3>
                     <h3>Organization Name: {{existedOrgNm}}</h3>
@@ -256,6 +303,37 @@ export default {
       qtyNumber: '',
       receiveItemsNumber: [],
       // Data for batch mode
+      batchHeaders: [
+        {
+          text: 'Tracking',
+          align: 'left',
+          value: 'trNo',
+          sortable: false
+        },
+        {
+          text: 'OrgName',
+          align: 'left',
+          value: 'orgNm',
+          sortable: false
+        },
+        {
+          text: 'UPC',
+          align: 'left',
+          value: 'UPC',
+          sortable: false
+        },
+        { text: 'Quantity',
+          align: 'left',
+          sortable: false,
+          value: 'qn' }
+      ],
+      currentScanBatch: 'Organization Name',
+      // currentScanLazy: 'Organization Name' ; 'Tracking No'; 'UPC'; 'Quantity'
+      orgNameBatch: '',
+      trackingBatch: '',
+      UPCBatch: '',
+      qtyBatch: '',
+      receiveItemsBatch: [],
       existedTracking: [],
       trackingExisted: false,
       existedOrgNm: '',
@@ -264,11 +342,8 @@ export default {
       showAlert1: false,
       alertType2: 'success',
       showAlert2: false,
-      alertType3: 'success',
-      showAlert3: false,
       message1: '',
       message2: '',
-      message3: '',
       // camera related codes
       source1: null,
       source2: null,
@@ -293,10 +368,8 @@ export default {
     clearAlert () {
       this.showAlert1 = false
       this.showAlert2 = false
-      this.showAlert3 = false
       this.message1 = ''
       this.message2 = ''
-      this.message3 = ''
     },
     clearLazy () {
       this.orgNameLazy = ''
@@ -305,38 +378,68 @@ export default {
       this.currentScanLazy = 'Organization Name'
       this.receiveItemsLazy = []
     },
+    clearNumber () {
+      this.orgNameNumber = ''
+      this.trackingNumber = ''
+      this.UPCNumber = ''
+      this.currentScanNumber = 'Organization Name'
+      this.receiveItemsNumber = []
+    },
+    clearBatch () {
+      this.orgNameBatch = ''
+      this.trackingBatch = ''
+      this.UPCBatch = ''
+      this.qtyBatch = ''
+      this.currentScanBatch = 'Organization Name'
+    },
     clear () {
       this.clearAlert()
       this.clearLazy()
+      this.clearNumber()
+      this.clearBatch()
+      this.receiveItemsBatch = []
     },
-    // async checkTrackingLazy () {
-    //   this.currentTab = 0
-    //   await this.checkTrackingExisted(this.trackingLazy)
-    //   this.changeFocusToUPCLazy()
-    // },
     async checkTrackingExisted (tracking) {
       try {
         this.existedTracking = await Inventory.checkTrackingExisted(tracking)
         if (this.existedTracking.data[0] !== undefined) {
           this.trackingExisted = true
           this.existedOrgNm = this.existedTracking.data[0].orgNm
+        } else {
+          // Not a existed UPC
+          if (this.currentTab === 0) {
+            this.currentScanLazy = 'UPC'
+          } else if (this.currentTab === 0) {
+            this.currentScanLazy = 'UPC'
+          } else if (this.currentTab === 2) {
+            this.updateReceiveItemsBatch()
+            this.submit()
+          }
         }
       } catch (error) {
         if (!error.response) {
           // network error
-          this.message3 = 'Network Error: Fail to connet to server'
+          this.message1 = 'Network Error: Fail to connet to server'
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message3 = error.response.data.error
+          this.message1 = error.response.data.error
         }
+        this.alertType1 = 'error'
+        this.showAlert1 = true
       }
     },
+    updateReceiveItemsBatch () {
+      this.receiveItemsBatch.push({
+        trNo: this.trackingBatch,
+        orgNm: this.orgNameBatch,
+        UPC: this.UPCBatch,
+        qn: this.qtyBatch})
+    },
     handleUPC (receiveItems, upc, qn) {
-      console.log('call handleUPCLazy')
       if (upc === 'WMS-RECEIVING-SUBMIT') {
         this.submit()
         return
@@ -354,7 +457,6 @@ export default {
       }
     },
     async onBarcodeScanned (barcode) {
-      console.log('in onBarcodeScanned')
       if ((document.activeElement.id === 'orgNameMan') ||
           (document.activeElement.id === 'trackingMan') ||
           (document.activeElement.id === 'UPCMan')) {
@@ -365,9 +467,8 @@ export default {
             this.orgNameLazy = barcode
             this.currentScanLazy = 'Tracking No'
           } else if (this.currentScanLazy === 'Tracking No') {
-            await this.checkTrackingExisted(barcode)
             this.trackingLazy = barcode
-            this.currentScanLazy = 'UPC'
+            await this.checkTrackingExisted(barcode)
           } else if (this.currentScanLazy === 'UPC') {
             this.handleUPC(this.receiveItemsLazy, barcode, 1)
           }
@@ -375,10 +476,9 @@ export default {
           if (this.currentScanNumber === 'Organization Name') {
             this.orgNameNumber = barcode
             this.currentScanNumber = 'Tracking No'
-          } else if (this.currentNumber === 'Tracking No') {
-            await this.checkTrackingExisted(barcode)
+          } else if (this.currentScanNumber === 'Tracking No') {
             this.trackingNumber = barcode
-            this.currentScanNumber = 'UPC'
+            await this.checkTrackingExisted(barcode)
           } else if (this.currentScanNumber === 'UPC') {
             if (barcode === 'WMS-RECEIVING-SUBMIT') {
               this.submit()
@@ -387,11 +487,23 @@ export default {
             this.UPCNumber = barcode
             this.currentScanNumber = 'Quantity'
           } else if (this.currentScanNumber === 'Quantity') {
-            this.handleUPC(this.receiveItemsNumber, barcode, this.qtyNumber)
+            this.handleUPC(this.receiveItemsNumber, this.UPCNumber, parseInt(barcode))
             this.currentScanNumber = 'UPC'
           }
         } else if (this.currentTab === 2) {
-        // to do ...
+          if (this.currentScanBatch === 'Organization Name') {
+            this.orgNameBatch = barcode
+            this.currentScanBatch = 'UPC'
+          } else if (this.currentScanBatch === 'UPC') {
+            this.UPCBatch = barcode
+            this.currentScanBatch = 'Quantity'
+          } else if (this.currentScanBatch === 'Quantity') {
+            this.qtyBatch = barcode
+            this.currentScanBatch = 'Tracking No'
+          } else if (this.currentScanBatch === 'Tracking No') {
+            this.trackingBatch = barcode
+            this.checkTrackingExisted(barcode)
+          }
         }
       }
     },
@@ -401,9 +513,13 @@ export default {
         this.orgNameLazy = document.getElementById('orgNameMan').value
         this.currentScanLazy = 'Tracking No'
       } else if (this.currentTab === 1) {
-      // to do ...
+        // Number Mode
+        this.orgNameNumber = document.getElementById('orgNameMan').value
+        this.currentScanNumber = 'Tracking No'
       } else if (this.currentTab === 2) {
-      // to do ...
+        this.message2 = 'Manual Input not supported in Batch Mode'
+        this.alertType2 = 'error'
+        this.showAlert2 = true
       }
     },
     async setValueTrMan () {
@@ -413,9 +529,14 @@ export default {
         this.trackingLazy = document.getElementById('trackingMan').value
         this.currentScanLazy = 'UPC'
       } else if (this.currentTab === 1) {
-      // to do ...
+        // Number Mode
+        await this.checkTrackingExisted(document.getElementById('trackingMan').value)
+        this.trackingNumber = document.getElementById('trackingMan').value
+        this.currentScanNumber = 'UPC'
       } else if (this.currentTab === 2) {
-      // to do ...
+        this.message2 = 'Manual Input not supported in Batch Mode'
+        this.alertType2 = 'error'
+        this.showAlert2 = true
       }
     },
     addUPCMan () {
@@ -423,9 +544,12 @@ export default {
         // Lazy Mode
         this.handleUPC(this.receiveItemsLazy, document.getElementById('UPCMan').value, 1)
       } else if (this.currentTab === 1) {
-      // to do ...
+        // Number Mode
+        this.handleUPC(this.receiveItemsNumber, document.getElementById('UPCMan').value, 1)
       } else if (this.currentTab === 2) {
-      // to do ...
+        this.message2 = 'Manual Input not supported in Batch Mode'
+        this.alertType2 = 'error'
+        this.showAlert2 = true
       }
     },
     async submit () {
@@ -436,22 +560,16 @@ export default {
         // find which tab to submit
         if (this.currentTab === 0) {
           trNo = this.trackingLazy
-          if (this.orgNameLazy === '') {
-            orgNm = 'WMS'
-          } else {
-            orgNm = this.orgNameLazy
-          }
+          orgNm = this.orgNameLazy
           receiveItems = this.receiveItemsLazy
         } else if (this.currentTab === 1) {
           trNo = this.trackingNumber
-          if (this.orgNameLazy === '') {
-            orgNm = 'WMS'
-          } else {
-            orgNm = this.orgNameNumber
-          }
+          orgNm = this.orgNameNumber
           receiveItems = this.receiveItemsNumber
         } else if (this.currentTab === 2) {
-        // to do ...
+          trNo = this.trackingBatch
+          orgNm = this.orgNameBatch
+          receiveItems = [{UPC: this.UPCBatch, qn: parseInt(this.qtyBatch), prdNm: '', price: 0}]
         }
         // UPC is required!
         if (receiveItems.length === 0) {
@@ -459,6 +577,15 @@ export default {
           this.alertType1 = 'error'
           this.showAlert1 = true
           return
+        }
+        if (trNo === '') {
+          this.message1 = 'Tracking No is needed! Not a valid receive.'
+          this.alertType1 = 'error'
+          this.showAlert1 = true
+          return
+        }
+        if (orgNm === '') {
+          orgNm = 'WMS'
         }
         // Send data to server
         await Inventory.post({
@@ -474,7 +601,14 @@ export default {
         this.message1 = 'Successfully Added a new Package'
         this.alertType1 = 'success'
         this.showAlert1 = true
-        this.clearLazy()
+        if (this.currentTab === 0) {
+          this.clearLazy()
+        } else if (this.currentTab === 1) {
+          this.clearNumber()
+        } else if (this.currentTab === 2) {
+          this.trackingBatch = ''
+          this.currentScanBatch = 'Tracking No'
+        }
       } catch (error) {
         if (!error.response) {
           // network error
@@ -513,12 +647,19 @@ export default {
     confirmDialog () {
       if (this.currentTab === 0) {
         this.orgNameLazy = this.existedOrgNm
-        this.trackingExisted = false
+        this.trackingLazy = this.existedTracking.data[0].trNo
+        this.currentScanLazy = 'UPC'
       } else if (this.currentTab === 1) {
-        // to do ...
+        this.orgNameNumber = this.existedOrgNm
+        this.trackingNumber = this.existedTracking.data[0].trNo
+        this.currentScanNumber = 'UPC'
       } else {
-        // to do ...
+        this.orgNameNumber = this.existedOrgNm
+        this.trackingBatch = this.existedTracking.data[0].trNo
+        this.updateReceiveItemsBatch()
+        this.submit()
       }
+      this.trackingExisted = false
       this.existedOrgNm = ''
     },
     cancelDialog () {
@@ -526,9 +667,11 @@ export default {
         this.trackingLazy = ''
         this.currentScanLazy = 'Tracking No'
       } else if (this.currentTab === 1) {
-        // to do ...
+        this.trackingNumber = ''
+        this.currentScanNumber = 'Tracking No'
       } else {
-        // to do ...
+        this.trackingBatch = ''
+        this.currentScanBatch = 'Tracking No'
       }
       this.trackingExisted = false
     },
