@@ -409,8 +409,8 @@ export default {
           // Not a existed UPC
           if (this.currentTab === 0) {
             this.currentScanLazy = 'UPC'
-          } else if (this.currentTab === 0) {
-            this.currentScanLazy = 'UPC'
+          } else if (this.currentTab === 1) {
+            this.currentScanNumber = 'UPC'
           } else if (this.currentTab === 2) {
             this.updateReceiveItemsBatch()
             this.submit()
