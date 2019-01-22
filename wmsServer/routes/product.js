@@ -136,7 +136,7 @@ module.exports = {
           //Delete some items
           //invLocation.qty(wms) < origQuantity - req.body.qn  error: Not enough items.
           if ((invLocation.qty + qnDelt) < 0) {
-            const error = new Error('Products has been moved out of WMS');
+            const error = new Error('Products has been moved out of WMS! Move back before delete.');
             error.status = 400;
             return next(error);
           } else {
@@ -298,7 +298,7 @@ module.exports = {
         }
       }
       if (qtyFromInvRec > locInv.qty) {
-        const error = new Error('Products has been moved out of WMS!');
+        const error = new Error('Products has been moved out of WMS! Move back before delete.');
         error.status = 400;
         return next(error);
       }

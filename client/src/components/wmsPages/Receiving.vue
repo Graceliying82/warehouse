@@ -391,13 +391,13 @@ export default {
       this.UPCBatch = ''
       this.qtyBatch = ''
       this.currentScanBatch = 'Organization Name'
+      this.receiveItemsBatch = []
     },
     clear () {
       this.clearAlert()
       this.clearLazy()
       this.clearNumber()
       this.clearBatch()
-      this.receiveItemsBatch = []
     },
     async checkTrackingExisted (tracking) {
       try {
@@ -625,26 +625,7 @@ export default {
         this.showAlert1 = true
       }
     },
-    setupMedia () {
-      let constraints = { audio: false, video: true }
-      if (navigator.mediaDevices === undefined) {
-        console.log('navigator.mediaDevices undefined')
-        navigator.mediaDevices = {}
-      }
-      if (navigator.mediaDevices.getUserMedia === undefined) {
-        navigator.mediaDevices.getUserMedia = function (constraints) {
-          let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia
-          if (!getUserMedia) {
-            return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
-          }
-          return new Promise(function (resolve, reject) {
-            getUserMedia.call(navigator, constraints, resolve, reject)
-          })
-        }
-      }
-      this.testMediaAccess(constraints)
-    },
-    confirmDialog () {
+        confirmDialog () {
       if (this.currentTab === 0) {
         this.orgNameLazy = this.existedOrgNm
         this.trackingLazy = this.existedTracking.data[0].trNo
@@ -674,6 +655,25 @@ export default {
         this.currentScanBatch = 'Tracking No'
       }
       this.trackingExisted = false
+    },
+    setupMedia () {
+      let constraints = { audio: false, video: true }
+      if (navigator.mediaDevices === undefined) {
+        console.log('navigator.mediaDevices undefined')
+        navigator.mediaDevices = {}
+      }
+      if (navigator.mediaDevices.getUserMedia === undefined) {
+        navigator.mediaDevices.getUserMedia = function (constraints) {
+          let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+          if (!getUserMedia) {
+            return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
+          }
+          return new Promise(function (resolve, reject) {
+            getUserMedia.call(navigator, constraints, resolve, reject)
+          })
+        }
+      }
+      this.testMediaAccess(constraints)
     },
     loadCameras () {
       navigator.mediaDevices
