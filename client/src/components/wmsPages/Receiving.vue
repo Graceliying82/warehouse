@@ -625,7 +625,7 @@ export default {
         this.showAlert1 = true
       }
     },
-        confirmDialog () {
+    confirmDialog () {
       if (this.currentTab === 0) {
         this.orgNameLazy = this.existedOrgNm
         this.trackingLazy = this.existedTracking.data[0].trNo

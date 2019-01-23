@@ -16,7 +16,7 @@
             <v-flex class="text-xs-center" mt-5>
               <v-btn color="cyan darken-2"
                 dark
-                v-on:click="submit">Submit</v-btn>
+                v-on:click.prevent="submit">Submit</v-btn>
             </v-flex>
             <v-flex class="text-xs-center" mt-5>
               <v-btn color="cyan darken-2"
@@ -70,41 +70,28 @@ export default {
   },
   methods: {
     handleCodes () {
-      // Have to get rid of the last ';' in codes
-      this.codes = this.codes.substring(0, this.codes.length - 1)
-      this.barcodes = this.codes.split(';', 10)
-      let atrbName = ''
-      for (let i = 0; i < this.barcodes.length; i++) {
-        atrbName = '#barcode' + i
-        // eslint-disable-next-line
-        JsBarcode(atrbName, this.barcodes[i])
+      if (this.codes.length !== 0) {
+        // Have to get rid of the last ';' in codes
+        this.codes = this.codes.substring(0, this.codes.length - 1)
+        this.barcodes = this.codes.split(';', 10)
+        let atrbName = ''
+        for (let i = 0; i < this.barcodes.length; i++) {
+          atrbName = '#barcode' + i
+          // eslint-disable-next-line
+          JsBarcode(atrbName, this.barcodes[i])
+        }
+        this.codes = ''
       }
-      console.log(this.barcodes)
-      // this.$nextTick(() => {
-      //   for (let i = 0; i < this.barcodes.length; i++) {
-      //     console.log(this.barcodes[i].id + '  ' + this.barcodes[i].code)
-      //     JsBarcode(this.barcodes[i].id, this.barcodes[i].code)
-      //   }
-      // })
-      // this.$nextTick(() => $nextTick(() => {
-      //   let atrbName = ''
-      //   for (let i = 0; i < this.barcodes.length; i++) {
-      //     atrbName = '#barcode' + i
-      //     console.log(atrbName)
-      //     JsBarcode(atrbName, this.barcodes[i])
-      //   }
-      // })
-      this.codes = ''
     },
     addCodes () {
       this.codes = this.codes + ';'
     },
     submit () {
+      this.clearCanvas()
       this.handleCodes()
       this.codes = ''
     },
-    clear () {
-      this.codes = ''
+    clearCanvas () {
       let canvas = ''
       let ctx = ''
       let atrbName = ''
@@ -117,6 +104,10 @@ export default {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.restore()
       }
+    },
+    clear () {
+      this.clearCanvas()
+      this.codes = ''
     }
   }
 }

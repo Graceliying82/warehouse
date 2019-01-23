@@ -85,7 +85,7 @@
               <template slot="items" slot-scope="props">
                 <td class="text-xs-left">{{ props.item.locID }}</td>
                 <td class="text-xs-left">{{ props.item.dspt }}</td>
-                <td class="justify-center layout px-0">
+                <td class="text-xs-left layout px-0">
                   <v-btn icon class="mx-0" @click="editItem(props.item)">
                     <v-icon color="teal">edit</v-icon>
                   </v-btn>
@@ -131,8 +131,13 @@ export default {
           align: 'left',
           value: 'locID'
         },
-        { text: 'Description', value: 'dspt' },
-        { text: 'Actions', value: '_id', sortable: false }
+        { text: 'Description',
+          align: 'left',
+          value: 'dspt' },
+        { text: 'Actions',
+          align: 'left',
+          value: '_id',
+          sortable: false }
       ],
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }

@@ -3,6 +3,7 @@
     <v-layout justify-center>
       <h1>Move in Products</h1>
     </v-layout>
+    <!-- Move In items list -->
     <v-layout justify-center>
       <v-flex ma-5 xs8>
         <v-alert
@@ -11,40 +12,44 @@
           outline>
             {{message1}}
           </v-alert>
-        <v-card>
-          <panel title="Scan Items">
-            <v-text-field
-            v-model="miLoc1"
-            v-bind:autofocus= "true"
-            label="Move in Location"
-            v-on:keydown.enter="changeFocusToUPC1()"
-            ></v-text-field>
-            <v-layout v-for = "(miItem, i) in miItems1" :key = "i">
-              <v-flex >
-                <v-text-field
-                  label="UPC"
-                  ref="UPC1"
-                  v-model="miItem.UPC"
-                  v-on:keydown.enter="handleUPCInput1(i)"
-                  required
-                  ></v-text-field>
-              </v-flex>
-              <v-flex offset-lg2>
-                <v-text-field
-                  label = "Quantity"
-                  ref="qty1"
-                  :rules="[rules.qnRule1, rules.qnRule2]"
-                  v-model.number="miItem.qty"
-                  v-on:keydown.enter="addNewMoveItem1(i)"
-                  type="number"
-                  ></v-text-field>
-              </v-flex>
-            </v-layout >
-            <v-btn dark class="cyan darken-2" @click.prevent="submit1()">Submit</v-btn>
-          </panel>
-        </v-card>
+        <v-flex>
+          <v-card>
+            <v-card-title class="title font-weight-light cyan lighten-1">
+            <span style='margin-right:1.25em; display:inline-block;'>Please scan :</span>
+            <span style="color:red;font-weight:bold">{{currentScan}}</span>
+            </v-card-title>
+            <v-card-text>
+              <h3 align='left'>Move In location: {{miLoc1}}</h3>
+              <h3 align='left'>UPC: {{UPC1}}</h3>
+              <br>
+              <v-layout>
+                  <v-flex>
+                  <v-data-table
+                  :headers="miItems1Headers"
+                  :items="miItems1"
+                  :rows-per-page-items="rowsPerPageItems"
+                  class="elevation-1">
+                    <template v-for = "it in miItems1" slot="items" slot-scope="props">
+                      <td
+                        :key="it.UPC + '-UPC'"
+                        class="text-xs-left">{{ props.item.UPC }}</td>
+                      <td
+                        :key="it.qty + '-qty'"
+                        class="text-xs-left">
+                        {{ props.item.qty }}
+                      </td>
+                    </template>
+                  </v-data-table>
+                  </v-flex>
+                </v-layout>
+                <v-btn dark @click.prevent="submit1">Submit</v-btn>
+                <v-btn dark @click.prevent="reset">Reset</v-btn>
+            </v-card-text>
+          </v-card>
+        </v-flex>
       </v-flex>
     </v-layout>
+     <!-- End of Move In items list -->
   </div>
 </template>
 
@@ -58,51 +63,81 @@ export default {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
       },
+      currentScan: 'Move in Location',
+      // 'Move in Location', 'UPC'
       miLoc1: '',
       UPC1: '',
-      qty1: null,
       alertType1: 'success',
       showAlert1: false,
       message1: '',
-      miItems1: [
-        { UPC: '', qty: 0 }
-      ],
+      miItems1Headers: [{
+        text: 'UPC',
+        align: 'left',
+        value: 'UPC',
+        sortable: false
+      },
+      { text: 'Quantity',
+        align: 'left',
+        sortable: false,
+        value: 'qty'
+      }],
+      miItems1: [],
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
   },
   methods: {
-    changeFocusToUPC1 () {
-      this.message1 = ''
+    clearAlert () {
       this.showAlert1 = false
-      this.checkLocationExisted(this.miLoc1)
-      this.$refs.UPC1[0].focus()
+      this.message1 = ''
     },
-    changeFocusToQty1 () {
-      this.$refs.qty1.focus()
+    setAlert (type, message) {
+      this.message1 = message
+      this.alertType1 = type
+      this.showAlert1 = true
     },
-    handleUPCInput1 (i) {
-      if (this.miItems1[i].UPC === 'WMS-RECEIVING-SUBMIT') {
+    clearMoveItems () {
+      this.currentScan = 'Move in Location'
+      this.miLoc1 = ''
+      this.UPC1 = ''
+      this.miItems1 = []
+    },
+    reset () {
+      this.clearAlert()
+      this.clearMoveItems()
+    },
+    handleUPCInput (input) {
+      if (input === 'WMS-RECEIVING-SUBMIT') {
         this.submit1()
       } else {
         let idx = -1
-        for (let j = 0; j < this.miItems1.length; j++) {
-          if ((this.miItems1[j].UPC === this.miItems1[i].UPC) && (i !== j)) {
-            idx = j
+        for (let i = 0; i < this.miItems1.length; i++) {
+          if ((this.miItems1[i].UPC === input)) {
+            idx = i
+            break
           }
         }
-        if (idx === -1) {
-          this.miItems1[i].qty = 1
-          if (i === (this.miItems1.length - 1)) {
-            // Add a line only if reach to the buttom of the lines
-            this.miItems1.push({ UPC: '', qty: 0 })
-          }
-          this.$nextTick(() => {
-            this.$refs.UPC1[i + 1].focus()
-          })
-        } else {
+        if (idx !== -1) {
+          // qty ++
           this.miItems1[idx].qty++
-          this.miItems1[i].UPC = ''
+        } else {
+          this.miItems1.push({UPC: input, qty: 1})
+          console.log(this.miItems1)
         }
+      }
+    },
+    onBarcodeScanned (barcode) {
+      this.clearAlert()
+      if (this.currentScan === 'Move in Location') {
+        this.checkLocationExisted(barcode).then((existed) => {
+          if (existed) {
+            this.miLoc1 = barcode
+            this.currentScan = 'UPC'
+          } else {
+            this.setAlert('error', 'Location: ' + barcode + ' Not Existed! Create one before using!')
+          }
+        })
+      } else if (this.currentScan === 'UPC') {
+        this.handleUPCInput(barcode)
       }
     },
     addNewMoveItem1 (i) {
@@ -116,76 +151,63 @@ export default {
     },
     async checkLocationExisted (locID) {
       try {
+        console.log('Here')
         let locIDExisted = await Location.checkLocationExisted(locID)
         if (locIDExisted.data.length === 0) {
           // Location doesn't existed!
-          this.alertType1 = 'error'
-          this.message1 = 'Location Not Existed! Create one before using!'
-          this.showAlert1 = true
+          return false
+        } else {
+          // Location found. Switch to UPC input
+          return true
         }
       } catch (error) {
         if (!error.response) {
           // network error
-          this.message1 = 'Network Error: Fail to connet to server'
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+          this.setAlert('error', 'Network Error: Fail to connet to server')
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message1 = error.response.data.error
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+          this.setAlert('error', error.response.data.error)
         }
       }
     },
     async submit1 () {
       try {
-        // reduce empty data
-        for (let i = 0; i < this.miItems1.length; i++) {
-          if ((this.miItems1[i].UPC === '') || (this.miItems1[i].UPC === 'WMS-RECEIVING-SUBMIT')) {
-            this.miItems1.splice(i, 1)
-          }
-        }
-        if ((this.miItems1.length === 0) || (this.miLoc1 === '')) {
-          this.miItems1 = [{ UPC: '', qty: 0 }]
-          this.message1 = 'Move in Location and UPC required.'
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+        if (this.miItems1.length === 0) {
+          this.setAlert('error', 'UPC is required!')
           return
         }
-        console.log(this.miItems1)
         await ProductInv.moveInBatch({
           'move': this.miItems1,
           'locFrom': 'WMS',
           'locTo': this.miLoc1,
           'note': ''
         })
-        this.alertType1 = 'success'
-        this.message1 = 'Move in successfully!'
-        this.showAlert1 = true
-        this.miLoc1 = ''
-        this.miItems1 = [{ UPC: '', qty: 0 }]
+        this.setAlert('success', 'Move in successfully!')
+        this.clearMoveItems()
       } catch (error) {
         if (!error.response) {
           // network error
-          this.message1 = 'Network Error: Fail to connet to server'
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+          this.setAlert('error', 'Network Error: Fail to connet to server')
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.data.error)
-          this.message1 = error.response.data.error
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+          this.setAlert('error', error.response.data.error)
         }
       }
     }
+  },
+  created () {
+    this.$barcodeScanner.init(this.onBarcodeScanned)
+  },
+  destroyed () {
+    this.$barcodeScanner.destroy()
   }
 }
 </script>
