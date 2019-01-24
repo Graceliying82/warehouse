@@ -172,7 +172,7 @@ export default {
       this.dialog = false
     },
     save () {
-      this.miItems1[this.editedIndex].qty = this.editedItem.qty
+      this.miItems1[this.editedIndex].qty = parseInt(this.editedItem.qty)
       this.dialog = false
     },
     handleUPCInput (input) {
@@ -208,15 +208,6 @@ export default {
       } else if (this.currentScan === 'UPC') {
         this.handleUPCInput(barcode)
       }
-    },
-    addNewMoveItem1 (i) {
-      if (i === (this.miItems1.length - 1)) {
-        // Add a line only if reach to the buttom of the lines
-        this.miItems1.push({ UPC: '', qty: 0 })
-      }
-      this.$nextTick(() => {
-        this.$refs.UPC1[i + 1].focus()
-      })
     },
     async checkLocationExisted (locID) {
       try {
