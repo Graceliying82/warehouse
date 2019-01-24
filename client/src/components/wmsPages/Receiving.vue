@@ -43,7 +43,13 @@
                       <td
                         :key="it.qn + '-qn'"
                         class="text-xs-left">
+                        <v-btn icon class="mx-0" @click="props.item.qn += 1">
+                          <v-icon color="teal">add_circle</v-icon>
+                        </v-btn>
                         {{ props.item.qn }}
+                        <v-btn icon class="mx-0" @click="props.item.qn > 0 ? props.item.qn -= 1 : ''">
+                          <v-icon color="teal">remove_circle</v-icon>
+                        </v-btn>
                       </td>
                     </template>
                   </v-data-table>
@@ -71,7 +77,14 @@
                       <td
                         :key="it.qn + '-qn'"
                         class="text-xs-left">
+                        <v-btn icon class="mx-0" @click="props.item.qn += 1">
+                          <v-icon color="teal">add_circle</v-icon>
+                        </v-btn>
                         {{ props.item.qn }}
+                        <v-btn icon class="mx-0"
+                          @click="props.item.qn > 0 ? props.item.qn -= 1 : ''">
+                          <v-icon color="teal">remove_circle</v-icon>
+                        </v-btn>
                       </td>
                     </template>
                   </v-data-table>
