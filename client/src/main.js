@@ -10,15 +10,12 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import store from '@/store/store'
 import Panel from '@/components/globals/Panel'
 import JsonExcel from 'vue-json-excel'
-import VueBarcodeScanner from 'vue-barcode-scanner'
 
 Vue.config.productionTip = false
 
 Vue.use(Vuetify)
 
 Vue.component('panel', Panel)
-
-Vue.use(VueBarcodeScanner)
 
 sync(store, router)
 

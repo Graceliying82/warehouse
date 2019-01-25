@@ -35,13 +35,17 @@
                       <td
                         :key="it.qty + '-qty'"
                         class="text-xs-left">
+                        <v-btn icon class="mx-0" @click="props.item.qty += 1">
+                          <v-icon color="teal">add_circle</v-icon>
+                        </v-btn>
                         {{ props.item.qty }}
+                        <v-btn icon class="mx-0"
+                          @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
+                          <v-icon color="teal">remove_circle</v-icon>
+                        </v-btn>
                       </td>
                       <td :key="it.UPC + '-action'" class="text-xs-left">
                         <!-- Start of Action buttons -->
-                        <v-btn icon class="mx-0" @click.prevent="editItem(props.item)">
-                          <v-icon color="teal">edit</v-icon>
-                        </v-btn>
                         <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
                           <v-icon color="teal">delete_forever</v-icon>
                         </v-btn>
@@ -54,41 +58,28 @@
                 <v-btn dark @click.prevent="submit1">Submit</v-btn>
                 <v-btn dark @click.prevent="reset">Reset</v-btn>
             </v-card-text>
+            <!-- Manual input area-->
+            <v-layout ma-5 >
+              <v-text-field
+                label="Move out Location"
+                id="moLocMan"
+                clearable
+              ></v-text-field>
+              <v-btn @click = "changeMoLocMan">Change</v-btn>
+            </v-layout>
+            <v-layout ma-5 >
+              <v-text-field
+                label="Note"
+                v-model="note"
+                counter =  500
+              ></v-text-field>
+            </v-layout>
+            <!-- End Manual input area-->
           </v-card>
         </v-flex>
       </v-flex>
     </v-layout>
     <!-- End of Move out items list -->
-    <!-- Dialog -->
-    <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">Edit Items</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container grid-list-md>
-            <v-layout column>
-              <v-flex xs12 sm6 md4>
-                <v-text-field
-                  v-model="editedItem.UPC"
-                  readonly
-                  box
-                  label="UPC"></v-text-field>
-              </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field v-model="editedItem.qty" label="Quantity"></v-text-field>
-              </v-flex>
-            </v-layout>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-          <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!-- End of Dialog -->
   </div>
 </template>
 
@@ -99,11 +90,6 @@ export default {
   data () {
     return {
       dialog: false,
-      editedIndex: -1,
-      editedItem: {
-        UPC: '',
-        qty: 0
-      },
       rules: {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
@@ -134,7 +120,16 @@ export default {
         }
       ],
       moItems1: [],
-      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
+      note: '',
+      // handle barcode scanning
+      attributes: {
+        barcode: '',
+        scannerSensitivity: 100,
+        callback: null,
+        hasListener: false,
+        pressedTime: []
+      }
     }
   },
   methods: {
@@ -157,23 +152,9 @@ export default {
       this.clearAlert()
       this.clearMoveItems()
     },
-    editItem (item) {
-      this.editedIndex = this.moItems1.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialog = true
-    },
     deleteItem (item) {
       const index = this.moItems1.indexOf(item)
       confirm('Are you sure you want to delete this item?') && this.moItems1.splice(index, 1)
-    },
-    close () {
-      this.editedItem.UPC = ''
-      this.editedItem.qty = 0
-      this.dialog = false
-    },
-    save () {
-      this.moItems1[this.editedIndex].qty = parseInt(this.editedItem.qty)
-      this.dialog = false
     },
     handleUPCInput (input) {
       if (input === 'WMS-RECEIVING-SUBMIT') {
@@ -208,6 +189,18 @@ export default {
       } else if (this.currentScan === 'UPC') {
         this.handleUPCInput(barcode)
       }
+    },
+    changeMoLocMan () {
+      this.clearAlert()
+      let aLoc = document.getElementById('moLocMan').value
+      this.checkLocationExisted(aLoc).then((existed) => {
+        if (existed) {
+          this.moLoc1 = aLoc
+          this.currentScan = 'UPC'
+        } else {
+          this.setAlert('error', 'Location: ' + aLoc + ' Not Existed! Create one before using!')
+        }
+      })
     },
     async checkLocationExisted (locID) {
       try {
@@ -258,13 +251,84 @@ export default {
           this.setAlert('error', error.response.data.error)
         }
       }
+    },
+    // Handle Barcode Input
+    // check whether the keystrokes are considered as scanner or human
+    checkInputElapsedTime (timestamp) {
+      // push current timestamp to the register
+      this.attributes.pressedTime.push(timestamp)
+      // when register is full (ready to compare)
+      if (this.attributes.pressedTime.length === 2) {
+        // compute elapsed time between 2 keystrokes
+        let timeElapsed = this.attributes.pressedTime[1] - this.attributes.pressedTime[0]
+        // too slow (assume as human)
+        if (timeElapsed >= this.attributes.scannerSensitivity) {
+          // put latest key char into barcode
+          this.attributes.barcode = event.key
+          // remove(shift) first timestamp in register
+          this.attributes.pressedTime.shift()
+          // not fast enough
+          return false
+        } else {
+          // fast enough (assume as scanner)
+          // reset the register
+          this.attributes.pressedTime = []
+        }
+      }
+      // not able to check (register is empty before pushing) or assumed as scanner
+      return true
+    },
+    addListener (type) {
+      if (this.attributes.hasListener) {
+        this.removeListener(type)
+      }
+      window.addEventListener(type, this.onInputScanned)
+      this.attributes.hasListener = true
+    },
+    removeListener (type) {
+      if (this.attributes.hasListener) {
+        window.removeEventListener(type, this.onInputScanned)
+        this.attributes.hasListener = false
+      }
+    },
+    onInputScanned (event) {
+      // ignore other keydown event that is not a TAB, so there are no duplicate keys
+      if (event.type === 'keydown' && event.keyCode !== 9) {
+        return
+      }
+      if (this.checkInputElapsedTime(Date.now())) {
+        if ((event.keyCode === 13 || event.keyCode === 9) && this.attributes.barcode !== '') {
+          // scanner is done and trigger Enter/Tab then clear barcode and play the sound if it's set as true
+          this.attributes.callback(this.attributes.barcode)
+          // clear textbox
+          this.attributes.barcode = ''
+          // clear pressedTime
+          this.attributes.pressedTime = []
+          // prevent TAB navigation for scanner
+          if (event.keyCode === 9) {
+            event.preventDefault()
+          }
+        } else {
+          // scan and validate each charactor
+          this.attributes.barcode += event.key
+        }
+      }
+    },
+    barcodeInit (callback) {
+      this.addListener('keypress')
+      this.addListener('keydown')
+      this.attributes.callback = callback
+    },
+    barcodeDestroy () {
+      this.removeListener('keypress')
+      this.removeListener('keydown')
     }
   },
   created () {
-    this.$barcodeScanner.init(this.onBarcodeScanned)
+    this.barcodeInit(this.onBarcodeScanned)
   },
   destroyed () {
-    this.$barcodeScanner.destroy()
+    this.barcodeDestroy()
   }
 }
 </script>

@@ -377,19 +377,25 @@ note:"this is a inventory change"
 
       for (let aMove of req.body.move) {
         let fromInventoryLocation = await locInvCollection.findOne({ _id: { UPC: aMove.UPC, loc: req.body.locFrom } }, { qty: 1 });
-        let fromQty = fromInventoryLocation.qty;
-        if (!fromQty) {
-          const error = new Error('Not enough items  in WMS! Please check your inventory!');
+        if (fromInventoryLocation === null) {
+          const error = new Error('Not enough items  in ' + req.body.locFrom + '! Please check your inventory!');
           error.status = 400;
           return next(error);
-        } else if (fromQty < aMove.qty) {
-          const error = new Error('Not enough inventory in location. You may need manual adjustment!');
-          error.status = 400;
-          return next(error);
-        } else if (aMove.qty <= 0) {
-          const error = new Error('Quantity not valid!');
-          error.status = 400;
-          return next(error);
+        } else {
+          fromQty = fromInventoryLocation.qty;
+          if (!fromQty) {
+            const error = new Error('Not enough items  in ' + req.body.locFrom + '! Please check your inventory!');
+            error.status = 400;
+            return next(error);
+          } else if (fromQty < aMove.qty) {
+            const error = new Error('Not enough inventory in location. You may need manual adjustment!');
+            error.status = 400;
+            return next(error);
+          } else if (aMove.qty <= 0) {
+            const error = new Error('Quantity not valid!');
+            error.status = 400;
+            return next(error);
+          }
         }
       }
 

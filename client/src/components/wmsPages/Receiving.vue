@@ -47,7 +47,7 @@
                           <v-icon color="teal">add_circle</v-icon>
                         </v-btn>
                         {{ props.item.qn }}
-                        <v-btn icon class="mx-0" @click="props.item.qn > 0 ? props.item.qn -= 1 : ''">
+                        <v-btn icon class="mx-0" @click="props.item.qn > 1 ? props.item.qn -= 1 : ''">
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
                       </td>
@@ -82,7 +82,7 @@
                         </v-btn>
                         {{ props.item.qn }}
                         <v-btn icon class="mx-0"
-                          @click="props.item.qn > 0 ? props.item.qn -= 1 : ''">
+                          @click="props.item.qn > 1 ? props.item.qn -= 1 : ''">
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
                       </td>
@@ -141,7 +141,7 @@
                   <div class="headline" >Manual Input</div>
                 </div>
               </v-card-title>
-              <v-layout>
+              <v-layout mx-3>
                 <v-text-field
                   label="Organization Name"
                   ref="orgNameMan"
@@ -150,7 +150,7 @@
                   ></v-text-field>
                 <v-btn @click.prevent=setValueOrgMan>Change</v-btn>
               </v-layout>
-              <v-layout row>
+              <v-layout mx-3>
                 <v-text-field
                   label="Tracking Number"
                   ref='trackingMan'
@@ -159,7 +159,7 @@
                   ></v-text-field>
                 <v-btn @click.prevent=setValueTrMan>Change</v-btn>
               </v-layout>
-              <v-layout row>
+              <v-layout mx-3>
                 <v-text-field
                   label="UPC"
                   ref='UPCMan'
@@ -374,7 +374,15 @@ export default {
       deviceId1: null,
       deviceId2: null,
       cam1NotFound: true,
-      cam2NotFound: true
+      cam2NotFound: true,
+      // handle barcode scanning
+      attributes: {
+        barcode: '',
+        scannerSensitivity: 100,
+        callback: null,
+        hasListener: false,
+        pressedTime: []
+      }
     }
   },
   methods: {
@@ -795,16 +803,87 @@ export default {
         // start it on Camera1
         this.startCamera2()
       }
+    },
+    // Handle Barcode Input
+    // check whether the keystrokes are considered as scanner or human
+    checkInputElapsedTime (timestamp) {
+      // push current timestamp to the register
+      this.attributes.pressedTime.push(timestamp)
+      // when register is full (ready to compare)
+      if (this.attributes.pressedTime.length === 2) {
+        // compute elapsed time between 2 keystrokes
+        let timeElapsed = this.attributes.pressedTime[1] - this.attributes.pressedTime[0]
+        // too slow (assume as human)
+        if (timeElapsed >= this.attributes.scannerSensitivity) {
+          // put latest key char into barcode
+          this.attributes.barcode = event.key
+          // remove(shift) first timestamp in register
+          this.attributes.pressedTime.shift()
+          // not fast enough
+          return false
+        } else {
+          // fast enough (assume as scanner)
+          // reset the register
+          this.attributes.pressedTime = []
+        }
+      }
+      // not able to check (register is empty before pushing) or assumed as scanner
+      return true
+    },
+    addListener (type) {
+      if (this.attributes.hasListener) {
+        this.removeListener(type)
+      }
+      window.addEventListener(type, this.onInputScanned)
+      this.attributes.hasListener = true
+    },
+    removeListener (type) {
+      if (this.attributes.hasListener) {
+        window.removeEventListener(type, this.onInputScanned)
+        this.attributes.hasListener = false
+      }
+    },
+    onInputScanned (event) {
+      // ignore other keydown event that is not a TAB, so there are no duplicate keys
+      if (event.type === 'keydown' && event.keyCode !== 9) {
+        return
+      }
+      if (this.checkInputElapsedTime(Date.now())) {
+        if ((event.keyCode === 13 || event.keyCode === 9) && this.attributes.barcode !== '') {
+          // scanner is done and trigger Enter/Tab then clear barcode and play the sound if it's set as true
+          this.attributes.callback(this.attributes.barcode)
+          // clear textbox
+          this.attributes.barcode = ''
+          // clear pressedTime
+          this.attributes.pressedTime = []
+          // prevent TAB navigation for scanner
+          if (event.keyCode === 9) {
+            event.preventDefault()
+          }
+        } else {
+          // scan and validate each charactor
+          this.attributes.barcode += event.key
+        }
+      }
+    },
+    barcodeInit (callback) {
+      this.addListener('keypress')
+      this.addListener('keydown')
+      this.attributes.callback = callback
+    },
+    barcodeDestroy () {
+      this.removeListener('keypress')
+      this.removeListener('keydown')
     }
+  },
+  created () {
+    this.barcodeInit(this.onBarcodeScanned)
+  },
+  destroyed () {
+    this.barcodeDestroy()
   },
   mounted () {
     this.setupMedia()
-  },
-  created () {
-    this.$barcodeScanner.init(this.onBarcodeScanned)
-  },
-  destroyed () {
-    this.$barcodeScanner.destroy()
   }
 }
 </script>
