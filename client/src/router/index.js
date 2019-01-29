@@ -4,7 +4,7 @@ import Hello from '@/components/Hello'
 import Login from '@/components/Login'
 import Receiving from '@/components/wmsPages/Receiving'
 import Shipping from '@/components/wmsPages/Shipping'
-import ShippingRecords from '@/components/wmsPages/ShippingRecords'
+import ShipOrderUpload from '@/components/wmsPages/ShipOrderUpload'
 import ShippingPrint from '@/components/wmsPages/ShippingPrint'
 import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
 import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
@@ -46,9 +46,9 @@ export default new Router({
       component: Shipping
     },
     {
-      path: '/shippingRecords',
-      name: 'shippingRecords',
-      component: ShippingRecords
+      path: '/shipOrderUpload',
+      name: 'shipOrderUpload',
+      component: ShipOrderUpload
     },
     {
       path: '/ShippingPrint',

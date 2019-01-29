@@ -96,7 +96,7 @@ export default {
         { divider: true },
         { heading: 'Shipping' },
         { icon: 'local_shipping', text: 'Shipping', name: 'shipping' },
-        { icon: 'assignment', text: 'Shipping Records', name: 'shippingRecords' },
+        { icon: 'assignment', text: 'Ship Order Upload', name: 'shipOrderUpload' },
         { icon: 'print', text: 'ShippingPrint', name: 'shippingPrint' },
         { divider: true },
         { heading: 'Manage Product' },
