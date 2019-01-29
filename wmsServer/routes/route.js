@@ -47,5 +47,7 @@ module.exports = (app) => {
 
   // from shipment
   app.post('/shipment', Shipment.post)
+  app.get('/shipments', Shipment.get)  //startdate, enddate, status - query parameter like inventory get
+  app.get('/shipment/:Id', Shipment.getByShipmentId)
 
 }

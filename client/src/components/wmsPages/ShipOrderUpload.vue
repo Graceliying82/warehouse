@@ -129,7 +129,7 @@
 
 <script>
 import * as csv from 'csvtojson'
-import Shipment from '@/services/shipment'
+import Shipment from '@/services/Shipment'
 export default {
   data () {
     return {
@@ -158,7 +158,7 @@ export default {
         { text: 'TrackingNo', align: 'left', value: 'trNo' },
         { text: 'OrgName', align: 'left', value: 'orgNm' },
         { text: 'Status', align: 'left', value: 'status' },
-        { text: 'Actions', align: 'left', value: 'TrackingNo' },
+        { text: 'Actions', align: 'left', value: 'TrackingNo' }
       ],
       orderForShip: [],
       alertType1: 'success',
