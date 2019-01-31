@@ -8,13 +8,13 @@
               :items="products"
               :rows-per-page-items="rowsPerPageItems"
             >
-            <template v-for = "it in products" slot="items" slot-scope="props">
-              <tr :key= "it.id" @click="showDetail(props.item)">
-                <td :key="it.id + '-UPC'" class="text-xs-left">{{ props.item.UPC }}</td>
-                <td :key="it.id + '-prdNm'" class="text-xs-left">
+            <template slot="items" slot-scope="props">
+              <tr  @click="showDetail(props.item)">
+                <td class="text-xs-left">{{ props.item.UPC }}</td>
+                <td class="text-xs-left">
                   {{ props.item.prdNm }}
                 </td>
-              <td :key="it.id + '-qty'" class="text-xs-left">{{ props.item.qty }}</td>
+                <td class="text-xs-left">{{ props.item.qty }}</td>
               </tr>
             </template>
           </v-data-table>
@@ -123,6 +123,7 @@ export default {
       try {
         this.error1 = ''
         this.products = (await ProductInv.getAllProductInventory()).data
+        // console.log(this.products)
       } catch (error) {
         if (!error.response) {
           // network error

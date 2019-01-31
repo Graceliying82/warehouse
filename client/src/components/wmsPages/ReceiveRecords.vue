@@ -182,40 +182,33 @@
             :rows-per-page-items="rowsPerPageItems"
             class="elevation-1"
           >
-            <template v-for = "it in items" slot="items" slot-scope="props">
-              <td :key="it.id + '-createTime'">{{ props.item.createTime }}</td>
+            <template slot="items" slot-scope="props">
+              <td>{{ props.item.createTime }}</td>
               <td
-                :key="it.id + '-trackingNo'"
                 class="text-xs-left">
                 {{ props.item.trackingNo }}
               </td>
               <td
-                :key="it.id + '-productName'"
                 class="text-xs-left">
                 {{ props.item.productName }}
               </td>
               <td
-                :key="it.id + '-UPC'"
                 class="text-xs-left">
                 {{ props.item.UPC }}
               </td>
               <td
-                :key="it.id + '-orgName'"
                 class="text-xs-left">
                 {{ props.item.orgName }}
               </td>
               <td
-                :key="it.id + '-price'"
                 class="text-xs-left">
                 {{ props.item.price }}
               </td>
               <td
-                :key="it.id + '-qn'"
                 class="text-xs-left">
                 {{ props.item.qn }}
               </td>
               <td
-                :key="it.id + '-action'"
                 class="justify-center layout px-0">
                 <v-btn icon class="mx-0" @click="editItem(props.item)">
                   <v-icon color="teal">edit</v-icon>

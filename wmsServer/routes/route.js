@@ -46,8 +46,8 @@ module.exports = (app) => {
   app.post('/deleteLoc/:locID', Location.deleteLocation)
 
   // from shipment
-  app.post('/shipment', Shipment.post)
+  app.post('/shipments', Shipment.post)
   app.get('/shipments', Shipment.get)  //startdate, enddate, status - query parameter like inventory get
-  app.get('/shipment/:Id', Shipment.getByShipmentId)
+  app.get('/shipments/:Id', Shipment.getByShipmentId)
 
 }

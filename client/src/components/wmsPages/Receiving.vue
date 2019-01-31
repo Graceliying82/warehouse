@@ -36,12 +36,10 @@
                   :items="receiveItemsLazy"
                   :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
-                    <template v-for = "it in receiveItemsLazy" slot="items" slot-scope="props">
+                    <template slot="items" slot-scope="props">
                       <td
-                        :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
-                        :key="it.qn + '-qn'"
                         class="text-xs-left">
                         <v-btn icon class="mx-0" @click="props.item.qn += 1">
                           <v-icon color="teal">add_circle</v-icon>
@@ -70,12 +68,10 @@
                   :items="receiveItemsNumber"
                   :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
-                    <template v-for = "it in receiveItemsNumber" slot="items" slot-scope="props">
+                    <template slot="items" slot-scope="props">
                       <td
-                        :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
-                        :key="it.qn + '-qn'"
                         class="text-xs-left">
                         <v-btn icon class="mx-0" @click="props.item.qn += 1">
                           <v-icon color="teal">add_circle</v-icon>
@@ -106,18 +102,14 @@
                   :items="receiveItemsBatch"
                   :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
-                    <template v-for = "it in receiveItemsBatch" slot="items" slot-scope="props">
+                    <template slot="items" slot-scope="props">
                       <td
-                        :key="it.trNo + '-trNo'"
                         class="text-xs-left">{{ props.item.trNo }}</td>
                       <td
-                      :key="it.orgNm + '-orgNm'"
                       class="text-xs-left">{{ props.item.orgNm }}</td>
                       <td
-                        :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
-                        :key="it.qn + '-qn'"
                         class="text-xs-left">
                         {{ props.item.qn }}
                       </td>
@@ -392,6 +384,16 @@ export default {
       this.message1 = ''
       this.message2 = ''
     },
+    setAlert1 (type, message) {
+      this.message1 = message
+      this.alertType1 = type
+      this.showAlert1 = true
+    },
+    setAlert2 (type, message) {
+      this.message2 = message
+      this.alertType2 = type
+      this.showAlert2 = true
+    },
     clearLazy () {
       this.orgNameLazy = ''
       this.trackingLazy = ''
@@ -478,6 +480,8 @@ export default {
       }
     },
     async onBarcodeScanned (barcode) {
+      // console.log('Here')
+      this.clearAlert()
       if ((document.activeElement.id === 'orgNameMan') ||
           (document.activeElement.id === 'trackingMan') ||
           (document.activeElement.id === 'UPCMan')) {
@@ -508,8 +512,12 @@ export default {
             this.UPCNumber = barcode
             this.currentScanNumber = 'Quantity'
           } else if (this.currentScanNumber === 'Quantity') {
-            this.handleUPC(this.receiveItemsNumber, this.UPCNumber, parseInt(barcode))
-            this.currentScanNumber = 'UPC'
+            if (isNaN(parseInt(barcode)) || (parseInt(barcode) > 9999)) {
+              this.setAlert1('error', 'Not a valid quantity!')
+            } else {
+              this.handleUPC(this.receiveItemsNumber, this.UPCNumber, parseInt(barcode))
+              this.currentScanNumber = 'UPC'
+            }
           }
         } else if (this.currentTab === 2) {
           if (this.currentScanBatch === 'Organization Name') {
@@ -519,8 +527,13 @@ export default {
             this.UPCBatch = barcode
             this.currentScanBatch = 'Quantity'
           } else if (this.currentScanBatch === 'Quantity') {
-            this.qtyBatch = barcode
-            this.currentScanBatch = 'Tracking No'
+            if (isNaN(parseInt(barcode)) || (parseInt(barcode) > 9999)) {
+              this.setAlert1('error', 'Not a valid quantity!')
+            } else {
+              this.qtyBatch = barcode
+              // Handle input Error
+              this.currentScanBatch = 'Tracking No'
+            }
           } else if (this.currentScanBatch === 'Tracking No') {
             this.trackingBatch = barcode
             this.checkTrackingExisted(barcode)

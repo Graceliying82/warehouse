@@ -39,18 +39,23 @@ module.exports = {
   async get(req, res, next) {
     const shipmentCollection = req.db.collection("shipment");
     try {
-      if ((req.query.startDate === undefined) ||
-        (req.query.endDate === undefined) ||
-        (req.query.status === null)) {
-        const error = new Error('startDate, endDate, status have to be passed');
-        error.status = 400;
-        return next(error);
-      };
-      let startDate = new Date(req.query.startDate).getTime();
-      let endDate = new Date(req.query.endDate).getTime();
+      let startDate = '';
+      let endDate = '';
       let status = req.query.status;
       let shipmentResult = null;
-      if (status === "all") {
+      if (status === undefined) {
+        const error = new Error('Status is needed.');
+        error.status = 400;
+        return next(error);
+      } else if (status === "all") {
+        // For status === all, startDate and endDate must specified.
+        if ((req.query.startDate === undefined) || (req.query.endDate === undefined)) {
+          const error = new Error('startDate, endDate is needed');
+          error.status = 400;
+          return next(error);
+        }
+        startDate = new Date(req.query.startDate).getTime();
+        endDate = new Date(req.query.endDate).getTime();
         shipmentResult = await shipmentCollection.find({
           crtStmp: {
             $lte: endDate,
@@ -58,11 +63,9 @@ module.exports = {
           }
         }).toArray();
       } else {
+        // When status !== all, return all data in that status
         shipmentResult = await shipmentCollection.find({
-          crtStmp: {
-            $lte: endDate,
-            $gte: startDate,
-          }, "status": status
+          "status": status
         }).toArray();
       }
       res.send(shipmentResult);
@@ -72,7 +75,6 @@ module.exports = {
       error.message = 'Fail to access database! Try again'
       next(error);
     }
-
   },
   async getByShipmentId(req, res, next) {
     const shipCollection = req.db.collection("shipment");

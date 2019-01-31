@@ -28,12 +28,10 @@
                   :items="moItems1"
                   :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
-                    <template v-for = "it in moItems1" slot="items" slot-scope="props">
+                    <template slot="items" slot-scope="props">
                       <td
-                        :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
-                        :key="it.qty + '-qty'"
                         class="text-xs-left">
                         <v-btn icon class="mx-0" @click="props.item.qty += 1">
                           <v-icon color="teal">add_circle</v-icon>
@@ -44,7 +42,7 @@
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
                       </td>
-                      <td :key="it.UPC + '-action'" class="text-xs-left">
+                      <td class="text-xs-left">
                         <!-- Start of Action buttons -->
                         <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
                           <v-icon color="teal">delete_forever</v-icon>

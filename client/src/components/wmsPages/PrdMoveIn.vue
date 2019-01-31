@@ -28,12 +28,10 @@
                   :items="miItems1"
                   :rows-per-page-items="rowsPerPageItems"
                   class="elevation-1">
-                    <template v-for = "it in miItems1" slot="items" slot-scope="props">
+                    <template slot="items" slot-scope="props">
                       <td
-                        :key="it.UPC + '-UPC'"
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
-                        :key="it.qty + '-qty'"
                         class="text-xs-left">
                         <v-btn icon class="mx-0" @click="props.item.qty += 1">
                           <v-icon color="teal">add_circle</v-icon>
@@ -44,7 +42,7 @@
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
                       </td>
-                      <td :key="it.UPC + '-action'" class="text-xs-left">
+                      <td class="text-xs-left">
                         <!-- Start of Action buttons -->
                         <v-btn icon class="mx-0" @click="deleteItem(props.item)">
                           <v-icon color="teal">delete_forever</v-icon>
@@ -59,7 +57,7 @@
                 <v-btn dark @click.prevent="reset">Reset</v-btn>
             </v-card-text>
             <!-- Manual input area-->
-            <v-layout ma-5 >
+            <v-layout mx-5 >
               <v-text-field
                 label="Move In Location"
                 id="miLocMan"
@@ -67,7 +65,15 @@
               ></v-text-field>
               <v-btn @click = "changeMiLocMan">Change</v-btn>
             </v-layout>
-            <v-layout ma-5 >
+            <v-layout mx-5>
+              <v-text-field
+                label="UPC"
+                id="UPCMan"
+                clearable
+              ></v-text-field>
+              <v-btn @click = "changeUPCMan">Change</v-btn>
+            </v-layout>
+            <v-layout mx-5 >
               <v-text-field
                 label="Note"
                 v-model="note"
@@ -203,6 +209,11 @@ export default {
           this.setAlert('error', 'Location: ' + aLoc + ' Not Existed! Create one before using!')
         }
       })
+    },
+    changeUPCMan () {
+      this.clearAlert()
+      let aUPC = document.getElementById('UPCMan').value
+      this.handleUPCInput(aUPC)
     },
     async checkLocationExisted (locID) {
       try {
