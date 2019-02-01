@@ -143,6 +143,7 @@ export default {
     async handleUPCInput1 () {
       try {
         this.error1 = ''
+        this.UPC1 = this.UPC1.trim()
         this.UPCInvList = (await ProductInv.getByUPC(this.UPC1)).data[0]
         this.locInv = this.UPCInvList.locationInventory
         this.sellerInv = this.UPCInvList.sellerInventory

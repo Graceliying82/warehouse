@@ -3,57 +3,60 @@
     <v-content>
       <v-container fill-height>
         <v-layout column>
-          <v-flex>
-              <v-text-field
-                autofocus
-                label="Scan or Input barcode; No more than 10 codes"
-                ref="codes"
-                v-model="codes"
-                v-on:keydown.enter="addCodes()"
-                required
-                ></v-text-field>
-            </v-flex>
-            <v-flex class="text-xs-center" mt-5>
-              <v-btn color="cyan darken-2"
-                dark
-                v-on:click.prevent="submit">Submit</v-btn>
-            </v-flex>
-            <v-flex class="text-xs-center" mt-5>
-              <v-btn color="cyan darken-2"
-                dark
-                v-on:click="clear">Clear</v-btn>
-            </v-flex>
             <v-flex>
-               <canvas id = "barcode0" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode1" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode2" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode3" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode4" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode5" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode6" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode7" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode8" ></canvas>
-            </v-flex>
-            <v-flex>
-               <canvas id = "barcode9" ></canvas>
-            </v-flex>
-        </v-layout>
+                <v-text-field
+                  autofocus
+                  label="Scan or Input barcode; No more than 10 codes"
+                  ref="codes"
+                  v-model="codes"
+                  v-on:keydown.enter="addCodes()"
+                  required
+                  ></v-text-field>
+              </v-flex>
+              <v-layout justify-center>
+                  <v-btn color="cyan darken-2"
+                    dark
+                    v-on:click.prevent="submit">Submit</v-btn>
+                  <v-btn color="cyan darken-2"
+                    dark
+                    v-on:click="clear">Clear</v-btn>
+              </v-layout>
+            <!-- Barcodes -->
+              <!-- v-btn v-if="ready4Print" @click.prevent ="printContent">Print Barcodes</v-btn -->
+              <!-- div id='printable'-->
+                <v-flex>
+                  <canvas id = "barcode0" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode1" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode2" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode3" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode4" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode5" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode6" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode7" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode8" ></canvas>
+                </v-flex>
+                <v-flex>
+                  <canvas id = "barcode9" ></canvas>
+                </v-flex>
+              <!-- /div -->
+            <!-- End Barcodes -->
+          </v-layout>
       </v-container>
     </v-content>
   </div>
@@ -65,7 +68,8 @@ export default {
     return {
       codes: '',
       barcodes: [],
-      barcode: ''
+      barcode: '',
+      ready4Print: false
     }
   },
   methods: {
@@ -78,7 +82,8 @@ export default {
         for (let i = 0; i < this.barcodes.length; i++) {
           atrbName = '#barcode' + i
           // eslint-disable-next-line
-          JsBarcode(atrbName, this.barcodes[i])
+          let result = JsBarcode(atrbName, this.barcodes[i])
+          console.log(result)
         }
         this.codes = ''
       }
@@ -89,6 +94,7 @@ export default {
     submit () {
       this.clearCanvas()
       this.handleCodes()
+      this.ready4Print = true
       this.codes = ''
     },
     clearCanvas () {
@@ -108,7 +114,22 @@ export default {
     clear () {
       this.clearCanvas()
       this.codes = ''
+      this.ready4Print = false
     }
+    // printContent () {
+    //   // console.log('Here')
+    //   // let restorepage = document.body.innerHTML
+    //   let printcontent = document.getElementById('printable').innerHTML
+    //   let frame = document.createElement('IFRAME')
+    //   frame.width = 0
+    //   frame.height = 0
+    //   document.body.appendChild(frame)
+    //   frame.contentWindow.document.write(printcontent)
+    //   frame.contentWindow.document.close()
+    //   frame.contentWindow.focus()
+    //   frame.contentWindow.print()
+    //   document.body.removeChild(frame)
+    // }
   }
 }
 </script>

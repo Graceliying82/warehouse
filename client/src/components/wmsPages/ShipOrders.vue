@@ -8,7 +8,7 @@
           <panel title="Show Orders for Shipping">
             <!-- Filter Set-->
               <v-layout>
-                <v-flex mx-5 lg3 xs5>
+                <v-flex mr-5 lg3 xs5>
                 <v-select
                   :items ="statusType"
                   v-model="statusTypeFilter"
@@ -67,7 +67,7 @@
               class="elevation-1"
               >
                 <template  slot="items" slot-scope="props">
-                  <tr @click="showDetail(props.item)" >
+                  <tr @click="showDetail4Item(props.item)" >
                     <td
                       class="text-xs-left">{{ props.item.orderID }}</td>
                     <td
@@ -95,20 +95,24 @@
           </v-flex>
           <!-- End Show OrderIDs-->
           <v-flex>
+            <v-btn dark
+              v-if = showDetailPanel
+              @click.prevent="printContent()">Print Detail</v-btn>
             <v-flex >
               <v-text-field
                 label="Tracking No"
                 required
+                v-model="trackingMan"
+                v-on:keydown.enter="showDetailMan"
                 ></v-text-field>
             </v-flex>
             <!-- Show Order Detail-->
+            <div id="printable">
             <v-flex v-if = showDetailPanel>
               <div class="font-weight-bold text-xs-left">Order ID: {{orderID4Detail}} </div>
-              <v-layout wrap>
-              <div class="font-weight-light text-xs-left">Tracking NO: {{tracking4Detail}}</div>
-              <v-spacer></v-spacer>
-              <div class="font-weight-light text-xs-left">Org Name : {{orgNm4Detail}}</div>
-              </v-layout>
+              <div class="font-weight-bold text-xs-left">Tracking NO: {{tracking4Detail}}</div>
+              <div class="font-weight-bold text-xs-left">Org Name : {{orgNm4Detail}}</div>
+              <div class="font-weight-bold text-xs-left">Status : {{status4Detail}}</div>
               <br>
               <v-flex v-for = "(detail, i) in orderDetail" :key = i my-2>
                 <v-card color = 'grey lighten-4'>
@@ -136,6 +140,7 @@
                 </v-card>
               </v-flex>
             </v-flex>
+            </div>
             <!-- End Show Order Detail-->
           </v-flex>
           <!-- Show OrdersItems For Shipping-->
@@ -269,10 +274,12 @@ export default {
       orderID4Detail: '',
       tracking4Detail: '',
       orgNm4Detail: '',
+      status4Detail: '',
+      trackingMan: '',
       orderForShip: [],
       menu: false,
       slider: 1,
-      statusType: ['ready', 'upgrade', 'all'],
+      statusType: ['ready', 'back orders', 'all'],
       statusTypeFilter: 'ready',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
@@ -479,14 +486,35 @@ export default {
         }
       }
     },
-    async showDetail (item) {
+    async showDetail (trackingNo) {
       this.showDetailPanel = true
-      let result = (await Shipment.getByShipmentId(item._id)).data
+      let result = (await Shipment.getByShipmentId(trackingNo)).data
       this.orderDetail = result.rcIts
       this.orderID4Detail = result.orderID
       this.tracking4Detail = result._id
       this.orgNm4Detail = result.orgNm
-      console.log(this.orderDetail)
+      this.status4Detail = result.status
+    },
+    async showDetail4Item (item) {
+      await this.showDetail(item._id)
+      item.status = this.status4Detail
+    },
+    showDetailMan () {
+      this.showDetail(this.trackingMan.trim())
+    },
+    printContent () {
+      // console.log('Here')
+      // let restorepage = document.body.innerHTML
+      let printcontent = document.getElementById('printable').innerHTML
+      let frame = document.createElement('IFRAME')
+      frame.width = 0
+      frame.height = 0
+      document.body.appendChild(frame)
+      frame.contentWindow.document.write(printcontent)
+      frame.contentWindow.document.close()
+      frame.contentWindow.focus()
+      frame.contentWindow.print()
+      document.body.removeChild(frame)
     }
   },
   created () {

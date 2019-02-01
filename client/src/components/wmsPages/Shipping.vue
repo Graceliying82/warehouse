@@ -1,18 +1,239 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-    <v-content>
-      <v-container fill-height>
-        <v-layout justify-center align-center>
-          <v-flex shrink>
-            <h1>Shipping Page Under construction</h1>
-          </v-flex>
-        </v-layout>
-      </v-container>
-    </v-content>
+   <v-layout justify-center>
+     <h1>Package your order</h1>
+   </v-layout>
+   <v-layout justify-center column>
+      <v-flex xs8>
+        <v-alert
+          v-show = showAlert1
+          :type = alertType1
+          outline>
+            {{message1}}
+          </v-alert>
+      </v-flex>
+      <!-- Scan area -->
+      <v-flex mt-5>
+          <v-card>
+            <v-card-title class="title font-weight-light cyan lighten-1">
+            <span style='margin-right:1.25em; display:inline-block;'>Please scan or input :</span>
+            <span style="color:red;font-weight:bold">{{currentScan}}</span>
+            </v-card-title>
+            <v-card-text v-if="showResult">
+              <v-layout>
+                <v-flex mx-5>
+                  <v-text-field
+                    slot="activator"
+                    label='Tracking No'
+                    v-model="trackingNo"
+                    readonly
+                  ></v-text-field>
+                </v-flex >
+                <v-flex mx-5>
+                  <v-text-field
+                    slot="activator"
+                    label="Order ID"
+                    v-model="orderID"
+                    readonly
+                  ></v-text-field>
+                </v-flex>
+                <v-flex mx-5>
+                  <v-text-field
+                    slot="activator"
+                    label="Organization Name"
+                    v-model="orgName"
+                    readonly
+                  ></v-text-field>
+                </v-flex>
+                <v-flex mx-5>
+                  <v-text-field
+                    slot="activator"
+                    label="Status"
+                    v-model="status"
+                    readonly
+                  ></v-text-field>
+                </v-flex>
+              </v-layout>
+            </v-card-text>
+            <!-- Manual input area-->
+            <v-layout mx-5 >
+              <v-text-field
+                label="Tracking No"
+                id="trackingNo"
+                clearable
+              ></v-text-field>
+              <v-btn @click = "changeTrackingMan">Change</v-btn>
+            </v-layout>
+            <!-- End Manual input area-->
+          </v-card>
+        </v-flex>
+   </v-layout>
   </div>
 </template>
 
 <script>
+import Shipment from '@/services/Shipment'
+export default {
+  data () {
+    return {
+      alertType1: 'success',
+      showAlert1: false,
+      message1: '',
+      attributes: {
+        barcode: '',
+        scannerSensitivity: 100,
+        callback: null,
+        hasListener: false,
+        pressedTime: []
+      },
+      currentScan: 'Tracking No',
+      // items to be showed on pages
+      trackingNo: '',
+      orderID: '',
+      orgName: '',
+      status: '',
+      showResult: false,
+      scannedItems: [],
+      orderItems: []
+    }
+  },
+  methods: {
+    clearAlert () {
+      this.showAlert1 = false
+      this.message1 = ''
+    },
+    setAlert (type, message) {
+      this.message1 = message
+      this.alertType1 = type
+      this.showAlert1 = true
+    },
+    async handleTrackingNo (trackingNo) {
+      console.log(trackingNo)
+      // Logic to get order information by tracking No
+      try {
+        let result = (await Shipment.getByShipmentId(trackingNo)).data
+        if (result.length !== 0) {
+          console.log('Tracking found!')
+          this.trackingNo = result._id
+          this.orderID = result.orderID
+          this.orgName = result.orgNm
+          this.orderItems = result.rcIts
+          this.status = result.status
+          this.showResult = true
+          console.log(this.orderItems)
+          if ((this.status === 'ready')) {
+            this.currentScan = 'Location ID'
+          } else if ((this.status === 'upgrade')) {
+            this.setAlert('error', 'Package has item upgrading!')
+          } else if ((this.status === 'shipped')) {
+            this.setAlert('error', 'Package has been shipped! Try other tracking no.')
+          }
+        } else {
+          this.setAlert('error', 'Tracking ' + trackingNo + ' is not existed! Please create before use!')
+        }
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    changeTrackingMan () {
+      this.clearAlert()
+      let aTracking = document.getElementById('trackingNo').value.trim()
+      this.handleTrackingNo(aTracking)
+    },
+    // Logic to handle barcode scan
+    onBarcodeScanned (barcode) {
+      this.clearAlert()
+      if (this.currentScan === 'Tracking No') {
+        this.handleTrackingNo(barcode)
+      }
+    },
+    addListener (type) {
+      if (this.attributes.hasListener) {
+        this.removeListener(type)
+      }
+      window.addEventListener(type, this.onInputScanned)
+      this.attributes.hasListener = true
+    },
+    removeListener (type) {
+      if (this.attributes.hasListener) {
+        window.removeEventListener(type, this.onInputScanned)
+        this.attributes.hasListener = false
+      }
+    },
+    checkInputElapsedTime (timestamp) {
+      // push current timestamp to the register
+      this.attributes.pressedTime.push(timestamp)
+      // when register is full (ready to compare)
+      if (this.attributes.pressedTime.length === 2) {
+        // compute elapsed time between 2 keystrokes
+        let timeElapsed = this.attributes.pressedTime[1] - this.attributes.pressedTime[0]
+        // too slow (assume as human)
+        if (timeElapsed >= this.attributes.scannerSensitivity) {
+          // put latest key char into barcode
+          this.attributes.barcode = event.key
+          // remove(shift) first timestamp in register
+          this.attributes.pressedTime.shift()
+          // not fast enough
+          return false
+        } else {
+          // fast enough (assume as scanner)
+          // reset the register
+          this.attributes.pressedTime = []
+        }
+      }
+      // not able to check (register is empty before pushing) or assumed as scanner
+      return true
+    },
+    onInputScanned (event) {
+      // ignore other keydown event that is not a TAB, so there are no duplicate keys
+      if (event.type === 'keydown' && event.keyCode !== 9) {
+        return
+      }
+      if (this.checkInputElapsedTime(Date.now())) {
+        if ((event.keyCode === 13 || event.keyCode === 9) && this.attributes.barcode !== '') {
+          // scanner is done and trigger Enter/Tab then clear barcode and play the sound if it's set as true
+          this.attributes.callback(this.attributes.barcode)
+          // clear textbox
+          this.attributes.barcode = ''
+          // clear pressedTime
+          this.attributes.pressedTime = []
+          // prevent TAB navigation for scanner
+          if (event.keyCode === 9) {
+            event.preventDefault()
+          }
+        } else {
+          // scan and validate each charactor
+          this.attributes.barcode += event.key
+        }
+      }
+    },
+    barcodeInit (callback) {
+      this.addListener('keypress')
+      this.addListener('keydown')
+      this.attributes.callback = callback
+    },
+    barcodeDestroy () {
+      this.removeListener('keypress')
+      this.removeListener('keydown')
+    }
+  },
+  created () {
+    this.barcodeInit(this.onBarcodeScanned)
+  },
+  destroyed () {
+    this.barcodeDestroy()
+  }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

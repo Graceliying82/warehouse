@@ -542,13 +542,16 @@ export default {
       }
     },
     setValueOrgMan () {
+      let orgValue = ''
       if (this.currentTab === 0) {
         // Lazy Mode
-        this.orgNameLazy = document.getElementById('orgNameMan').value
+        orgValue = document.getElementById('orgNameMan').value
+        this.orgNameLazy = orgValue.trim()
         this.currentScanLazy = 'Tracking No'
       } else if (this.currentTab === 1) {
         // Number Mode
-        this.orgNameNumber = document.getElementById('orgNameMan').value
+        orgValue = document.getElementById('orgNameMan').value
+        this.orgNameNumber = orgValue.trim()
         this.currentScanNumber = 'Tracking No'
       } else if (this.currentTab === 2) {
         this.message2 = 'Manual Input not supported in Batch Mode'
@@ -557,15 +560,18 @@ export default {
       }
     },
     async setValueTrMan () {
+      let trackingValue = ''
       if (this.currentTab === 0) {
         // Lazy Mode
-        await this.checkTrackingExisted(document.getElementById('trackingMan').value)
-        this.trackingLazy = document.getElementById('trackingMan').value
+        trackingValue = document.getElementById('trackingMan').value
+        await this.checkTrackingExisted(trackingValue.trim())
+        this.trackingLazy = trackingValue.trim()
         this.currentScanLazy = 'UPC'
       } else if (this.currentTab === 1) {
         // Number Mode
-        await this.checkTrackingExisted(document.getElementById('trackingMan').value)
-        this.trackingNumber = document.getElementById('trackingMan').value
+        trackingValue = document.getElementById('trackingMan').value
+        await this.checkTrackingExisted(trackingValue.trim())
+        this.trackingNumber = trackingValue.trim()
         this.currentScanNumber = 'UPC'
       } else if (this.currentTab === 2) {
         this.message2 = 'Manual Input not supported in Batch Mode'
@@ -574,12 +580,14 @@ export default {
       }
     },
     addUPCMan () {
+      let UPCValue = ''
       if (this.currentTab === 0) {
         // Lazy Mode
-        this.handleUPC(this.receiveItemsLazy, document.getElementById('UPCMan').value, 1)
+        UPCValue = document.getElementById('UPCMan').value
+        this.handleUPC(this.receiveItemsLazy, UPCValue.trim(), 1)
       } else if (this.currentTab === 1) {
         // Number Mode
-        this.handleUPC(this.receiveItemsNumber, document.getElementById('UPCMan').value, 1)
+        this.handleUPC(this.receiveItemsNumber, UPCValue.trim(), 1)
       } else if (this.currentTab === 2) {
         this.message2 = 'Manual Input not supported in Batch Mode'
         this.alertType2 = 'error'

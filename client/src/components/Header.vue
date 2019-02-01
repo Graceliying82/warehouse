@@ -95,7 +95,7 @@ export default {
         { icon: 'border_color', text: 'Edit Locations', name: 'invtLocEdit' },
         { divider: true },
         { heading: 'Shipping' },
-        { icon: 'local_shipping', text: 'Shipping', name: 'shipping' },
+        { icon: 'local_shipping', text: 'Shipping and Packaging', name: 'shipping' },
         { icon: 'assignment', text: 'Shipping and Orders', name: 'shipOrders' },
         { icon: 'print', text: 'ShippingPrint', name: 'shippingPrint' },
         { divider: true },
