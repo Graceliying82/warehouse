@@ -112,12 +112,12 @@ module.exports = {
                 _id: req.params.Id
               }, //query
               {
-                $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp, status: 'back orders' },
+                $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp, status: 'backOrder' },
               },
               { upsert: true }
             );
-            shipment.status = 'back orders'
-          } else if ((!notEnough) && (shipment.status === 'back orders')) {
+            shipment.status = 'backOrder'
+          } else if ((!notEnough) && (shipment.status === 'backOrder')) {
             await shipCollection.findOneAndUpdate(
               {
                 _id: req.params.Id

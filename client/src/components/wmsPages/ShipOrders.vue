@@ -279,7 +279,7 @@ export default {
       orderForShip: [],
       menu: false,
       slider: 1,
-      statusType: ['ready', 'back orders', 'all'],
+      statusType: ['ready', 'backOrder', 'all'],
       statusTypeFilter: 'ready',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
