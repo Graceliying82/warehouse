@@ -179,7 +179,7 @@ module.exports = {
     try {
       let shipment = req.body;
       let shipmentID = shipment._id;
-      let userID = req.body.usrID;
+      let userID = req.decoded.email;
       let orgNm = shipment.orgNm;
       //validate seller inventory
       for (let anItem of shipment.rcIts){
@@ -234,7 +234,7 @@ module.exports = {
         shipFromDB.shipBy = userID;
         shipFromDB.mdfTm = shipTm;
         shipFromDB.mdfStmp = shipStmp;
-        result = await shipCollection.update({_id:shipmentID}, shipFromDB);
+        result = await shipCollection.replaceOne({_id:shipmentID}, shipFromDB);
       } else {
         const error = new Error('shipment not found, this should never happen');
         error.status = 400;

@@ -94,7 +94,7 @@ module.exports = {
       let invReceive = await invReceivecollection.findOne({trNo:req.body.trNo,orgNm:req.body.orgNm});
       //req.body.rcIts contain all information
       if (invReceive){
-        invReceive.usrID = req.body.usrID;
+        invReceive.usrID = req.decoded.email;
         invReceive.mdfTm = req.body.crtTm;
         invReceive.mdfStmp = req.body.crtStmp;
         const origrcIts = invReceive.rcIts;
@@ -112,7 +112,7 @@ module.exports = {
             invReceive.rcIts.push(req.body.rcIts[i]);
           }
         }
-        result = await invReceivecollection.update({_id:invReceive._id}, invReceive);
+        result = await invReceivecollection.replaceOne({_id:invReceive._id}, invReceive);
       } else {
         result = await invReceivecollection.insertOne(req.body);
       }
