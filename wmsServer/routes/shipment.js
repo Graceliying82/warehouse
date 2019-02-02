@@ -80,6 +80,7 @@ module.exports = {
     const shipCollection = req.db.collection("shipment");
     const locInvCollection = req.db.collection("locationInv");
     const sellerInvCollection = req.db.collection("sellerInv");
+    const prdCollection = req.db.collection("product");
     try {
       let shipment = await shipCollection.findOne({ _id: req.params.Id });
       if (shipment === null) {
@@ -104,6 +105,12 @@ module.exports = {
             } else {
               anItem.warning = false;
               anItem.sellerInv = sellerInvQty.qty;
+            }
+            let prod = await prdCollection.findOne({_id:anItem.UPC},{prdNm:1});
+            if (prod){
+              anItem.prdNm = prod.prdNm;
+            } else {
+              anItem.prdNm = "N/A";
             }
           };
           if ((notEnough) && (shipment.status === 'ready')) {
