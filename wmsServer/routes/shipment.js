@@ -138,5 +138,114 @@ module.exports = {
       error.message = 'Fail to access database! Try again'
       next(error);
     }
+  },
+  /*
+  {
+    "_id" : "1Z81R75W0292816010",  //tracking number
+    "orgNm" : "Apple",
+    "rcIts" : [ 
+        {
+            "UPC" : "884116277361",
+            "loc" : "L1ABC"
+            "qty" : 10
+        },
+         {
+            "UPC" : "884116277361",
+            "loc" : "L1ABC"
+            "qty" : 33
+        },  
+        {
+            "UPC" : "192330666473",
+             "loc" : "L2ABC"
+            "qty" : 9
+        }
+    ]
+  }
+  validate seller inventory for all UPC
+  will not validate location inventory
+  will not validate shipment sku, quantity is right.. it will be done by the UI
+  update shipment status to shipped
+  update modified time, add - shippedby
+  decrease inventory for inventory, sellerInventory, location inventory, if localtion inventory become minus, they need do move... 
+  */  
+  async ship(req, res, next) {
+    const shipCollection = req.db.collection("shipment");
+    const invCollection = req.db.collection("inventory");
+    const locInvCollection = req.db.collection("locationInv");
+    const sellerInvCollection = req.db.collection("sellerInv");
+    let shipTime = new Date()
+    let shipTm = new Date(shipTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
+    let shipStmp = shipTime.getTime() // add a create timestamp
+    try {
+      let shipment = req.body;
+      let shipmentID = shipment._id;
+      let userID = req.body.usrID;
+      let orgNm = shipment.orgNm;
+      //validate seller inventory
+      for (let anItem of shipment.rcIts){
+        let sellerInv = await sellerInvCollection.findOne({ "_id.UPC": anItem.UPC, "_id.org": orgNm }, { qty: 1});
+        if ((!sellerInv) || (sellerInv.qty < anItem.qty )){
+          const error = new Error('Not enough inventory');
+          error.status = 400;
+          return next(error);
+        } 
+      }
+      //update inventory records
+      for (let anItem of shipment.rcIts){
+        let aUPC = anItem.UPC;
+        let aloc = anItem.loc;
+        let aQty = anItem.qty;
+        await invCollection.findOneAndUpdate(
+          {
+            _id: aUPC
+          }, //query
+          {
+            $set: { mdfTm: shipTm, mdfStmp: shipStmp },
+            $inc: { qty: -aQty }
+          },
+          { upsert: true }   //up sert for easy test
+        );
+        await locInvCollection.findOneAndUpdate(
+          {
+            _id: {UPC: aUPC, loc: aloc}
+          }, //query
+          {
+            $inc: { qty: -aQty},
+            $set: { mdfTm: shipTm, mdfStmp: shipStmp }
+          },
+          { upsert: true }   //up sert for easy test
+        );
+        await sellerInvCollection.findOneAndUpdate(
+          {
+            _id: { UPC: aUPC, org: orgNm }
+          }, //query
+          {
+            $inc: { qty: -aQty},
+            $set: { mdfTm: shipTm, mdfStmp: shipStmp }
+          }
+        );
+      }
+      //update shipment
+
+      let shipFromDB = await shipCollection.findOne({_id:shipmentID});
+      //req.body.rcIts contain all information
+      if (shipFromDB){
+        shipFromDB.status = "shipped";
+        shipFromDB.shipBy = userID;
+        shipFromDB.mdfTm = shipTm;
+        shipFromDB.mdfStmp = shipStmp;
+        result = await shipCollection.update({_id:shipmentID}, shipFromDB);
+      } else {
+        const error = new Error('shipment not found, this should never happen');
+        error.status = 400;
+        return next(error);
+      }
+      res.send("Ship success");
+      res.end();
+    } catch (error) {
+      console.log("ship confirmation: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
   }
 }
