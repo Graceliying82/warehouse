@@ -91,7 +91,7 @@ module.exports = {
           let notEnough = false
           let rcIts = shipment.rcIts;
           for (let anItem of rcIts) {
-            let locInv = await locInvCollection.find({"_id.UPC": anItem.UPC}, {"_id.loc": 1, qty: 1}).toArray();
+            let locInv = await locInvCollection.find({"_id.UPC": anItem.UPC,qty: {$gt:0}}, {"_id.loc": 1, qty: 1}).toArray();
             anItem.locInv = locInv;
             let sellerInvQty = await sellerInvCollection.findOne({ "_id.UPC": anItem.UPC, "_id.org": shipment.orgNm }, { qty: 1});
             if (!sellerInvQty) {
