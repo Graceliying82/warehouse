@@ -194,7 +194,12 @@ module.exports = {
         const error = new Error('shipment not found');
         error.status = 400;
         return next(error);
+      } else if (shipFromDB.status === "shipped"){
+        const error = new Error("shipped already, can not ship again");
+        error.status = 400;
+        return next(error);
       }
+      
       for (let anItem of shipFromDB.rcIts){
         let sellerInv = await sellerInvCollection.findOne({ "_id.UPC": anItem.UPC, "_id.org": orgNm }, { qty: 1});
         if ((!sellerInv) || (sellerInv.qty < anItem.qty )){
