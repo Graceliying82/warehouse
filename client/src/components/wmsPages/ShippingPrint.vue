@@ -1,64 +1,57 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-    <v-content>
-      <v-container fill-height>
-        <v-layout column>
-            <v-flex>
-                <v-text-field
-                  autofocus
-                  label="Scan or Input barcode; No more than 10 codes"
-                  ref="codes"
-                  v-model="codes"
-                  v-on:keydown.enter="addCodes()"
-                  required
-                  ></v-text-field>
-              </v-flex>
-              <v-layout justify-center>
-                  <v-btn color="cyan darken-2"
-                    dark
-                    v-on:click.prevent="submit">Submit</v-btn>
-                  <v-btn color="cyan darken-2"
-                    dark
-                    v-on:click="clear">Clear</v-btn>
-              </v-layout>
-            <!-- Barcodes -->
-              <!-- v-btn v-if="ready4Print" @click.prevent ="printContent">Print Barcodes</v-btn -->
-              <!-- div id='printable'-->
-                <v-flex>
-                  <canvas id = "barcode0" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode1" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode2" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode3" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode4" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode5" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode6" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode7" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode8" ></canvas>
-                </v-flex>
-                <v-flex>
-                  <canvas id = "barcode9" ></canvas>
-                </v-flex>
-              <!-- /div -->
-            <!-- End Barcodes -->
-          </v-layout>
-      </v-container>
-    </v-content>
+  <v-layout column>
+      <v-flex>
+          <v-text-field
+            autofocus
+            label="Scan or Input barcode; No more than 10 codes"
+            ref="codes"
+            v-model="codes"
+            v-on:keydown.enter="addCodes()"
+            required
+            ></v-text-field>
+        </v-flex>
+        <v-layout justify-center>
+            <v-btn color="cyan darken-2"
+              dark
+              v-on:click.prevent="submit">Submit</v-btn>
+            <v-btn color="cyan darken-2"
+              dark
+              v-on:click="clear">Clear</v-btn>
+        </v-layout>
+        <!-- Barcodes -->
+          <v-flex>
+            <canvas id = "barcode0" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode1" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode2" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode3" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode4" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode5" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode6" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode7" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode8" ></canvas>
+          </v-flex>
+          <v-flex>
+            <canvas id = "barcode9" ></canvas>
+          </v-flex>
+          <!-- End Barcodes -->
+    </v-layout>
   </div>
 </template>
 
@@ -94,7 +87,6 @@ export default {
     submit () {
       this.clearCanvas()
       this.handleCodes()
-      this.ready4Print = true
       this.codes = ''
     },
     clearCanvas () {

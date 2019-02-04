@@ -126,17 +126,15 @@
                     </v-list-tile-content>
                   </v-flex>
                   </v-card-title>
-                  <v-data-table
-                    :headers="locInvHeader"
-                    :items="detail.locInv"
-                    :rows-per-page-items="rowsPerPageItems"
-                    class="elevation-1"
-                    >
-                    <template slot="items" slot-scope="props">
-                      <td class="text-xs-left">{{ props.item._id.loc }}</td>
-                      <td class="text-xs-left">{{ props.item.qty }}</td>
+                  <v-layout column>
+                    <template v-for="(alocInv,index) in detail.locInv">
+                      <v-layout :key="index">
+                        <v-list-tile-sub-title :key="index+ '-loc'">Location  :  {{ alocInv._id.loc }}</v-list-tile-sub-title>
+                        <v-list-tile-sub-title :key="index+ '-qty'">Quantity  :  {{ alocInv.qty }}</v-list-tile-sub-title>
+                      </v-layout>
                     </template>
-                  </v-data-table>
+                    <br>
+                  </v-layout>
                 </v-card>
               </v-flex>
             </v-flex>

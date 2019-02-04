@@ -10,5 +10,8 @@ export default {
   },
   getByShipmentId (id) {
     return Api().get('/shipments/' + id)
+  },
+  ship (data) {
+    return Api().post('/shipment/ship', data)
   }
 }

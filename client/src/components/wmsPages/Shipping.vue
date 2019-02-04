@@ -1,73 +1,123 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-   <v-layout justify-center>
-     <h1>Package your order</h1>
-   </v-layout>
-   <v-layout justify-center column>
-      <v-flex xs8>
-        <v-alert
-          v-show = showAlert1
-          :type = alertType1
-          outline>
-            {{message1}}
-          </v-alert>
-      </v-flex>
-      <!-- Scan area -->
-      <v-flex mt-5>
-          <v-card>
-            <v-card-title class="title font-weight-light cyan lighten-1">
-            <span style='margin-right:1.25em; display:inline-block;'>Please scan or input :</span>
-            <span style="color:red;font-weight:bold">{{currentScan}}</span>
-            </v-card-title>
-            <v-card-text v-if="showResult">
-              <v-layout>
-                <v-flex mx-5>
-                  <v-text-field
-                    slot="activator"
-                    label='Tracking No'
-                    v-model="trackingNo"
-                    readonly
-                  ></v-text-field>
-                </v-flex >
-                <v-flex mx-5>
-                  <v-text-field
-                    slot="activator"
-                    label="Order ID"
-                    v-model="orderID"
-                    readonly
-                  ></v-text-field>
-                </v-flex>
-                <v-flex mx-5>
-                  <v-text-field
-                    slot="activator"
-                    label="Organization Name"
-                    v-model="orgName"
-                    readonly
-                  ></v-text-field>
-                </v-flex>
-                <v-flex mx-5>
-                  <v-text-field
-                    slot="activator"
-                    label="Status"
-                    v-model="status"
-                    readonly
-                  ></v-text-field>
-                </v-flex>
-              </v-layout>
-            </v-card-text>
-            <!-- Manual input area-->
-            <v-layout mx-5 >
-              <v-text-field
-                label="Tracking No"
-                id="trackingNo"
-                clearable
-              ></v-text-field>
-              <v-btn @click = "changeTrackingMan">Change</v-btn>
-            </v-layout>
-            <!-- End Manual input area-->
-          </v-card>
+    <v-layout justify-center>
+      <h1>Package your order</h1>
+    </v-layout>
+    <v-layout justify-center column>
+        <v-flex xs8>
+          <v-alert
+            v-show = showAlert1
+            :type = alertType1
+            outline>
+              {{message1}}
+            </v-alert>
         </v-flex>
-   </v-layout>
+        <!-- Scan area -->
+          <v-layout justify-center>
+            <v-toolbar-title>Please scan or input : </v-toolbar-title>
+            <v-toolbar-title style="color:red;font-weight:bold">{{currentScan}}</v-toolbar-title>
+          </v-layout>
+          <!-- Manual input area-->
+          <v-layout mx-5 >
+            <v-text-field
+              label="Tracking No"
+              v-model="trackingInput"
+              id="trackingNo"
+              clearable
+            ></v-text-field>
+            <v-btn @click = "changeTrackingMan">Find</v-btn>
+          </v-layout>
+    </v-layout>
+    <!-- End Manual input area-->
+    <v-layout row v-if="showResult" justify-center>
+      <v-flex mx-5>
+        <v-text-field
+          slot="activator"
+          label='Tracking No'
+          v-model="trackingNo"
+          readonly
+        ></v-text-field>
+      </v-flex >
+      <v-flex mx-5>
+        <v-text-field
+          slot="activator"
+          label="Order ID"
+          v-model="orderID"
+          readonly
+        ></v-text-field>
+      </v-flex>
+      <v-flex mx-5>
+        <v-text-field
+          slot="activator"
+          label="Organization Name"
+          v-model="orgName"
+          readonly
+        ></v-text-field>
+      </v-flex>
+      <v-flex mx-5>
+        <v-text-field
+          slot="activator"
+          label="Status"
+          v-model="status"
+          readonly
+        ></v-text-field>
+      </v-flex>
+    </v-layout>
+    <v-layout row v-if="showResult" justify-center mx-5>
+    <!-- Show Order Detail-->
+    <v-flex lg6 mr-5>
+      <v-flex v-for = "(detail, i) in orderItems" :key = i my-2 >
+        <v-card v-bind:class = detail.style :key="'card'+ i" >
+          <v-layout row align-start>
+          <v-flex mt-2 mx-2 lg6 wrap>
+            <v-list-tile-content>
+              <v-list-tile-sub-title :key="'UPC'+ i" >UPC  :  {{ detail.UPC }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title :key="'PrdName'+ i">Product Name  :  {{ detail.prdNm }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title :key="'RQTY'+ i">Required Qty  :  {{ detail.qty }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title :key="'SQTY'+ i">Scanned Qty  :  {{ detail.scQty }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title>Seller Inventroy  :  {{ detail.sellerInv }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title style="color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</v-list-tile-sub-title>
+            </v-list-tile-content>
+          </v-flex>
+          <v-flex lg6>
+          <v-data-table
+            :headers="locInvHeader"
+            :items="detail.locInv"
+            :rows-per-page-items="rowsPerPageItems"
+            class="elevation-1"
+            >
+            <template slot="items" slot-scope="props">
+              <td class="text-xs-left">{{ props.item._id.loc }}</td>
+              <td class="text-xs-left">{{ props.item.qty }}</td>
+            </template>
+          </v-data-table>
+          </v-flex>
+          </v-layout>
+        </v-card>
+      </v-flex>
+    </v-flex>
+    <v-flex lg6>
+      <h1>Scan Items</h1>
+      <h1 v-if='scannedLoc' style="color:red;">From {{scannedLoc}}</h1>
+      <v-data-table
+        :headers="scanItemsHeader"
+        :items="scannedItems"
+        :rows-per-page-items="rowsPerPageItems"
+        class="elevation-1"
+        >
+        <template slot="items" slot-scope="props">
+          <td class="text-xs-left">{{ props.item.loc }}</td>
+          <td class="text-xs-left">{{ props.item.prdNm }}</td>
+          <td class="text-xs-left">{{ props.item.UPC }}</td>
+          <td class="text-xs-left">{{ props.item.qty }}</td>
+        </template>
+      </v-data-table>
+      <v-btn dark @click.prevent="submit">submit</v-btn>
+    </v-flex>
+    </v-layout>
+  <!-- End Show Order Detail-->
+  <!-- Scaned Items -->
+  <!-- End Scaned Items -->
   </div>
 </template>
 
@@ -87,6 +137,7 @@ export default {
         pressedTime: []
       },
       currentScan: 'Tracking No',
+      trackingInput: '',
       // items to be showed on pages
       trackingNo: '',
       orderID: '',
@@ -94,7 +145,23 @@ export default {
       status: '',
       showResult: false,
       scannedItems: [],
-      orderItems: []
+      orderItems: [],
+      scanItemsHeader: [
+        { text: 'Location ID', align: 'left', value: 'loc' },
+        { text: 'UPC', align: 'left', value: 'UPC' },
+        { text: 'Product Name', align: 'left', value: 'prdNm' },
+        { text: 'Quantity', align: 'left', value: 'qty' }
+      ],
+      scannedLoc: '',
+      scannedUPC: '',
+      scannedPrdNm: '',
+      HighLightIdx: -1,
+      styles: ['grey lighten-4', 'deep-orange lighten-1', 'green darken-3'],
+      locInvHeader: [
+        { text: 'Location', align: 'left', value: 'loc' },
+        { text: 'Quantity', align: 'left', value: 'qty' }
+      ],
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
   },
   methods: {
@@ -107,20 +174,39 @@ export default {
       this.alertType1 = type
       this.showAlert1 = true
     },
+    clearUp () {
+      this.currentScan = 'Tracking No'
+      this.trackingNo = ''
+      this.orderID = ''
+      this.orgName = ''
+      this.status = ''
+      this.showResult = false
+      this.scannedItems = []
+      this.orderItems = []
+      this.scannedLoc = ''
+      this.scannedUPC = ''
+      this.scannedPrdNm = ''
+      this.HighLightIdx = -1
+      this.trackingInput = ''
+    },
     async handleTrackingNo (trackingNo) {
-      console.log(trackingNo)
+      // console.log(trackingNo)
       // Logic to get order information by tracking No
       try {
         let result = (await Shipment.getByShipmentId(trackingNo)).data
         if (result.length !== 0) {
-          console.log('Tracking found!')
+          // console.log('Tracking found!')
           this.trackingNo = result._id
           this.orderID = result.orderID
           this.orgName = result.orgNm
-          this.orderItems = result.rcIts
           this.status = result.status
+          this.orderItems = result.rcIts
+          for (let item of this.orderItems) {
+            item.scQty = 0
+            item.style = this.styles[0]
+          }
           this.showResult = true
-          console.log(this.orderItems)
+          // console.log(this.orderItems)
           if ((this.status === 'ready')) {
             this.currentScan = 'Location ID'
           } else if ((this.status === 'upgrade')) {
@@ -147,14 +233,149 @@ export default {
     },
     changeTrackingMan () {
       this.clearAlert()
+      this.clearUp()
       let aTracking = document.getElementById('trackingNo').value.trim()
       this.handleTrackingNo(aTracking)
     },
+    checkLocation (loc) {
+      // This functin is for checking the scanned location is good for this order or not
+      let locationFound = false
+      for (let item of this.orderItems) {
+        for (let i = 0; i < item.locInv.length; i++) {
+          if (item.locInv[i]._id.loc === loc) {
+            locationFound = true
+            break
+          }
+          if (locationFound === true) break
+        }
+      }
+      return locationFound
+    },
+    getIndexUPC (UPC, items) {
+      let index = -1
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].UPC === UPC) {
+          index = i
+          break
+        }
+      }
+      return index
+    },
+    updateScannedItems () {
+      let idxScannedItems = -1
+      for (let i = 0; i < this.scannedItems.length; i++) {
+        if ((this.scannedItems[i].UPC === this.scannedUPC) && (this.scannedItems[i].loc === this.scannedLoc)) {
+          idxScannedItems = i
+          break
+        }
+      }
+      if (idxScannedItems !== -1) {
+        this.$set(this.scannedItems[idxScannedItems], 'qty', (this.scannedItems[idxScannedItems].qty + 1))
+        // console.log(this.scannedItems)
+      } else {
+        this.scannedItems.push({
+          loc: this.scannedLoc,
+          UPC: this.scannedUPC,
+          prdNm: this.scannedPrdNm,
+          qty: 1
+        })
+        console.log(this.scannedItems)
+      }
+    },
     // Logic to handle barcode scan
+    setLocation (barcode) {
+      if (this.checkLocation(barcode)) {
+        this.scannedLoc = barcode
+        this.currentScan = 'UPC'
+      } else {
+        this.setAlert('error', 'Location not for this Order. Please check!')
+      }
+    },
     onBarcodeScanned (barcode) {
       this.clearAlert()
       if (this.currentScan === 'Tracking No') {
         this.handleTrackingNo(barcode)
+      } else if (this.currentScan === 'Location ID') {
+        if (isNaN(parseInt(barcode[0]))) {
+          this.setLocation(barcode)
+        } else {
+          this.setAlert('error', 'Not a valid Location. Please check.')
+        }
+      } else if (this.currentScan === 'UPC') {
+        if (isNaN(parseInt(barcode[0]))) {
+          this.setLocation(barcode)
+        } else {
+          // this is a UPC
+          let idx = this.getIndexUPC(barcode, this.orderItems)
+          if (idx === -1) {
+            this.setAlert('error', 'UPC not for this Order. Please check!')
+          } else {
+            // Hight Light UPC chosen
+            if (this.HighLightIdx !== idx) {
+              if ((this.HighLightIdx !== -1) && (this.orderItems[this.HighLightIdx].style !== this.styles[2])) {
+                // If Style already changed to green. Don't change color any more
+                this.orderItems[this.HighLightIdx].style = this.styles[0]
+              }
+              this.orderItems[idx].style = this.styles[1]
+              this.HighLightIdx = idx
+              this.$forceUpdate()
+            }
+            // Handle logic to decrease UPC from current available inventory
+            if (this.orderItems[idx].scQty < this.orderItems[idx].qty) {
+              // this.orderItems[idx].scQty++
+              this.$set(this.orderItems[idx], 'scQty', (this.orderItems[idx].scQty + 1))
+              if (this.orderItems[idx].qty === this.orderItems[idx].scQty) {
+                this.orderItems[idx].style = this.styles[2]
+              }
+              this.scannedUPC = barcode
+              this.scannedPrdNm = this.orderItems[idx].prdNm
+              this.updateScannedItems()
+              // console.log(this.orderItems)
+              this.$forceUpdate()
+            } else {
+              this.setAlert('error', 'Scanned more than required. Please check!')
+            }
+          }
+        }
+      }
+    },
+    checkData () {
+      let passCheck = true
+      for (let aOrder of this.orderItems) {
+        if (aOrder.qty !== aOrder.scQty) {
+          passCheck = false
+          break
+        }
+      }
+      return passCheck
+    },
+    async submit () {
+      this.clearAlert()
+      if (this.checkData()) {
+        console.log('Passed Check!')
+        try {
+          await Shipment.ship({
+            '_id': this.trackingNo,
+            'orgNm': this.orgName,
+            'rcIts': this.scannedItems
+          })
+          this.setAlert('success', 'Shipment submit successfully.')
+          this.clearUp()
+        } catch (error) {
+          if (!error.response) {
+            // network error
+            this.setAlert('error', 'Network Error: Fail to connet to server')
+          } else if (error.response.data.error.includes('jwt')) {
+            console.log('jwt error')
+            this.$store.dispatch('resetUserInfo', true)
+            this.$router.push('/login')
+          } else {
+            console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+            this.setAlert('error', error.response.data.error)
+          }
+        }
+      } else {
+        this.setAlert('error', 'Not all items been scanned. Please check!')
       }
     },
     addListener (type) {
@@ -238,4 +459,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.HLclass {
+  color: red;
+}
 </style>
