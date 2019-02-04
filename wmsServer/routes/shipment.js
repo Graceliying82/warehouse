@@ -189,7 +189,18 @@ module.exports = {
       let userID = req.decoded.email;
       let orgNm = shipment.orgNm;
       //validate seller inventory
-      for (let anItem of shipment.rcIts){
+      let shipFromDB = await shipCollection.findOne({_id:shipmentID});
+      if (!shipFromDB) {
+        const error = new Error('shipment not found');
+        error.status = 400;
+        return next(error);
+      } else if (shipFromDB.status === "shipped"){
+        const error = new Error("shipped already, can not ship again");
+        error.status = 400;
+        return next(error);
+      }
+      
+      for (let anItem of shipFromDB.rcIts){
         let sellerInv = await sellerInvCollection.findOne({ "_id.UPC": anItem.UPC, "_id.org": orgNm }, { qty: 1});
         if ((!sellerInv) || (sellerInv.qty < anItem.qty )){
           const error = new Error('Not enough inventory');
@@ -233,9 +244,6 @@ module.exports = {
         );
       }
       //update shipment
-
-      let shipFromDB = await shipCollection.findOne({_id:shipmentID});
-      //req.body.rcIts contain all information
       if (shipFromDB){
         shipFromDB.status = "shipped";
         shipFromDB.shipBy = userID;
