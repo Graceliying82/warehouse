@@ -234,7 +234,7 @@ export default {
     async getAllProductInventory () {
       try {
         this.products = (await ProductInv.getAllProductInventory()).data
-        console.log(this.products)
+        // console.log(this.products)
         for (let aPrd of this.products) {
           if (aPrd.balance === 'unbalanced') {
             aPrd.style = this.styles[1]
