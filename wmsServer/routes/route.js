@@ -23,6 +23,7 @@ module.exports = (app) => {
   app.get('/prodInvByLoc/:loc', ProductInv.getProdInvByLoc) //get product by locations, seprated by ,
   app.post('/prodInvAdjustBatch', ProductInv.postInvUpdate)
   app.post('/locInvMoveBatch', ProductInv.moveInvBatch) //move inventory
+  app.post('/prodInvCheckBalance/', ProductInv.checkBalanceOfPrdInv)
 
   // from user
   app.post('/users', User.post)

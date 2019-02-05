@@ -19,16 +19,21 @@ module.exports = {
     const result = [];
     try {
       const productArray = await prodCollection.find({}, { _id: 1, prdNm: 1 }).toArray();
-      const inventoryArray = await invCollection.find({}, { _id: 1, qty: 1 }).toArray();
+      const inventoryArray = await invCollection.find({qty: { $gt: 0 }}, { _id: 1, qty: 1 }).toArray();
       for (let prod of productArray) {
         let qty = 0;
+        let status = '';
         for (let inv of inventoryArray) {
           if (inv._id === prod._id) {
+            balance = inv.balance
             qty = inv.qty;
             break;
           }
         }
-        let prodInv = { UPC: prod._id, prdNm: prod.prdNm, qty: qty };
+        if (qty === 0) {
+          continue
+        }
+        let prodInv = { UPC: prod._id, prdNm: prod.prdNm, qty: qty, balance: balance};
         result.push(prodInv);
       }
       res.send(result);
@@ -128,7 +133,7 @@ module.exports = {
     let result = [];
     try {
       let productList = await prodCollection.find({ _id: { $in: UPCs } }, { _id: 1, prdNm: 1 }).toArray();
-      let invList = await invCollection.find({ _id: { $in: UPCs } }, { _id: 1, qty: 1 }).toArray();
+      let invList = await invCollection.find({ _id: { $in: UPCs }}, { _id: 1, qty: 1 }).toArray();
       let sellerInvList = await sellerInvCollection.find({ "_id.UPC": { $in: UPCs } }, { _id: 1, qty: 1 }).toArray();
       let locInvList = await locInvCollection.find({ "_id.UPC": { $in: UPCs } }, { _id: 1, qty: 1 }).toArray();
 
@@ -144,17 +149,18 @@ module.exports = {
         for (var aInv of invList) {
           if (aInv._id === aUPC) {
             aProInv.qty = aInv.qty;
+            aProInv.balance = aInv.balance
           }
         }
         aProInv.sellerInventory = [];
         for (var aSellInv of sellerInvList) {
-          if (aSellInv._id.UPC === aUPC) {
+          if ((aSellInv._id.UPC === aUPC) && (aSellInv.qty > 0)) {
             aProInv.sellerInventory.push({ org: aSellInv._id.org, qty: aSellInv.qty });
           }
         }
         aProInv.locationInventory = [];
         for (var aLocInv of locInvList) {
-          if (aLocInv._id.UPC === aUPC) {
+          if ((aLocInv._id.UPC === aUPC) && (aLocInv.qty > 0)) {
             aProInv.locationInventory.push({ loc: aLocInv._id.loc, qty: aLocInv.qty });
           }
         }
@@ -430,4 +436,56 @@ note:"this is a inventory change"
       next(error);
     }
   },
+  // This is a task will check balance of all products with qty larger than 0
+  async checkBalanceOfPrdInv (req, res, next) {
+    const invCollection = req.db.collection("inventory");
+    const sellerInvCollection = req.db.collection("sellerInv");
+    const locInvCollection = req.db.collection("locationInv");
+    try 
+    {
+      let inventoryList = await invCollection.find({qty: { $gt: 0 }}).project({ _id: 1, qty: 1 }).toArray();
+      for (let aInv of inventoryList) {
+        let total = 0;
+        let balanced = true;
+        let locInvList = await locInvCollection.find({"_id.UPC" : aInv._id, qty: { $gt: 0 }}).toArray();
+        for (let alocInv of locInvList) {
+          total += alocInv.qty;
+        }
+        if (total !== aInv.qty) {
+          balanced = false;
+        }
+        total = 0;
+        let sellerList = await sellerInvCollection.find({"_id.UPC" : aInv._id, qty: { $gt: 0 }}).toArray();
+        for (let aSeller of sellerList) {
+          total += aSeller.qty
+        }
+        if (total != aInv.qty) {
+          balanced = false;
+        }
+        if (balanced) {
+          await invCollection.findOneAndUpdate(
+            {
+              _id: aInv._id
+            }, //query
+            {
+              $set: { "balance": 'balanced'}
+             }
+          );
+        } else {
+          await invCollection.findOneAndUpdate(
+            {
+              _id: aInv._id
+            }, //query
+            {
+              $set: { "balance": 'unbalanced'}
+             }
+          );
+        }
+      }
+      res.send('Done!');
+      res.end();
+    } catch (error) {
+      next(error)
+    }
+  }
 };

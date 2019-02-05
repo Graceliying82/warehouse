@@ -9,6 +9,12 @@ export default {
   },
   getAllProductInventory () {
     return Api().get('/prodInvAll')
+  },
+  checkBalance () {
+    return Api().post('/prodInvCheckBalance')
+  },
+  prodInvAdjustBatch (data) {
+    return Api().post('/prodInvAdjustBatch', data)
   }
   // get () {
   //   return Api().get('/locations')

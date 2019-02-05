@@ -63,7 +63,7 @@ module.exports = {
             _id: aUPC
           }, //query
           {
-            $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp },
+            $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp, balance: 'balanced'},
             $inc: { qty: aQty }
           },
           { upsert: true }
