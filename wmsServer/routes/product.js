@@ -4,7 +4,16 @@ module.exports = {
   async get(req, res, next) {
     const dbcollection = req.db.collection("product");
     try {
-      var result = await dbcollection.find().toArray();
+      let UPC = req.params.id
+      let dbRst = null
+      let result = []
+      if (UPC != undefined) {
+        // If UPC is passed in, return one product
+        result = await dbcollection.findOne({_id: UPC})
+      } else {
+        // If UPC is not passed in, return the whole list
+        result = await dbcollection.find().toArray();
+      }
       res.send(result);
       res.end();
     } catch (error) {
@@ -24,6 +33,75 @@ module.exports = {
       req.body.crtStmp = createTime.getTime();
       result2 = await dbcollection.insertOne(req.body);
       res.send(result2);
+      res.end();
+    } catch (error) {
+      console.log("Create Product error: " + error);
+      error.message = 'Fail to access database! Try again'
+      next(error);
+    }
+  },
+  // Update product detail informations
+  // product: {
+  //   'UPC': '', // Must be Unique
+  //   'prdNm': '', // product full name
+  //   'length': 0, // By inch
+  //   'width': 0, // By inch
+  //   'height': 0, // By inch
+  //   'weight': 0, // By oz
+  //   'volume': 0, // By ml
+  //   'color': 'N/A',
+  //   'brdNm': 'N/A', // Brand Name
+  //   'modNo': 'N/A', // Model No
+  //   'modYr': 'N/A', // Model year
+  //   'note': '',
+  //   'category': 'N/A', //category
+  //   'customizable': false //customizable
+  //    compSpec: {  // If 'category' === 'computer' otherwise will be 'null'
+  //      'ramSz': 'N/A', // Ram Size
+  //      'ramType': 'N/A', // Ram Size
+  //      'optSys': 'N/A', // operation system
+  //      'dvd': 'No',
+  //      'sdSize': 'N/A', // sd card size
+  //      'hd1Size': 'N/A', // hard drive #1 size
+  //      'hd1Type': 'N/A', // hard drive #1 type
+  //      'hd2Size': 'N/A', // hard drive #2 size
+  //      'hd2Type': 'N/A' // hard drive #2 type
+  // }, 
+  // },
+  async put(req, res, next) {
+    const prdCollection = req.db.collection("product");
+    try {
+      let UPC = req.body.UPC;
+      let modifyTime = new Date();
+      let mdfTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      let mdfStmp = modifyTime.getTime();
+      await prdCollection.findOneAndUpdate(
+        { // query
+          _id: req.body.UPC
+        }, 
+        { // update
+          $set: { 
+            mdfTm: mdfTm, 
+            mdfStmp: mdfStmp,
+            prdNm: req.body.prdNm,
+            length: req.body.length,
+            width: req.body.width,
+            height: req.body.height,
+            weight: req.body.weight,
+            volume: req.body.volume,
+            color: req.body.color,
+            brdNm: req.body.brdNm,
+            modNo: req.body.modNo,
+            modYr: req.body.modYr,
+            note: req.body.note,
+            cat: req.body.cat,
+            cstmiz: req.body.cstmiz,
+            compSpec: req.body.compSpec
+          }
+        },
+        { upsert: true }
+      );
+      res.send('Success!');
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);

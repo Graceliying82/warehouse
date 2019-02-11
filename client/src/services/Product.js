@@ -7,6 +7,12 @@ export default {
   get () {
     return Api().get('/products')
   },
+  put (data) {
+    return Api().put('/products', data)
+  },
+  getProductByUPC (UPC) {
+    return Api().get('/products/' + UPC)
+  },
   updateProduct (data) {
     return Api().post('/receiveUpdate', data)
   },

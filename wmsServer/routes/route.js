@@ -32,6 +32,8 @@ module.exports = (app) => {
   // from product
   app.post('/products', Product.post)
   app.get('/products', Product.get)
+  app.get('/products/:id', Product.get)
+  app.put('/products', Product.put)
 
   app.post('/receiveUpdate', Product.updateProduct)
   app.post('/receiveDelete', Product.deleteProduct)
