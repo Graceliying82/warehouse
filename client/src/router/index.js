@@ -13,6 +13,7 @@ import UpgradeApprove from '@/components/wmsPages/UpgradeApprove'
 import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
 import UpgradeRequestRecord from '@/components/wmsPages/UpgradeRequestRecord'
 import Inventory from '@/components/wmsPages/Inventory'
+import ProductsList from '@/components/wmsPages/ProductsList'
 import ProductInputDetail from '@/components/wmsPages/ProductInputDetail'
 import ProductInventory from '@/components/wmsPages/ProductInventory'
 import Reports from '@/components/wmsPages/Reports'
@@ -90,6 +91,11 @@ export default new Router({
       path: '/inventory',
       name: 'inventory',
       component: Inventory
+    },
+    {
+      path: '/productsList',
+      name: 'ProductsList',
+      component: ProductsList
     },
     {
       path: '/productInputDetail',

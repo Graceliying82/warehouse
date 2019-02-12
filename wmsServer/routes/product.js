@@ -2,17 +2,23 @@ var ObjectId = require('mongodb').ObjectID
 module.exports = {
   //  Get Products
   async get(req, res, next) {
-    const dbcollection = req.db.collection("product");
+    const prdCollection = req.db.collection("product");
     try {
       let UPC = req.params.id
       let dbRst = null
       let result = []
       if (UPC != undefined) {
         // If UPC is passed in, return one product
-        result = await dbcollection.findOne({_id: UPC})
+        result = await prdCollection.findOne({_id: UPC})
       } else {
+        let CategoryChoice = ['Computer', 'Parts', 'Others'];
         // If UPC is not passed in, return the whole list
-        result = await dbcollection.find().toArray();
+        if ((req.query.category === undefined) || (req.query.category === 'All')) {
+          result = await prdCollection.find().toArray();
+        } else {
+          // result = await dbcollection.find().toArray();
+          result = await prdCollection.find({'cat':req.query.category}).toArray()
+        }
       }
       res.send(result);
       res.end();

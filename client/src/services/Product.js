@@ -13,6 +13,10 @@ export default {
   getProductByUPC (UPC) {
     return Api().get('/products/' + UPC)
   },
+  getProductsByFilter (category) {
+    console.log('Here')
+    return Api().get('/products' + '?category=' + category)
+  },
   updateProduct (data) {
     return Api().post('/receiveUpdate', data)
   },

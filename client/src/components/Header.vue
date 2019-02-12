@@ -100,6 +100,7 @@ export default {
         { icon: 'print', text: 'ShippingPrint', name: 'shippingPrint' },
         { divider: true },
         { heading: 'Manage Product' },
+        { icon: 'dashboard', text: 'Products List', name: 'ProductsList' },
         { icon: 'art_track', text: 'Input Product Detail', name: 'productInputDetail' },
         { icon: 'important_devices', text: 'Products Inventory', name: 'productInventory' },
         { divider: true },

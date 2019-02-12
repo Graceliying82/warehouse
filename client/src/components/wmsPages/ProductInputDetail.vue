@@ -42,7 +42,7 @@
           </v-flex>
           <v-flex mx-5>
             <v-select
-            :items ="TypeChoice"
+            :items ="CategoryChoice"
             v-model="prdBasic.cat"
             label="Category"
             v-on:change="chooseCategory()"
@@ -247,7 +247,7 @@ export default {
         'cat': 'N/A', // category
         'cstmiz': false // customizable
       },
-      TypeChoice: ['N/A', 'Computer', 'Parts', 'Others'],
+      CategoryChoice: ['N/A', 'Computer', 'Parts', 'Others'],
       DvdChoice: ['No', 'Yes'],
       csmzChoice: [true, false],
       computerSpec: {
