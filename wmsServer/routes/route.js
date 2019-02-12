@@ -6,7 +6,7 @@ const Inventory = require('./inventory')
 const Location = require('./location')
 const ProductInv = require('./productInv')
 const Shipment = require('./shipment')
-
+const TempSchema = require('./tempSchema')
 module.exports = (app) => {
   // from Login
   app.post('/login', Login.post)
@@ -53,4 +53,9 @@ module.exports = (app) => {
   app.get('/shipments', Shipment.get)  //startdate, enddate, status - query parameter like inventory get
   app.get('/shipments/:Id', Shipment.getByShipmentId)
   app.post('/shipment/ship', Shipment.ship) //ship a shipment
+
+  //from tempSchema
+  app.post('/tempschema', TempSchema.post)
+  app.get('/tempschema', TempSchema.get)
+  app.post('/tempschema/deleteValue', TempSchema.deleteValue)
 }

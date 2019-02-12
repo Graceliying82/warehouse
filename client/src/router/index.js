@@ -9,6 +9,7 @@ import ShippingPrint from '@/components/wmsPages/ShippingPrint'
 import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
 import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
 import InventoryLocations from '@/components/wmsPages/InventoryLocations'
+import UpgradeTemplate from '@/components/wmsPages/UpgradeTemplate'
 import UpgradeApprove from '@/components/wmsPages/UpgradeApprove'
 import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
 import UpgradeRequestRecord from '@/components/wmsPages/UpgradeRequestRecord'
@@ -71,6 +72,11 @@ export default new Router({
       path: '/inventoryLocations',
       name: 'inventoryLocations',
       component: InventoryLocations
+    },
+    {
+      path: '/upgradeTemplate',
+      name: 'upgradeTemplate',
+      component: UpgradeTemplate
     },
     {
       path: '/upgradeApprove',

@@ -105,6 +105,7 @@ export default {
         { icon: 'important_devices', text: 'Products Inventory', name: 'productInventory' },
         { divider: true },
         { heading: 'Upgrade' },
+        { icon: 'settings_input_component', text: 'Create Update Template', name: 'upgradeTemplate' },
         { icon: 'build', text: 'New Upgrade Request', name: 'upgradeRequest' },
         { icon: 'gavel', text: 'Active Upgrade Request', name: 'upgradeApprove' },
         { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' },
