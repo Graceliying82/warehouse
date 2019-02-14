@@ -121,7 +121,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("receive error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -144,7 +146,9 @@ module.exports = {
           res.end()
         } catch (error) {
           console.log("Get Org by dates error: " + error)
-          error.message = 'Fail to access database! Try again'
+          if (error.message === null) {
+            error.message = 'Fail to access database! Try again'
+          };
           next(error)
         }
       } else {
@@ -160,7 +164,9 @@ module.exports = {
           res.end()
         } catch (error) {
           console.log("Get Org by dates error: " + error)
-          error.message = 'Fail to access database! Try again'
+          if (error.message === null) {
+            error.message = 'Fail to access database! Try again'
+          };
           next(error)
         }
       }
@@ -178,7 +184,9 @@ module.exports = {
         res.end()
       } catch (error) {
         console.log("Get Org error: " + error)
-        error.message = 'Fail to access database! Try again'
+        if (error.message === null) {
+          error.message = 'Fail to access database! Try again'
+        };
         next(error)
       }
    }

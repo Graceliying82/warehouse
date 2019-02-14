@@ -27,20 +27,20 @@
         <!-- First Row -->
         <h2>Basic Infomation</h2>
         <v-layout row mx-5>
-          <v-flex mr-5>
+          <v-flex mr-5 md4>
             <v-text-field
               v-model="prdBasic.UPC"
               label="UPC"
               required
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md4>
             <v-text-field
               v-model="prdBasic.prdNm"
               label="Product Name"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md4>
             <v-select
             :items ="CategoryChoice"
             v-model="prdBasic.cat"
@@ -48,7 +48,7 @@
             v-on:change="chooseCategory()"
             required></v-select>
           </v-flex>
-          <v-flex ml-5>
+          <v-flex ml-5 md4>
             <v-select
             :items ="csmzChoice"
             v-model="prdBasic.cstmiz"
@@ -58,25 +58,25 @@
         </v-layout>
         <!-- Second Row -->
         <v-layout row>
-          <v-flex mx-5>
+          <v-flex mx-5 md4>
           <v-text-field
             v-model="prdBasic.brdNm"
             label="Brand Name"
           ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md4>
             <v-text-field
               v-model="prdBasic.modNo"
               label="Model Number"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md4>
             <v-text-field
               v-model="prdBasic.modYr"
               label="Model Year"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md4>
             <v-text-field
               v-model="prdBasic.color"
               label="Color"
@@ -147,25 +147,25 @@
         </v-flex>
         <!-- First Row -->
         <v-layout row>
-          <v-flex mx-5>
+          <v-flex ml-2 mr-5 md2>
             <v-text-field
               v-model="computerSpec.ramSz"
               label="Ram size"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md2>
             <v-text-field
               v-model="computerSpec.ramType"
               label="Ram Type"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md2>
             <v-text-field
               v-model="computerSpec.optSys"
               label="operation System"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md2>
             <v-select
             :items ="DvdChoice"
             v-model="computerSpec.dvd"
@@ -173,34 +173,42 @@
             v-on:change="chooseCategory()"
             required></v-select>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex ml-5 mr-2 md2>
+            <v-select
+            :items ="DvdChoice"
+            v-model="computerSpec.caddy"
+            label="Caddy"
+            v-on:change="chooseCategory()"
+            required></v-select>
+          </v-flex>
+        </v-layout>
+        <!-- Second Row -->
+        <v-layout row>
+          <v-flex ml-2 mr-5 md2>
             <v-text-field
               v-model="computerSpec.sdSize"
               label="Sd Card Size"
             ></v-text-field>
           </v-flex>
-        </v-layout>
-        <!-- Second Row -->
-        <v-layout row>
-          <v-flex mx-5>
+          <v-flex mx-5 md2>
             <v-text-field
               v-model="computerSpec.hd1Size"
               label="Hard Drive #1 Size"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md2>
             <v-text-field
               v-model="computerSpec.hd1Type"
               label="Hard Drive #1 Type"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex mx-5 md2>
             <v-text-field
               v-model="computerSpec.hd2Size"
               label="Hard Drive #2 Size"
             ></v-text-field>
           </v-flex>
-          <v-flex mx-5>
+          <v-flex ml-5 mr-2 md2>
             <v-text-field
               v-model="computerSpec.hd2Type"
               label="Hard Drive #2 Type"
@@ -221,6 +229,7 @@
 
 <script>
 import Product from '@/services/Product'
+import Tempschema from '@/services/Tempschema'
 export default {
   data () {
     return {
@@ -247,7 +256,7 @@ export default {
         'cat': 'N/A', // category
         'cstmiz': false // customizable
       },
-      CategoryChoice: ['N/A', 'Computer', 'Parts', 'Others'],
+      CategoryChoice: [],
       DvdChoice: ['No', 'Yes'],
       csmzChoice: [true, false],
       computerSpec: {
@@ -255,6 +264,7 @@ export default {
         'ramType': 'N/A', // Ram Size
         'optSys': 'N/A', // operation system
         'dvd': 'No',
+        'caddy': 'No',
         'sdSize': 'N/A', // sd card size
         'hd1Size': 'N/A', // hard drive #1 size
         'hd1Type': 'N/A', // hard drive #1 type
@@ -299,6 +309,7 @@ export default {
       this.computerSpec.ramType = 'N/A'
       this.computerSpec.optSys = 'N/A'
       this.computerSpec.dvd = 'No'
+      this.computerSpec.caddy = 'No'
       this.computerSpec.sdSize = 'N/A'
       this.computerSpec.hd1Size = 'N/A'
       this.computerSpec.hd1Type = 'N/A'
@@ -412,6 +423,24 @@ export default {
             this.setAlert('error', error.response.data.error)
           }
         }
+      }
+    }
+  },
+  async created () {
+    try {
+      let result = (await Tempschema.getByID('cat')).data
+      this.CategoryChoice = result.value
+    } catch (error) {
+      if (!error.response) {
+        // network error
+        this.setAlert('error', 'Network Error: Fail to connet to server')
+      } else if (error.response.data.error.includes('jwt')) {
+        console.log('jwt error')
+        this.$store.dispatch('resetUserInfo', true)
+        this.$router.push('/login')
+      } else {
+        console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+        this.setAlert('error', error.response.data.error)
       }
     }
   }

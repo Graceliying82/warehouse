@@ -40,7 +40,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("query all product inventory: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
 
@@ -53,7 +55,9 @@ module.exports = {
       locationArray = await locCollection.find({}, { locID: 1, dspt: 1 }).toArray();
     } catch (error) {
       console.log("query product inventory for location: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
     if (req.params.loc === "all") {
@@ -111,7 +115,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("query product inventory for location: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -170,7 +176,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("query product inventory: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -219,7 +227,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("query product inventory: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -356,7 +366,9 @@ note:"this is a inventory change"
       }
     } catch (error) {
       console.log("adjust product inventory: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
 
@@ -432,7 +444,9 @@ note:"this is a inventory change"
       res.end();
     } catch (error) {
       console.log("move location inventory: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },

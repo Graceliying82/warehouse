@@ -24,11 +24,14 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Get User error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
   //create product
+  // Note: put UPC as _id at client side. this rest api will not handle duplicate situation.
   async post(req, res, next) {
     const dbcollection = req.db.collection("product");
     try {
@@ -37,12 +40,20 @@ module.exports = {
       let createTime = new Date();
       req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       req.body.crtStmp = createTime.getTime();
-      result2 = await dbcollection.insertOne(req.body);
-      res.send(result2);
+      let result1 = await dbcollection.findOne({_id: req.body_id})
+      if (result1) {
+        const error = new Error('Product UPC existed.');
+        error.status = 400;
+        return next(error)
+      }
+      await dbcollection.insertOne(req.body);
+      res.send('success');
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -111,7 +122,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -351,7 +364,9 @@ module.exports = {
 
     } catch (error) {
       console.log("Update Product error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -463,7 +478,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   }

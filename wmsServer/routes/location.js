@@ -17,7 +17,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Create Location error: " + error)
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error)
     }
   },
@@ -42,7 +44,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Update Location error: " + error)
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error)
     }
   },
@@ -63,7 +67,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("Delete Location error: " + error);
-      error.message = 'Fail to access database! Try again';
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -81,7 +87,9 @@ module.exports = {
       res.end()
     } catch (error) {
       console.log("Get Location error: " + error)
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error)
     }
   }

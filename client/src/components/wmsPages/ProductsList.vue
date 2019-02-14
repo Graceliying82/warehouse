@@ -94,6 +94,7 @@
 
 <script>
 import Product from '@/services/Product'
+import Tempschema from '@/services/Tempschema'
 export default {
   data () {
     return {
@@ -101,7 +102,7 @@ export default {
       showAlert1: false,
       message1: '',
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
-      CategoryChoice: ['All', 'Computer', 'Parts', 'Others'],
+      CategoryChoice: [],
       filter: {
         cat: 'All'
       },
@@ -194,6 +195,25 @@ export default {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
           this.setAlert('error', error.response.data.error)
         }
+      }
+    }
+  },
+  async created () {
+    try {
+      let result = (await Tempschema.getByID('cat')).data
+      this.CategoryChoice = result.value
+      this.CategoryChoice.unshift('All')
+    } catch (error) {
+      if (!error.response) {
+        // network error
+        this.setAlert('error', 'Network Error: Fail to connet to server')
+      } else if (error.response.data.error.includes('jwt')) {
+        console.log('jwt error')
+        this.$store.dispatch('resetUserInfo', true)
+        this.$router.push('/login')
+      } else {
+        console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+        this.setAlert('error', error.response.data.error)
       }
     }
   }

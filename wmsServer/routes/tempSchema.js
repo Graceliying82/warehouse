@@ -36,7 +36,9 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("receive error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -54,7 +56,9 @@ module.exports = {
       }
     } catch (error) {
       console.log("receive error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   },
@@ -93,7 +97,9 @@ module.exports = {
       }
     } catch (error) {
       console.log("receive error: " + error);
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error);
     }
   }

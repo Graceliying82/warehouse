@@ -19,7 +19,9 @@ module.exports = {
       res.end()
     } catch (error) {
       console.log("Create User error: " + error)
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error)
     }
   },
@@ -33,7 +35,9 @@ module.exports = {
       res.end()
     } catch (error) {
       console.log("Get User error: " + error)
-      error.message = 'Fail to access database! Try again'
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error)
     }
   }
