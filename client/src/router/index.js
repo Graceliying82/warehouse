@@ -18,8 +18,8 @@ import ProductsList from '@/components/wmsPages/ProductsList'
 import ProductInputDetail from '@/components/wmsPages/ProductInputDetail'
 import ProductInventory from '@/components/wmsPages/ProductInventory'
 import Reports from '@/components/wmsPages/Reports'
-import CreateUser from '@/components/wmsPages/CreateUser'
-import DeleteUser from '@/components/wmsPages/DeleteUser'
+import ManageUser from '@/components/wmsPages/ManageUser'
+import ManageOrg from '@/components/wmsPages/ManageOrg'
 import ReceiveRecords from '@/components/wmsPages/ReceiveRecords'
 import InvtLocMg from '@/components/wmsPages/InvtLocMg'
 import InvtLocEidt from '@/components/wmsPages/InvtLocEdit'
@@ -114,19 +114,9 @@ export default new Router({
       component: ProductInventory
     },
     {
-      path: '/createUser',
-      name: 'createUser',
-      component: CreateUser
-    },
-    {
       path: '/reports',
       name: 'reports',
       component: Reports
-    },
-    {
-      path: '/deleteUser',
-      name: 'deleteUser',
-      component: DeleteUser
     },
     {
       path: '/receiveRecords',
@@ -142,6 +132,16 @@ export default new Router({
       path: '/invtLocEdit',
       name: 'invtLocEdit',
       component: InvtLocEidt
+    },
+    {
+      path: '/manageUser',
+      name: 'manageUser',
+      component: ManageUser
+    },
+    {
+      path: '/manageOrg',
+      name: 'manageOrg',
+      component: ManageOrg
     }
   ]
 })

@@ -1,4 +1,7 @@
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const BcryptConfig = require('../config/bcrypt')
+
 
 function jwtSignUser (payload) {
   return jwt.sign(payload,'warehousemanagement'
@@ -17,7 +20,9 @@ module.exports = {
           error.status = 401;
           return next(error);
         } else {
-          if (result.pswd === req.body.pswd) {
+          let match = await bcrypt.compare(req.body.pswd, result.pswd)
+          if (match) {
+          // if (req.body.pswd === result.pswd) {
             token = jwtSignUser(result);
             res.send({
               'email': result.email,

@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt')
+
 module.exports = {
 
   //create new user
@@ -14,6 +16,9 @@ module.exports = {
       let createTime = new Date();
       req.body.crtTm = new Date(createTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST'
       req.body.crtStmp = createTime.getTime();
+      let pswd = req.body.pswd
+      let hashedPswd = await bcrypt.hashSync(pswd, 10)
+      req.body.pswd = hashedPswd
       result2 = await dbcollection.insertOne(req.body);
       res.send(result2);
       res.end()

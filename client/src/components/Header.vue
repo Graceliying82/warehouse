@@ -32,7 +32,7 @@
           <v-list-tile-content font-weight-regular>
               <v-list-tile-title font-weight-regular>
                 <h3>
-                Hello!   {{$store.state.orgName}}  {{$store.state.userName}}
+                Hello! {{$store.state.userName}}
                 </h3>
               </v-list-tile-title>
             </v-list-tile-content>
@@ -46,8 +46,8 @@
               row
               align-center
             >
-            <v-flex xs6>
-              <v-subheader v-if="item.heading">
+            <v-flex>
+              <v-subheader v-if="item.heading" class="font-weight-bold">
                 {{ item.heading }}
               </v-subheader>
             </v-flex>
@@ -110,9 +110,9 @@ export default {
         { icon: 'gavel', text: 'Active Upgrade Request', name: 'upgradeApprove' },
         { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' },
         { divider: true },
-        { heading: 'User' },
-        { icon: 'person_add', text: 'Add User', name: 'createUser' },
-        { icon: 'person_pin', text: 'User Records', name: 'deleteUser' }
+        { heading: 'User and Organization' },
+        { icon: 'person_add', text: 'Add User', name: 'manageUser' },
+        { icon: 'person_pin', text: 'Manage Organization', name: 'manageOrg' }
       ],
       wmsUser: [
         { heading: 'Receiving' },
