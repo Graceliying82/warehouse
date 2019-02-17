@@ -74,7 +74,30 @@ module.exports = {
       res.send(result)
       res.end()
     } catch (error) {
-      console.log("Get Org error: " + error)
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error)
+    }
+  },
+
+  //delete org by id
+  async deleteById (req, res, next) {
+    const dbcollection = req.db.collection("org");
+    let o_id = ObjectId(req.body._id);
+    try {
+      await dbcollection.deleteOne(
+        {
+          "_id": o_id
+        } //query
+      )
+      res.send('Delete success')
+      res.end();
+    } catch (error) {
+      console.log("Create Org error: " + error)
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
       next(error)
     }
   }

@@ -12,5 +12,8 @@ export default {
   },
   put (data) {
     return Api().put('/orgs', data)
+  },
+  deleteById (data) {
+    return Api().post('/orgs/delete', data)
   }
 }

@@ -82,6 +82,9 @@
           </v-dialog>
           <v-dialog v-model="dialogDel" max-width="500px">
             <panel title='Delete Org'>
+              <h2>You are going to delete Org {{editedItem.orgNm}}</h2>
+              <v-btn dark @click.prevent="confirmDel">confirm</v-btn>
+              <v-btn dark @click.prevent="clearDel">cancel</v-btn>
             </panel>
           </v-dialog>
         </v-flex>
@@ -102,8 +105,8 @@ export default {
         orgNm: '',
         dspt: ''
       },
-      dialogEdit : false,
-      dialogDel : false,
+      dialogEdit: false,
+      dialogDel: false,
       orgList: [],
       orgHeaders: [
         { text: 'Org Name', align: 'left', value: 'orgNm' },
@@ -114,7 +117,7 @@ export default {
       editedItem: {
         orgNm: '',
         dspt: '',
-        _id: '',
+        _id: ''
       },
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
@@ -180,6 +183,8 @@ export default {
     },
     deleteItem (item) {
       this.dialogDel = true
+      this.editedIndex = this.orgList.indexOf(item)
+      this.editedItem = Object.assign({}, item)
     },
     async confirmEdit () {
       try {
@@ -213,6 +218,29 @@ export default {
     },
     clearEdit () {
       this.dialogEdit = false
+    },
+    async confirmDel () {
+      try {
+        await Org.deleteById(this.editedItem)
+        this.dialogDel = false
+        this.setAlert('success', 'Delete Item successfully')
+        await this.showOrgs()
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    clearDel () {
+      this.dialogDel = false
     }
   }
 }

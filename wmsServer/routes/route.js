@@ -16,6 +16,7 @@ module.exports = (app) => {
   app.get('/orgs', Org.get)
   app.get('/orgs/:name', Org.getByName)
   app.put('/orgs', Org.put)
+  app.post('/orgs/delete', Org.deleteById)
 
   //from production inventory
   app.get('/prodInv/:UPC', ProductInv.getByUPC)
