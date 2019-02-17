@@ -30,7 +30,11 @@
           class="elevation-1"
         >
         <template slot="items" slot-scope="props">
-          <tr>
+          <tr
+            @click.prevent="navigateTo({
+              name: 'productDetail',
+              params: { idUPC: props.item._id }
+            })">
           <td class="text-xs-left">{{ props.item._id }}</td>
           <td class="text-xs-left">{{ props.item.prdNm }}</td>
           <td class="text-xs-left">{{ props.item.length }}</td>
@@ -59,7 +63,11 @@
             class="elevation-1"
           >
           <template slot="items" slot-scope="props">
-            <tr>
+            <tr
+              @click.prevent="navigateTo({
+                name: 'productDetail',
+                params: { idUPC: props.item._id }
+                })">
             <td class="text-xs-left">{{ props.item._id }}</td>
             <td class="text-xs-left">{{ props.item.prdNm }}</td>
             <td class="text-xs-left">{{ props.item.length }}</td>
@@ -196,6 +204,9 @@ export default {
           this.setAlert('error', error.response.data.error)
         }
       }
+    },
+    navigateTo (route) {
+      this.$router.push(route)
     }
   },
   async created () {
@@ -203,6 +214,7 @@ export default {
       let result = (await Tempschema.getByID('cat')).data
       this.CategoryChoice = result.value
       this.CategoryChoice.unshift('All')
+      await this.getByFilter()
     } catch (error) {
       if (!error.response) {
         // network error

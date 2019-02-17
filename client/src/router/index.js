@@ -109,6 +109,11 @@ export default new Router({
       component: ProductInputDetail
     },
     {
+      path: '/productInputDetail/:idUPC',
+      name: 'productDetail',
+      component: ProductInputDetail
+    },
+    {
       path: '/productInventory',
       name: 'productInventory',
       component: ProductInventory
