@@ -551,7 +551,7 @@ export default {
     async generate () {
       this.prepareNewPrd()
       try {
-        await Product.post(this.prdBasic)
+        // await Product.post(this.prdBasic)
       } catch (error) {
         if (!error.response) {
           // network error

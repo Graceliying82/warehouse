@@ -364,7 +364,7 @@ export default {
       }
     },
     chooseCategory () {
-      console.log('Here')
+      // console.log('Here')
       if (this.prdBasic.cat === 'Computer') {
         this.computerCategroy = true
       }
@@ -406,7 +406,7 @@ export default {
           } else {
             this.prdBasic.compSpec = null
           }
-          console.log(this.prdBasic)
+          // console.log(this.prdBasic)
           await Product.put(this.prdBasic)
           this.clearData()
           this.setAlert('success', 'Update product information successfully.')

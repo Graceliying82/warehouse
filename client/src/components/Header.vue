@@ -111,7 +111,7 @@ export default {
         { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' },
         { divider: true },
         { heading: 'User and Organization' },
-        { icon: 'person_add', text: 'Add User', name: 'manageUser' },
+        { icon: 'person_add', text: 'Manage Users', name: 'manageUser' },
         { icon: 'person_pin', text: 'Manage Organization', name: 'manageOrg' }
       ],
       wmsUser: [

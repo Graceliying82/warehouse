@@ -190,7 +190,7 @@ export default {
         } else {
           this.basics = result
         }
-        console.log(result)
+        // console.log(result)
       } catch (error) {
         if (!error.response) {
           // network error
