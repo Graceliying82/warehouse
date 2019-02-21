@@ -97,6 +97,7 @@ export default {
         { heading: 'Shipping' },
         { icon: 'local_shipping', text: 'Shipping and Packaging', name: 'shipping' },
         { icon: 'assignment', text: 'Shipping and Orders', name: 'shipOrders' },
+        { icon: 'subtitles', text: 'Batch pick', name: 'batchPick' },
         { icon: 'print', text: 'ShippingPrint', name: 'shippingPrint' },
         { divider: true },
         { heading: 'Manage Product' },

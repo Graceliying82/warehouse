@@ -6,6 +6,7 @@ import Receiving from '@/components/wmsPages/Receiving'
 import Shipping from '@/components/wmsPages/Shipping'
 import ShipOrders from '@/components/wmsPages/ShipOrders'
 import ShippingPrint from '@/components/wmsPages/ShippingPrint'
+import BatchPick from '@/components/wmsPages/ShippingBatchPick'
 import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
 import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
 import InventoryLocations from '@/components/wmsPages/InventoryLocations'
@@ -57,6 +58,11 @@ export default new Router({
       path: '/ShippingPrint',
       name: 'shippingPrint',
       component: ShippingPrint
+    },
+    {
+      path: '/BatchPick',
+      name: 'batchPick',
+      component: BatchPick
     },
     {
       path: '/PrdMoveIn',

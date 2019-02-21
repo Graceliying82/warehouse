@@ -32,7 +32,7 @@ export default {
       this.message1 = message
       this.alertType1 = type
       this.showAlert1 = true
-    },
+    }
   }
 }
 </script>
