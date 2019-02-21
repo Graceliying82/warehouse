@@ -1,6 +1,6 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-    <v-layout column>
+    <v-layout column mx-5>
       <v-flex xs8>
           <v-alert
             v-show = showAlert1
@@ -10,7 +10,7 @@
             </v-alert>
       </v-flex>
       <!-- Create New User -->
-      <v-flex ma-5>
+      <v-flex my-5>
         <panel title='Create New User'>
           <v-form ref="form" v-model="valid" @submit.prevent>
               <v-layout row wrap>
@@ -66,7 +66,7 @@
         </panel>
       </v-flex>
       <!-- Edit user -->
-      <v-flex ma-5>
+      <v-flex my-5>
         <panel title = 'Users List'>
           <v-data-table
               :headers="usersHeaders"
@@ -76,13 +76,62 @@
             <template slot="items" slot-scope="props">
               <td class="text-xs-left">{{ props.item.usrNm }}</td>
               <td class="text-xs-left">{{ props.item.email }}</td>
-              <td class="text-xs-left">{{ props.item.orgNm }}</td>
               <td class="text-xs-left">{{ props.item.isSup }}</td>
               <td class="text-xs-left">{{ props.item.isWms }}</td>
               <td class="text-xs-left">{{ props.item.status }}</td>
+              <td class="text-xs-left">
+                <v-btn icon class="mx-0" @click="editItem(props.item)">
+                  <v-icon color="teal">edit</v-icon>
+                </v-btn>
+              </td>
             </template>
           </v-data-table>
         </panel>
+        <v-dialog v-model="dialogEdit" max-width="800px">
+          <panel title='Edit User'>
+            <v-layout row>
+              <v-flex md6 xs12 mx-5>
+                <v-text-field
+                  v-model="editedItem.usrNm"
+                  label="User Name"
+                ></v-text-field>
+              </v-flex>
+              <v-flex md6 xs12 mx-5>
+                <v-text-field
+                  v-model="editedItem.email"
+                  label="Email"
+                ></v-text-field>
+              </v-flex>
+            </v-layout>
+            <v-layout row>
+              <v-flex md6 xs12 mx-5>
+                <v-select
+                  :items="options"
+                  v-model="editedItem.isSup"
+                  label="Supervisor"
+                  required></v-select>
+              </v-flex>
+              <v-flex md6 xs12 mx-5>
+                <v-select
+                  :items="options"
+                  v-model="editedItem.isWms"
+                  label="WMSUser"
+                  required></v-select>
+              </v-flex>
+            </v-layout>
+            <v-layout row>
+              <v-flex md6 xs12 mx-5>
+                <v-text-field
+                  v-model="editedItem.status"
+                  label="Status"
+                  readonly
+                ></v-text-field>
+              </v-flex>
+              <v-btn dark @click.prevent='changeStatus()'>Change</v-btn>
+            </v-layout>
+            <v-btn dark @click.prevent='submitChange()'>Submit</v-btn>
+          </panel>
+        </v-dialog>
       </v-flex>
     </v-layout>
   </div>
@@ -107,17 +156,28 @@ export default {
         'isSup': false,
         'isWms': false,
         'isB': false,
-        'isS': false
+        'isS': false,
+        'status': 'Active'
       },
       users: [],
+      editedIndex: -1,
+      dialogEdit: false,
+      editedItem: {
+        'email': '',
+        'usrNm': '',
+        'orgNm': 'WMS',
+        'isSup': false,
+        'isWms': false,
+        'status': ''
+      },
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       usersHeaders: [
         { text: 'User Name', align: 'left', value: 'usrNm' },
         { text: 'Email', align: 'left', value: 'email' },
-        { text: 'Org Name', align: 'left', value: 'orgNm' },
         { text: 'Supervisor', align: 'left', value: 'isSup' },
         { text: 'WmsUser', align: 'left', value: 'isWms' },
-        { text: 'Status', align: 'left', value: 'status' }
+        { text: 'Status', align: 'left', value: 'status' },
+        { text: 'Actions', align: 'left', value: '_id' }
       ],
       emailRules: [
         v => !!v || 'E-mail is required',
@@ -133,6 +193,10 @@ export default {
       userRoles: [
         'Supervisor',
         'WmsUser'
+      ],
+      options: [
+        true,
+        false
       ]
     }
   },
@@ -170,12 +234,18 @@ export default {
         this.usr.isWms = true
       }
     },
+    editItem (item) {
+      this.dialogEdit = true
+      this.editedIndex = this.users.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+    },
     async createUser () {
       try {
         // this.$refs.form.validate()
         await Users.post(this.usr)
         this.setAlert('success', 'A new user ' + this.usr.usrNm + ' is added.')
         this.clearData()
+        this.getUserList()
       } catch (error) {
         if (!error.response) {
           // network error
@@ -189,24 +259,51 @@ export default {
           this.error = error.response.data.error
         }
       }
+    },
+    async getUserList () {
+      try {
+        this.users = (await Users.get()).data
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    changeStatus () {
+      if (this.editedItem.status === 'Active') {
+        this.editedItem.status = 'Deactive'
+      } else if (this.editedItem.status === 'Deactive') {
+        this.editedItem.status = 'Active'
+      }
+    },
+    async submitChange () {
+      try {
+        // this.users = (await Users.get()).data
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
     }
   },
   async created () {
-    try {
-      this.users = (await Users.get()).data
-    } catch (error) {
-      if (!error.response) {
-        // network error
-        this.setAlert('error', 'Network Error: Fail to connet to server')
-      } else if (error.response.data.error.includes('jwt')) {
-        console.log('jwt error')
-        this.$store.dispatch('resetUserInfo', true)
-        this.$router.push('/login')
-      } else {
-        console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-        this.setAlert('error', error.response.data.error)
-      }
-    }
+    this.getUserList()
   }
 }
 </script>

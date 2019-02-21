@@ -120,21 +120,30 @@ export default {
         { icon: 'library_books', text: 'Receiving Records', name: 'receiveRecords' },
         { divider: true },
         { heading: 'Location' },
-        { icon: 'business', text: 'Locations Management', name: 'invtLocMg' },
-        { icon: 'last_page', text: 'Product Move In', name: 'stockMove' },
-        { icon: 'first_page', text: 'Product Move Out', name: 'stockMove' },
+        { icon: 'business', text: 'Locations Inventory', name: 'invtLocMg' },
+        { icon: 'last_page', text: 'Product Move In', name: 'PrdMoveIn' },
+        { icon: 'first_page', text: 'Product Move Out', name: 'PrdMoveOut' },
+        { icon: 'border_color', text: 'Edit Locations', name: 'invtLocEdit' },
         { divider: true },
         { heading: 'Shipping' },
-        { icon: 'local_shipping', text: 'Shipping', name: 'shipping' },
-        { icon: 'assignment', text: 'Shipping Records', name: 'shippingRecords' },
+        { icon: 'local_shipping', text: 'Shipping and Packaging', name: 'shipping' },
+        { icon: 'assignment', text: 'Shipping and Orders', name: 'shipOrders' },
+        { icon: 'print', text: 'ShippingPrint', name: 'shippingPrint' },
         { divider: true },
         { heading: 'Manage Product' },
-        { icon: 'important_devices', text: 'Products', name: 'products' },
+        { icon: 'dashboard', text: 'Products List', name: 'ProductsList' },
+        { icon: 'art_track', text: 'Input Product Detail', name: 'productInputDetail' },
+        { icon: 'important_devices', text: 'Products Inventory', name: 'productInventory' },
         { divider: true },
         { heading: 'Upgrade' },
+        { icon: 'settings_input_component', text: 'Create Update Template', name: 'upgradeTemplate' },
         { icon: 'build', text: 'New Upgrade Request', name: 'upgradeRequest' },
         { icon: 'gavel', text: 'Active Upgrade Request', name: 'upgradeApprove' },
-        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' }
+        { icon: 'receipt', text: 'Upgrade Request Records', name: 'upgradeRequestRecord' },
+        { divider: true },
+        { heading: 'User and Organization' },
+        { icon: 'person_add', text: 'Manage Users', name: 'manageUser' },
+        { icon: 'person_pin', text: 'Manage Organization', name: 'manageOrg' }
       ],
       buyer: [
         { heading: 'Receiving' },
@@ -179,30 +188,30 @@ export default {
     }
   },
   created () {
-    this.$store.watch(() => { return this.$store.getters.getSupervisor }, user => {
-      if (user) {
-        this.items = this.supervisor
-        console.log('This is a supervisor')
-      }
-    })
     this.$store.watch(() => { return this.$store.getters.getWmsUser }, user => {
       if (user) {
         this.items = this.wmsUser
         console.log('This is a wmsUser')
       }
     })
-    this.$store.watch(() => { return this.$store.getters.getBuyer }, user => {
+    this.$store.watch(() => { return this.$store.getters.getSupervisor }, user => {
       if (user) {
-        this.items = this.buyer
-        console.log('This is a buyer')
+        this.items = this.supervisor
+        console.log('This is a supervisor')
       }
     })
-    this.$store.watch(() => { return this.$store.getters.getSeller }, user => {
-      if (user) {
-        this.items = this.seller
-        console.log('This is a seller')
-      }
-    })
+    // this.$store.watch(() => { return this.$store.getters.getBuyer }, user => {
+    //   if (user) {
+    //     this.items = this.buyer
+    //     console.log('This is a buyer')
+    //   }
+    // })
+    // this.$store.watch(() => { return this.$store.getters.getSeller }, user => {
+    //   if (user) {
+    //     this.items = this.seller
+    //     console.log('This is a seller')
+    //   }
+    // })
   }
 }
 </script>
