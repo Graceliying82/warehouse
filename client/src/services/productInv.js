@@ -4,8 +4,8 @@ export default {
   moveInBatch (data) {
     return Api().post('/locInvMoveBatch', data)
   },
-  getByUPC (data) {
-    return Api().get('/prodInv/' + data)
+  getByUPC (upcs) {
+    return Api().get('/prodInv/' + upcs)
   },
   getAllProductInventory () {
     return Api().get('/prodInvAll')
