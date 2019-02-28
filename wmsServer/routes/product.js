@@ -41,7 +41,7 @@ module.exports = {
       let createTime = new Date();
       req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       req.body.crtStmp = createTime.getTime();
-      let result1 = await dbcollection.findOne({_id: req.body_id})
+      let result1 = await dbcollection.findOne({_id: UPC})
       if (result1) {
         const error = new Error('Product UPC existed.');
         error.status = 400;
@@ -113,8 +113,10 @@ module.exports = {
             modYr: req.body.modYr,
             note: req.body.note,
             cat: req.body.cat,
+            origUPC: req.body.origUPC,
             cstmiz: req.body.cstmiz,
-            compSpec: req.body.compSpec
+            compSpec: req.body.compSpec,
+            cfgLists: req.body.cfgLists
           }
         },
         { upsert: true }
@@ -476,6 +478,35 @@ module.exports = {
 
 
       //  res.send(result)
+      res.end();
+    } catch (error) {
+      console.log("Create Product error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
+  async deleteConfig (req, res, next) {
+    const dbcollection = req.db.collection("product");
+    try {
+      let UPC = req.body.UPC;
+      // req.body.createTime = new Date().toLocaleString();
+      let result1 = await dbcollection.findOne({_id: req.body.UPC})
+      if (!result1) {
+        const error = new Error('Not a valid UPC');
+        error.status = 400;
+        return next(error)
+      }
+      await dbcollection.findOneAndUpdate(
+        {
+          "_id": req.body.UPC,
+        },
+        {
+          $unset: { cfgLists: "" }
+        }
+      )
+      res.send('success');
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);

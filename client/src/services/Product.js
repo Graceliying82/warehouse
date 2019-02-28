@@ -22,5 +22,8 @@ export default {
   },
   deleteProduct (data) {
     return Api().post('/receiveDelete', data)
+  },
+  deleteConfig (data) {
+    return Api().post('/products/deleteConfig', data)
   }
 }

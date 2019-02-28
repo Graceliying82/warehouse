@@ -32,7 +32,7 @@
                   required></v-text-field>
               </v-flex>
               <v-flex class="text-xs-center" mt-5>
-                <v-btn color="light-blue darken-3" type="submit" v-on:click="register">Submit</v-btn>
+                <v-btn color="blue-grey lighten-5" type="submit" v-on:click="register">Submit</v-btn>
               </v-flex>
             </v-layout>
           </form>

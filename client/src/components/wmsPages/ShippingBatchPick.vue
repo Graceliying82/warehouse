@@ -66,7 +66,14 @@
         </panel>
       </v-flex>
       <v-flex v-if = showPrintable mt-5>
+        <v-layout row>
         <v-btn dark @click.prevent="planPickUp()">Plan a Pick Up</v-btn>
+        <v-checkbox
+          v-model="includeWMS"
+          label="Include WMS Inventory"
+          value=true
+        ></v-checkbox>
+        </v-layout>
         <v-flex>
           <v-alert
             v-show = showAlert2
@@ -93,33 +100,35 @@
               </v-flex>
               <v-btn dark @click.prevent='printContent()'>Print</v-btn>
             </panel>
-        </div>
-        <v-flex v-for = "(item, i) in retUPCQtyList" :key = i my-2>
-          <v-card v-bind:class = item.color>
-            <v-card-title>
-              <v-list-tile-content>
-                <v-list-tile-sub-title >UPC  :  {{ item.UPC }}</v-list-tile-sub-title>
-                <v-list-tile-sub-title >Product Name  :  {{ item.prdNm }}</v-list-tile-sub-title>
-                <v-list-tile-sub-title>Total available  :  {{ item.qty }}</v-list-tile-sub-title>
-                <v-list-tile-sub-title>Total required by orders  :  {{ item.reqQty }}</v-list-tile-sub-title>
-                <br>
-              <v-layout column>
-                <template v-for="(alocInv,index) in item.locationInventory">
-                  <v-layout :key="index">
-                    <v-flex mr-5>
-                      <p :key="index+ '-loc'">Location  :  {{ alocInv.loc }}</p>
-                    </v-flex>
-                    <v-flex>
-                      <p :key="index+ '-qty'">Quantity  :  {{ alocInv.qty }}</p>
-                    </v-flex>
+          <panel title='Current Inventory'>
+            <v-flex v-for = "(item, i) in retUPCQtyList" :key = i my-2>
+              <v-card v-bind:class = item.color>
+                <v-card-title>
+                  <v-list-tile-content>
+                    <v-list-tile-sub-title >UPC  :  {{ item.UPC }}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title >Product Name  :  {{ item.prdNm }}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title>Total available  :  {{ item.qty }}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title>Total required by orders  :  {{ item.reqQty }}</v-list-tile-sub-title>
+                    <br>
+                  <v-layout column>
+                    <template v-for="(alocInv,index) in item.locationInventory">
+                      <v-layout :key="index">
+                        <v-flex mr-5>
+                          <p :key="index+ '-loc'">Location  :  {{ alocInv.loc }}</p>
+                        </v-flex>
+                        <v-flex>
+                          <p :key="index+ '-qty'">Quantity  :  {{ alocInv.qty }}</p>
+                        </v-flex>
+                      </v-layout>
+                    </template>
+                    <br>
                   </v-layout>
-                </template>
-                <br>
-              </v-layout>
-            </v-list-tile-content>
-            </v-card-title>
-          </v-card>
-        </v-flex>
+                </v-list-tile-content>
+                </v-card-title>
+              </v-card>
+            </v-flex>
+          </panel>
+        </div>
       </v-flex>
     </v-layout>
   </div>
@@ -137,6 +146,7 @@ export default {
       alertType2: 'success',
       showAlert2: false,
       message2: '',
+      includeWMS: false,
       inputTracking: '',
       shipments: [],
       shipmentHeaders: [
@@ -177,6 +187,7 @@ export default {
       this.shipments = []
       this.showPrintable = false
       this.showPickUp = false
+      this.includeWMS = false
       this.upcQtyList = []
       this.retUPCQtyList = []
       this.pickUPList = []
@@ -259,7 +270,7 @@ export default {
           }
         }
       }
-      console.log(this.upcQtyList)
+      // console.log(this.upcQtyList)
       let upcList = ''
       for (let i = 0; i < this.upcQtyList.length; i++) {
         upcList = upcList + this.upcQtyList[i].UPC
@@ -267,11 +278,10 @@ export default {
           upcList = upcList + ','
         }
       }
-      console.log(upcList)
+      // console.log(upcList)
       try {
         this.retUPCQtyList = (await ProductInv.getByUPC(upcList)).data
         this.mergeRetAndReq()
-        // this.$forceUpdate()
         console.log(this.retUPCQtyList)
       } catch (error) {
         if (!error.response) {
@@ -322,56 +332,119 @@ export default {
         return b
       }
     },
+    // This function will be called before trying to plan a pickup.
+    // System will not plan a pick up if there are backorders in batch orders
+    // If includeWMS not true, the function has to went through every UPC and minors WMS inventory before calculate backorders.
+    isBatchBackOrder (includeWMS) {
+      let backOrder = false
+      if (includeWMS) {
+        for (let aUPC of this.retUPCQtyList) {
+          if (aUPC.color === this.Colors[1]) {
+            backOrder = true
+            break
+          }
+        }
+      } else {
+        // not include WMS inventory
+        let actQty = 0
+        for (let item of this.retUPCQtyList) {
+          for (let aInv of item.locationInventory) {
+            if (aInv.loc !== 'WMS') {
+              actQty += aInv.qty
+            }
+          }
+          if (actQty < item.reqQty) {
+            backOrder = true
+            break
+          }
+        }
+      }
+      return backOrder
+    },
     planPickUp () {
       // make a pickUPList
       // {loc: 'A001',
       //  items: {UPC: '12345', qty: 3}
       // }
       // check order availability
-      let backOrder = false
-      this.showPickUp = true
-      for (let aUPC of this.retUPCQtyList) {
-        if (aUPC.color === this.Colors[1]) {
-          backOrder = true
-          break
-        }
-      }
+      // console.log(this.includeWMS)
+      let backOrder = this.isBatchBackOrder(this.includeWMS)
       if (backOrder) {
         this.setAlert2('error', 'Some Orders have not enough inventory. Please check.')
       } else {
-        for (let aUPC of this.retUPCQtyList) {
-          let leftQty = aUPC.reqQty
-          for (let alocIn of aUPC.locationInventory) {
-            let idx = -1
-            for (let i = 0; i < this.pickUPList.length; i++) {
-              if (alocIn.loc === this.pickUPList[i].loc) {
-                // Add one more pick up to this loc
+        this.pickUPList = []
+        this.showPickUp = true
+        if (this.includeWMS) {
+          for (let aUPC of this.retUPCQtyList) {
+            let leftQty = aUPC.reqQty
+            for (let alocIn of aUPC.locationInventory) {
+              let idx = -1
+              for (let i = 0; i < this.pickUPList.length; i++) {
+                if (alocIn.loc === this.pickUPList[i].loc) {
+                  // Add one more pick up to this loc
+                  let minQty = this.min(leftQty, alocIn.qty)
+                  this.pickUPList[i].items.push({UPC: aUPC.UPC, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                  leftQty = leftQty - minQty
+                  idx = i
+                  break
+                }
+              }
+              if (idx === -1) {
+                // Not found this loc before
                 let minQty = this.min(leftQty, alocIn.qty)
-                this.pickUPList[i].items.push({UPC: aUPC.UPC, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                this.pickUPList.push({
+                  loc: alocIn.loc,
+                  items: [{
+                    UPC: aUPC.UPC,
+                    prdNm: aUPC.prdNm,
+                    qty: minQty
+                  }]
+                })
                 leftQty = leftQty - minQty
-                idx = i
+              }
+              if (leftQty === 0) {
                 break
               }
             }
-            if (idx === -1) {
-              // Not found this loc before
-              let minQty = this.min(leftQty, alocIn.qty)
-              this.pickUPList.push({
-                loc: alocIn.loc,
-                items: [{
-                  UPC: aUPC.UPC,
-                  prdNm: aUPC.prdNm,
-                  qty: minQty
-                }]
-              })
-              leftQty = leftQty - minQty
-            }
-            if (leftQty === 0) {
-              break
+          }
+        } else {
+          for (let aUPC of this.retUPCQtyList) {
+            let leftQty = aUPC.reqQty
+            for (let alocIn of aUPC.locationInventory) {
+              let idx = -1
+              if (alocIn.loc === 'WMS') {
+                continue
+              } else {
+                for (let i = 0; i < this.pickUPList.length; i++) {
+                  if (alocIn.loc === this.pickUPList[i].loc) {
+                    // Add one more pick up to this loc
+                    let minQty = this.min(leftQty, alocIn.qty)
+                    this.pickUPList[i].items.push({UPC: aUPC.UPC, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                    leftQty = leftQty - minQty
+                    idx = i
+                    break
+                  }
+                }
+                if (idx === -1) {
+                  // Not found this loc before
+                  let minQty = this.min(leftQty, alocIn.qty)
+                  this.pickUPList.push({
+                    loc: alocIn.loc,
+                    items: [{
+                      UPC: aUPC.UPC,
+                      prdNm: aUPC.prdNm,
+                      qty: minQty
+                    }]
+                  })
+                  leftQty = leftQty - minQty
+                }
+                if (leftQty === 0) {
+                  break
+                }
+              }
             }
           }
         }
-        console.log(this.pickUPList)
       }
     },
     printContent () {

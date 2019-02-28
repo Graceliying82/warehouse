@@ -22,34 +22,34 @@
               <h3 align='left'>Move out location: {{moLoc1}}</h3>
               <br>
               <v-layout>
-                  <v-flex>
+                <v-flex>
                   <v-data-table
-                  :headers="moItems1Headers"
-                  :items="moItems1"
-                  :rows-per-page-items="rowsPerPageItems"
-                  class="elevation-1">
-                    <template slot="items" slot-scope="props">
-                      <td
-                        class="text-xs-left">{{ props.item.UPC }}</td>
-                      <td
-                        class="text-xs-left">
-                        <v-btn icon class="mx-0" @click="props.item.qty += 1">
-                          <v-icon color="teal">add_circle</v-icon>
-                        </v-btn>
-                        {{ props.item.qty }}
-                        <v-btn icon class="mx-0"
-                          @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
-                          <v-icon color="teal">remove_circle</v-icon>
-                        </v-btn>
-                      </td>
-                      <td class="text-xs-left">
-                        <!-- Start of Action buttons -->
-                        <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
-                          <v-icon color="teal">delete_forever</v-icon>
-                        </v-btn>
-                        <!-- End of Action buttons -->
-                      </td>
-                    </template>
+                    :headers="moItems1Headers"
+                    :items="moItems1"
+                    :rows-per-page-items="rowsPerPageItems"
+                    class="elevation-1">
+                      <template slot="items" slot-scope="props">
+                        <td
+                          class="text-xs-left">{{ props.item.UPC }}</td>
+                        <td
+                          class="text-xs-left">
+                          <v-btn icon class="mx-0" @click="props.item.qty += 1">
+                            <v-icon color="teal">add_circle</v-icon>
+                          </v-btn>
+                          {{ props.item.qty }}
+                          <v-btn icon class="mx-0"
+                            @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
+                            <v-icon color="teal">remove_circle</v-icon>
+                          </v-btn>
+                        </td>
+                        <td class="text-xs-left">
+                          <!-- Start of Action buttons -->
+                          <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
+                            <v-icon color="teal">delete_forever</v-icon>
+                          </v-btn>
+                          <!-- End of Action buttons -->
+                        </td>
+                      </template>
                   </v-data-table>
                   </v-flex>
                 </v-layout>
@@ -57,7 +57,7 @@
                 <v-btn dark @click.prevent="reset">Reset</v-btn>
             </v-card-text>
             <!-- Manual input area-->
-            <v-layout ma-5 >
+            <v-layout my-2 mx-5>
               <v-text-field
                 label="Move out Location"
                 id="moLocMan"
@@ -65,7 +65,15 @@
               ></v-text-field>
               <v-btn @click = "changeMoLocMan">Change</v-btn>
             </v-layout>
-            <v-layout ma-5 >
+            <v-layout my-2 mx-5>
+              <v-text-field
+                label="UPC"
+                id="moUPCMan"
+                clearable
+              ></v-text-field>
+              <v-btn @click = "changeMoUPCMan">Change</v-btn>
+            </v-layout>
+            <v-layout my-2 mx-5>
               <v-text-field
                 label="Note"
                 v-model="note"
@@ -200,6 +208,15 @@ export default {
         }
       })
     },
+    changeMoUPCMan () {
+      this.clearAlert()
+      let aLoc = document.getElementById('moUPCMan').value
+      if (this.moLoc1 === '') {
+        this.setAlert('error', 'Set Location for move out first')
+      } else {
+        this.handleUPCInput(aLoc)
+      }
+    },
     async checkLocationExisted (locID) {
       try {
         let locIDExisted = await Location.checkLocationExisted(locID)
@@ -320,6 +337,36 @@ export default {
     barcodeDestroy () {
       this.removeListener('keypress')
       this.removeListener('keydown')
+    },
+    async batchPick () {
+      try {
+        if (this.moItems1.length === 0) {
+          this.setAlert('error', 'UPC is required!')
+        } else {
+          // await ProductInv.moveInBatch({
+          //   'move': this.moItems1,
+          //   'locFrom': this.moLoc1,
+          //   'locTo': 'WMS',
+          //   'note': ''
+          // })
+          console.log(this.moItems1)
+          console.log(this.moLoc1)
+          this.setAlert('success', 'Reserved for packaging successfully!')
+          this.clearMoveItems()
+        }
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.data.error)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
     }
   },
   created () {
