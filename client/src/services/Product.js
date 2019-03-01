@@ -25,5 +25,8 @@ export default {
   },
   deleteConfig (data) {
     return Api().post('/products/deleteConfig', data)
+  },
+  getUPCsByOrig (data) {
+    return Api().post('/products/getUPCsByOrig', data)
   }
 }

@@ -207,7 +207,7 @@
         <v-layout row mt-3>
           <v-flex xs4 sm2  mr-2>
             <v-text-field
-                label="HD1 Type"
+                label="HD2 Type"
                 outline
                 readonly
               ></v-text-field>
@@ -224,7 +224,7 @@
         <v-layout row mt-3>
           <v-flex xs4 sm2  mr-2>
             <v-text-field
-                label="HD1 Size"
+                label="HD2 Size"
                 outline
                 readonly
               ></v-text-field>
@@ -249,7 +249,32 @@
         <v-btn dark @click.prevent="genProducts()">Generate</v-btn>
       </v-card-title>
       <v-card-text>
+        <v-data-table
+          :items="generatedPrds"
+          class="elevation-1"
+          :headers = "genPrdHeader"
+          :rows-per-page-items="rowsPerPageItems"
+        >
+          <template slot="items" slot-scope="props">
+            <td class="text-xs-left">{{ props.item.UPC }}</td>
+            <td class="text-xs-left">{{ props.item.ramType }}</td>
+            <td class="text-xs-left">{{ props.item.ramSz }}</td>
+            <td class="text-xs-left">{{ props.item.optSys }}</td>
+            <td class="text-xs-left">{{ props.item.hd1Type }}</td>
+            <td class="text-xs-left">{{ props.item.hd1Size }}</td>
+            <td class="text-xs-left">{{ props.item.hd2Type }}</td>
+            <td class="text-xs-left">{{ props.item.hd2Size }}</td>
+          </template>
+        </v-data-table>
       </v-card-text>
+    </v-card>
+    <v-card v-if=showStep4>
+      <v-card-title class="title font-weight-light blue-grey lighten-5">
+        <span style='margin-right:1.25em; display:inline-block;'>Step 4 : Submit</span>
+        <v-spacer></v-spacer>
+        <v-btn dark @click.prevent="ClearAll()">Clear All</v-btn>
+        <v-btn dark @click.prevent="submit()">Submit</v-btn>
+      </v-card-title>
     </v-card>
   </div>
 </template>
@@ -265,6 +290,7 @@ export default {
       message: '',
       showAlertDialog: false,
       showStep2: false,
+      showStep4: false,
       UPCInput: '',
       SchemaDBName: ['ramType', 'ramSz', 'optSys', 'hdType', 'hdSize', 'cat'],
       SchemaDBValues: {
@@ -291,7 +317,18 @@ export default {
         origUPC: ''
       },
       prdBasic: {},
-      computerSpec: ''
+      computerSpec: '',
+      genPrdHeader: [
+        { text: 'UPC', align: 'left', value: 'UPC' },
+        { text: 'Ram Type', align: 'left', value: 'ramType' },
+        { text: 'Ram Size', align: 'left', value: 'ramSz' },
+        { text: 'OS', align: 'left', value: 'optSys' },
+        { text: 'HD1 Type', align: 'left', value: 'hd1Type' },
+        { text: 'HD1 Size', align: 'left', value: 'hd1Size' },
+        { text: 'HD2 Type', align: 'left', value: 'hd2Type' },
+        { text: 'HD2 Size', align: 'left', value: 'hd2Size' }
+      ],
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
   },
   methods: {
@@ -303,6 +340,26 @@ export default {
       this.message = message
       this.alertType = type
       this.showAlert = true
+    },
+    ClearAll () {
+      this.clearAlert()
+      this.showStep2 = false
+      this.showStep4 = false
+      this.UPCInput = ''
+      this.ramTypeList = []
+      this.ramSizeList = []
+      this.osList = []
+      this.hd1TypeList = []
+      this.hd1SzList = []
+      this.hd2TypeList = []
+      this.hd2SzList = []
+      this.generatedPrds = []
+      this.configLists = {}
+      this.newPrdBasic.UPC = ''
+      this.newPrdBasic.prdNm = ''
+      this.newPrdBasic.origUPC = ''
+      this.prdBasic = {}
+      this.computerSpec = ''
     },
     setAlertDialog (message) {
       this.message = message
@@ -463,7 +520,7 @@ export default {
       return true
     },
     genUPC (baseUPC, product) {
-      console.log(product)
+      // console.log(product)
       let newUPC = baseUPC +
                   '-' + product.ramType +
                   '-' + product.ramSz +
@@ -474,10 +531,11 @@ export default {
                   '-' + product.hd2Size
       return newUPC
     },
-    genProducts () {
+    async genProductsList () {
       if (!this.passConfigurationCheck()) {
         this.setAlertDialog('Every configuration should have at least one default value.')
       } else {
+        this.generatedPrds = []
         if (this.newPrdBasic.UPC !== '') {
           let aProduct = {}
           // let selected = this.listSelected(this.ramTypeList)
@@ -504,7 +562,8 @@ export default {
                                     if (aHD2Sz.value === true) {
                                       aProduct.hd2Size = aHD2Sz.name
                                       aProduct.UPC = this.genUPC(this.prdBasic._id, aProduct)
-                                      this.generatedPrds.push(aProduct)
+                                      let cloneProduct = await Object.assign({}, aProduct)
+                                      this.generatedPrds.push(cloneProduct)
                                     }
                                   }
                                 }
@@ -519,9 +578,31 @@ export default {
               }
             }
           }
-          console.log(this.generatedPrds)
+          // console.log(this.generatedPrds)
+          if (this.generatedPrds.length > 0) {
+            this.showStep4 = true
+          }
         }
       }
+    },
+    async removeCreatedPrd () {
+      let existedUPCList = (await Product.getUPCsByOrig({'UPC': this.newPrdBasic.UPC})).data
+      console.log(existedUPCList)
+      for (let aUPC of existedUPCList) {
+        if (aUPC._id === aUPC.origUPC) {
+          aUPC._id = this.genUPC(aUPC._id, aUPC.compSpec)
+        }
+        for (let i = 0; i < this.generatedPrds.length; i++) {
+          if (this.generatedPrds[i].UPC === aUPC._id) {
+            console.log('Deleting UPC :' + this.generatedPrds[i].UPC)
+            this.generatedPrds.splice(i, 1)
+          }
+        }
+      }
+    },
+    async genProducts () {
+      await this.genProductsList()
+      await this.removeCreatedPrd()
     },
     async save () {
       try {
@@ -530,7 +611,6 @@ export default {
         this.prdBasic.UPC = this.prdBasic._id
         // console.log(this.prdBasic)
         await Product.put(this.prdBasic)
-        // this.clearData()
         this.setAlertDialog('Update product information successfully.')
       } catch (error) {
         if (!error.response) {
@@ -548,9 +628,59 @@ export default {
     },
     async deleteConfig () {
       try {
-        await Product.deleteConfig({'UPC': this.prdBasic.origUPC})
-        // this.clearData()
+        await Product.deleteConfig({'UPC': this.prdBasic.origUPC, 'UPCOnly': true})
         this.setAlertDialog('Update product information successfully.')
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlertDialog('Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlertDialog(error.response.data.error)
+        }
+      }
+    },
+    async submit () {
+      try {
+        // Save configuration to root product
+        await this.save()
+        if (this.generatedPrds.length > 0) {
+          this.setAlertDialog('This may take a while. Please wait')
+          for (let aPrd of this.generatedPrds) {
+            await Product.put({
+              'UPC': aPrd.UPC,
+              'origUPC': this.newPrdBasic.UPC,
+              'prdNm': this.prdBasic.prdNm,
+              'length': this.prdBasic.length,
+              'width': this.prdBasic.width,
+              'height': this.prdBasic.height,
+              'weight': this.prdBasic.weight,
+              'volume': this.prdBasic.volume,
+              'color': this.prdBasic.color,
+              'brdNm': this.prdBasic.brdNm,
+              'modNo': this.prdBasic.modNo,
+              'modYr': this.prdBasic.modYr,
+              'cat': this.prdBasic.cat,
+              'cstmiz': this.prdBasic.cstmiz,
+              'compSpec': {
+                'ramSz': aPrd.ramSz,
+                'ramType': aPrd.ramType,
+                'optSys': aPrd.optSys,
+                'hd1Type': aPrd.hd1Type,
+                'hd1Size': aPrd.hd1Size,
+                'hd2Type': aPrd.hd2Type,
+                'hd2Size': aPrd.hd2Size,
+                'caddy': this.computerSpec.caddy,
+                'dvd': this.computerSpec.dvd
+              }
+            })
+          }
+          this.setAlertDialog('Done Updating')
+        }
       } catch (error) {
         if (!error.response) {
           // network error

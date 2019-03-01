@@ -42,7 +42,7 @@
           </v-flex>
           <v-flex mx-5 md4>
             <v-select
-            :items ="CategoryChoice"
+            :items ="SchemaDBValues['cat']"
             v-model="prdBasic.cat"
             label="Category"
             v-on:change="chooseCategory()"
@@ -147,25 +147,30 @@
         </v-flex>
         <!-- First Row -->
         <v-layout row>
-          <v-flex ml-2 mr-5 md2>
-            <v-text-field
+          <v-flex ml-2 mr-3 md2>
+            <v-select
+              :items ="SchemaDBValues['ramSz']"
               v-model="computerSpec.ramSz"
               label="Ram size"
-            ></v-text-field>
+              required
+              ></v-select>
           </v-flex>
-          <v-flex mx-5 md2>
-            <v-text-field
+          <v-flex mx-3 md2>
+            <v-select
+              :items ="SchemaDBValues['ramType']"
               v-model="computerSpec.ramType"
               label="Ram Type"
-            ></v-text-field>
+              required
+              ></v-select>
           </v-flex>
-          <v-flex mx-5 md2>
-            <v-text-field
+          <v-flex mx-3 md2>
+            <v-select
+              :items ="SchemaDBValues['optSys']"
               v-model="computerSpec.optSys"
-              label="operation System"
-            ></v-text-field>
+              label="Operation System"
+              ></v-select>
           </v-flex>
-          <v-flex mx-5 md2>
+          <v-flex mx-3 md2>
             <v-select
             :items ="DvdChoice"
             v-model="computerSpec.dvd"
@@ -173,7 +178,7 @@
             v-on:change="chooseCategory()"
             required></v-select>
           </v-flex>
-          <v-flex ml-5 mr-2 md2>
+          <v-flex ml-3 mr-2 md2>
             <v-select
             :items ="DvdChoice"
             v-model="computerSpec.caddy"
@@ -184,35 +189,37 @@
         </v-layout>
         <!-- Second Row -->
         <v-layout row>
-          <v-flex ml-2 mr-5 md2>
-            <v-text-field
-              v-model="computerSpec.sdSize"
-              label="Sd Card Size"
-            ></v-text-field>
-          </v-flex>
-          <v-flex mx-5 md2>
-            <v-text-field
-              v-model="computerSpec.hd1Size"
-              label="Hard Drive #1 Size"
-            ></v-text-field>
-          </v-flex>
-          <v-flex mx-5 md2>
-            <v-text-field
+          <v-flex mr-3 md2>
+            <v-select
+              :items ="SchemaDBValues['hdType']"
               v-model="computerSpec.hd1Type"
-              label="Hard Drive #1 Type"
-            ></v-text-field>
+              label="HD1 Type"
+              required
+              ></v-select>
           </v-flex>
-          <v-flex mx-5 md2>
-            <v-text-field
-              v-model="computerSpec.hd2Size"
-              label="Hard Drive #2 Size"
-            ></v-text-field>
+          <v-flex mx-3 md2>
+            <v-select
+              :items ="SchemaDBValues['hdSize']"
+              v-model="computerSpec.hd1Size"
+              label="HD1 Size"
+              required
+              ></v-select>
           </v-flex>
-          <v-flex ml-5 mr-2 md2>
-            <v-text-field
+          <v-flex mx-3 md2>
+            <v-select
+              :items ="SchemaDBValues['hdType']"
               v-model="computerSpec.hd2Type"
-              label="Hard Drive #2 Type"
-            ></v-text-field>
+              label="HD2 Type"
+              required
+              ></v-select>
+          </v-flex>
+          <v-flex mx-3 md2>
+            <v-select
+              :items ="SchemaDBValues['hdSize']"
+              v-model="computerSpec.hd2Size"
+              label="HD2 Size"
+              required
+              ></v-select>
           </v-flex>
         </v-layout>
       </v-layout>
@@ -270,6 +277,16 @@ export default {
         'hd1Type': 'N/A', // hard drive #1 type
         'hd2Size': 'N/A', // hard drive #2 size
         'hd2Type': 'N/A' // hard drive #2 type
+      },
+      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'hdType', 'hdSize', 'cat'],
+      SchemaDBValues: {
+        'ramType': [],
+        'ramSz': [],
+        'optSys': [],
+        'dvd': ['Yes', 'No'],
+        'hdType': [],
+        'hdSize': [],
+        'cat': []
       },
       rules: {
         valuePos: val => val >= 0 || 'Not a valid number'
@@ -383,17 +400,17 @@ export default {
       this.prdBasic.modYr = this.prdBasic.modYr.trim()
       this.prdBasic.note = this.prdBasic.note.trim()
       this.prdBasic.cat = this.prdBasic.cat.trim()
-      if (this.prdBasic.cat === 'Computer') {
-        this.computerSpec.ramSz = this.computerSpec.ramSz.trim()
-        this.computerSpec.ramType = this.computerSpec.ramType.trim()
-        this.computerSpec.optSys = this.computerSpec.optSys.trim()
-        this.computerSpec.dvd = this.computerSpec.dvd.trim()
-        this.computerSpec.sdSize = this.computerSpec.sdSize.trim()
-        this.computerSpec.hdSize = this.computerSpec.hd1Size.trim()
-        this.computerSpec.hdType = this.computerSpec.hd1Type.trim()
-        this.computerSpec.hdSize = this.computerSpec.hd2Size.trim()
-        this.computerSpec.hdType = this.computerSpec.hd2Type.trim()
-      }
+      // if (this.prdBasic.cat === 'Computer') {
+      //   this.computerSpec.ramSz = this.computerSpec.ramSz.trim()
+      //   this.computerSpec.ramType = this.computerSpec.ramType.trim()
+      //   this.computerSpec.optSys = this.computerSpec.optSys.trim()
+      //   this.computerSpec.dvd = this.computerSpec.dvd.trim()
+      //   this.computerSpec.sdSize = this.computerSpec.sdSize.trim()
+      //   this.computerSpec.hdSize = this.computerSpec.hd1Size.trim()
+      //   this.computerSpec.hdType = this.computerSpec.hd1Type.trim()
+      //   this.computerSpec.hdSize = this.computerSpec.hd2Size.trim()
+      //   this.computerSpec.hdType = this.computerSpec.hd2Type.trim()
+      // }
     },
     async submit () {
       if (this.prdBasic.UPC === '') {
@@ -424,12 +441,32 @@ export default {
           }
         }
       }
+    },
+    async getSchemaDBValues () {
+      try {
+        for (let aSchNm of this.SchemaDBName) {
+          let result = (await Tempschema.getByID(aSchNm)).data
+          this.SchemaDBValues[aSchNm] = result.value
+        }
+        // console.log(this.SchemaDBValues)
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
     }
   },
   async created () {
     try {
-      let result = (await Tempschema.getByID('cat')).data
-      this.CategoryChoice = result.value
+      await this.getSchemaDBValues()
     } catch (error) {
       if (!error.response) {
         // network error

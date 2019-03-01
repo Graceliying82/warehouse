@@ -89,7 +89,6 @@ module.exports = {
   async put(req, res, next) {
     const prdCollection = req.db.collection("product");
     try {
-      let UPC = req.body.UPC;
       let modifyTime = new Date();
       let mdfTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       let mdfStmp = modifyTime.getTime();
@@ -490,8 +489,6 @@ module.exports = {
   async deleteConfig (req, res, next) {
     const dbcollection = req.db.collection("product");
     try {
-      let UPC = req.body.UPC;
-      // req.body.createTime = new Date().toLocaleString();
       let result1 = await dbcollection.findOne({_id: req.body.UPC})
       if (!result1) {
         const error = new Error('Not a valid UPC');
@@ -507,6 +504,27 @@ module.exports = {
         }
       )
       res.send('success');
+      res.end();
+    } catch (error) {
+      console.log("Create Product error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
+  async getUPCsByOrig (req, res, next) {
+    const dbcollection = req.db.collection("product");
+    try {
+      let result = []
+      if (req.body.UPCOnly) {
+        // return _id and origUPC only
+        result = await dbcollection.find({origUPC: req.body.UPC}).project({ _id: 1, origUPC: 1, compSpec: 1 }).toArray()
+      } else {
+        // return full list
+        result = await dbcollection.find({origUPC: req.body.UPC}).toArray()
+      }
+      res.send(result);
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);
