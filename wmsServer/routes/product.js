@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt')
+const nextKey = require('./nextKey');
 var ObjectId = require('mongodb').ObjectID
 module.exports = {
   //  Get Products
@@ -41,6 +42,7 @@ module.exports = {
       let createTime = new Date();
       req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       req.body.crtStmp = createTime.getTime();
+      req.body.pid = await nextKey("product",req.db);
       let result1 = await dbcollection.findOne({_id: UPC})
       if (result1) {
         const error = new Error('Product UPC existed.');
