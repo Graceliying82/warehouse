@@ -67,23 +67,23 @@ module.exports = {
   //   'height': 0, // By inch
   //   'weight': 0, // By oz
   //   'volume': 0, // By ml
-  //   'color': 'N/A',
-  //   'brdNm': 'N/A', // Brand Name
-  //   'modNo': 'N/A', // Model No
-  //   'modYr': 'N/A', // Model year
+  //   'color': 'NA',
+  //   'brdNm': 'NA', // Brand Name
+  //   'modNo': 'NA', // Model No
+  //   'modYr': 'NA', // Model year
   //   'note': '',
-  //   'category': 'N/A', //category
+  //   'category': 'NA', //category
   //   'customizable': false //customizable
   //    compSpec: {  // If 'category' === 'computer' otherwise will be 'null'
-  //      'ramSz': 'N/A', // Ram Size
-  //      'ramType': 'N/A', // Ram Size
-  //      'optSys': 'N/A', // operation system
+  //      'ramSz': 'NA', // Ram Size
+  //      'ramType': 'NA', // Ram Size
+  //      'optSys': 'NA', // operation system
   //      'dvd': 'No',
-  //      'sdSize': 'N/A', // sd card size
-  //      'hd1Size': 'N/A', // hard drive #1 size
-  //      'hd1Type': 'N/A', // hard drive #1 type
-  //      'hd2Size': 'N/A', // hard drive #2 size
-  //      'hd2Type': 'N/A' // hard drive #2 type
+  //      'sdSize': 'NA', // sd card size
+  //      'hd1Size': 'NA', // hard drive #1 size
+  //      'hd1Type': 'NA', // hard drive #1 type
+  //      'hd2Size': 'NA', // hard drive #2 size
+  //      'hd2Type': 'NA' // hard drive #2 type
   // }, 
   // },
   async put(req, res, next) {
@@ -374,7 +374,7 @@ module.exports = {
   },
 
   // Delete a receiving records information
-  async deleteProduct(req, res, next) {
+  async deleteInvReceive(req, res, next) {
     const invReceivecollection = req.db.collection("inventoryReceive");
     const sellerInvCollection = req.db.collection("sellerInv");
     const locInvCollection = req.db.collection("locationInv");
@@ -525,6 +525,24 @@ module.exports = {
         result = await dbcollection.find({origUPC: req.body.UPC}).toArray()
       }
       res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("Create Product error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
+  async deleteProduct (req, res, next) {
+    const dbcollection = req.db.collection("product");
+    try {
+      await dbcollection.deleteOne(
+        {
+          "_id": req.body.UPC
+        } //query
+      )
+      res.send('Delete Success!');
       res.end();
     } catch (error) {
       console.log("Create Product error: " + error);

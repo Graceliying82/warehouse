@@ -341,11 +341,7 @@ export default {
       this.alertType = type
       this.showAlert = true
     },
-    ClearAll () {
-      this.clearAlert()
-      this.showStep2 = false
-      this.showStep4 = false
-      this.UPCInput = ''
+    clearCheckBoxLists () {
       this.ramTypeList = []
       this.ramSizeList = []
       this.osList = []
@@ -353,6 +349,12 @@ export default {
       this.hd1SzList = []
       this.hd2TypeList = []
       this.hd2SzList = []
+    },
+    ClearAll () {
+      this.clearAlert()
+      this.showStep2 = false
+      this.showStep4 = false
+      this.clearCheckBoxLists()
       this.generatedPrds = []
       this.configLists = {}
       this.newPrdBasic.UPC = ''
@@ -389,9 +391,8 @@ export default {
       }
     },
     genCheckboxList () {
+      this.clearCheckBoxLists()
       if (Object.keys(this.configLists).length !== 0) {
-        // configuration List existed
-        console.log('ConfirgList Existed')
         this.ramTypeList = this.configLists.ramType
         this.ramSizeList = this.configLists.ramSz
         this.osList = this.configLists.os
@@ -418,6 +419,7 @@ export default {
     },
     async find () {
       this.clearAlert()
+      this.ClearAll()
       if (this.UPCInput === '') {
         this.setAlertDialog('UPC is required.')
       } else {
@@ -426,6 +428,10 @@ export default {
           this.UPCInput = ''
           if ((result === '') || (result === null) || (result === undefined)) {
             this.setAlert('error', 'UPC not found.')
+          } else if ((result.origUPC) && (result._id !== result.origUPC)) {
+            // This is not a original Product
+            console.log('here')
+            this.setAlertDialog('Generated UPC can not be use to gen new prodcuts. Try with a original UPC.')
           } else {
             this.showDetail = true
             this.newPrdBasic.UPC = result._id
@@ -586,7 +592,7 @@ export default {
       }
     },
     async removeCreatedPrd () {
-      let existedUPCList = (await Product.getUPCsByOrig({'UPC': this.newPrdBasic.UPC})).data
+      let existedUPCList = (await Product.getUPCsByOrig({'UPC': this.newPrdBasic.UPC, 'UPCOnly': true})).data
       console.log(existedUPCList)
       for (let aUPC of existedUPCList) {
         if (aUPC._id === aUPC.origUPC) {
@@ -628,7 +634,9 @@ export default {
     },
     async deleteConfig () {
       try {
-        await Product.deleteConfig({'UPC': this.prdBasic.origUPC, 'UPCOnly': true})
+        await Product.deleteConfig({'UPC': this.prdBasic.origUPC})
+        this.configLists = {}
+        this.genCheckboxList()
         this.setAlertDialog('Update product information successfully.')
       } catch (error) {
         if (!error.response) {

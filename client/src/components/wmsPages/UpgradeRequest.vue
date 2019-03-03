@@ -1,146 +1,164 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-layout justify-center column ma-5>
-      <v-flex lg6>
-        <v-alert
-          v-show = showAlert1
-          :type = alertType1
-          outline>
-            {{message1}}
-        </v-alert>
-      </v-flex>
-      <v-flex>
-        <h1>Please scan or input UPC for upgrade</h1>
-        <v-layout mx-5 >
-            <v-text-field
-              label="UPC"
-              v-model="UPCInput"
-              id="UPC"
-              clearable
-            ></v-text-field>
-            <v-btn dark @click="find()">Find</v-btn>
-          </v-layout>
-      </v-flex>
-      <!-- Show UPC Detail Information -->
-      <v-layout v-if=showDetail column mx-5>
-        <v-layout row justify-space-around>
-          <v-flex lg3>
-            <v-text-field
-              label='Current UPC'
-              v-model="UPCInvList.UPC"
-              box
-              readonly
-            ></v-text-field>
-          </v-flex >
-          <v-flex lg3>
-            <v-text-field
-              label='Product Name'
-              v-model="UPCInvList.prdNm"
-              box
-              readonly
-            ></v-text-field>
-          </v-flex >
-          <v-flex lg3>
-            <v-text-field
-              label='Total'
-              v-model="UPCInvList.qty"
-              box
-              readonly
-            ></v-text-field>
-          </v-flex >
-        </v-layout>
-        <!-- Upgrade Choice -->
-        <!-- End Upgrade Choice -->
-        <v-layout row justify-space-around>
-          <v-flex lg3>
-            <v-select
-              :items ="memItems"
-              v-model="selectMem"
-              label="Memory"
-            ></v-select>
-          </v-flex >
-          <v-flex lg3>
-            <v-select
-              :items ="HDItems"
-              v-model="selectHD"
-              label="Hard Drive"
-            ></v-select>
-          </v-flex >
-          <v-flex lg3>
-            <v-select
-              :items ="cdItems"
-              v-model="cdDrive"
-              label="Hard Drive"
-            ></v-select>
-          </v-flex >
-        </v-layout>
-        <!-- Locatin Inventory table -->
-        <v-flex lg6 ma-2>
+      <panel title='Step 1: Input base UPC for upgrading'>
+        <v-flex lg6>
+          <v-alert
+            v-show = showAlert1
+            :type = alertType1
+            outline>
+              {{message1}}
+          </v-alert>
+        </v-flex>
+        <v-flex>
+          <v-layout mx-5 >
+              <v-text-field
+                label="UPC"
+                v-model="UPCInput"
+                id="UPC"
+                clearable
+              ></v-text-field>
+              <v-btn dark @click="find()">Find</v-btn>
+            </v-layout>
+        </v-flex>
+      </panel>
+        <!-- Show UPC Detail Information -->
+        <v-layout v-if=showDetail column>
           <v-card>
-            <v-card-title class="title font-weight-light cyan lighten-4">
-              Location Inventory
-              <v-spacer></v-spacer>
-              <span > Total Upgrade {{total4Loc}}</span>
+            <v-card-title class="title font-weight-light blue-grey lighten-5">
+              <span style='margin-right:1.25em; display:inline-block;'>Step 2 : Choose configrations for target UPC</span>
             </v-card-title>
-            <v-data-table
-              :headers="locInvHeader"
-              :items="locInv"
-              :rows-per-page-items="rowsPerPageItems"
-              class="elevation-1"
-              >
-              <template slot="items" slot-scope="props">
-                <td class="text-xs-left">{{ props.item.loc }}</td>
-                <td class="text-xs-left">{{ props.item.qty }}</td>
-                <td class="text-xs-left">
-                  <v-btn icon class="mx-0" @click.prevent= addLoc(props.item)>
-                    <v-icon color="teal">add_circle</v-icon>
-                  </v-btn>
-                    {{ props.item.qtyDelta }}
-                  <v-btn icon class="mx-0" @click.prevent= subLoc(props.item)>
-                    <v-icon color="teal">remove_circle</v-icon>
-                  </v-btn>
-                </td>
-              </template>
-            </v-data-table>
+            <v-card-text>
+              <v-layout row justify-space-around>
+                <v-flex lg6 mr-3>
+                  <v-text-field
+                    label='Current UPC'
+                    v-model="UPCInvList.UPC"
+                    box
+                    readonly
+                  ></v-text-field>
+                </v-flex >
+                <v-flex lg3 mx-3>
+                  <v-text-field
+                    label='Product Name'
+                    v-model="UPCInvList.prdNm"
+                    box
+                    readonly
+                  ></v-text-field>
+                </v-flex >
+                <v-flex lg3 ml-3>
+                  <v-text-field
+                    label='Total'
+                    v-model="UPCInvList.qty"
+                    box
+                    readonly
+                  ></v-text-field>
+                </v-flex >
+              </v-layout>
+              <!-- Upgrade Choice -->
+              <!-- End Upgrade Choice -->
+              <v-layout row justify-space-around>
+                <v-flex lg3>
+                  <v-select
+                    :items ="memItems"
+                    v-model="selectMem"
+                    label="Memory"
+                  ></v-select>
+                </v-flex >
+                <v-flex lg3>
+                  <v-select
+                    :items ="HDItems"
+                    v-model="selectHD"
+                    label="Hard Drive"
+                  ></v-select>
+                </v-flex >
+                <v-flex lg3>
+                  <v-select
+                    :items ="cdItems"
+                    v-model="cdDrive"
+                    label="Hard Drive"
+                  ></v-select>
+                </v-flex >
+              </v-layout>
+            </v-card-text>
           </v-card>
-        </v-flex>
-        <!-- End Locatin Inventory table -->
-        <!-- Seller Inventory table -->
-        <v-flex lg6 ma-2>
-          <v-card-title class="title font-weight-light cyan lighten-4">
-            Seller Inventory
-            <v-spacer></v-spacer>
-            <span > Total Upgrade {{total4Seller}}</span>
-          </v-card-title>
-          <v-data-table
-            :headers="sellerInvHead"
-            :items="sellerInv"
-            :rows-per-page-items="rowsPerPageItems"
-            class="elevation-1"
-            >
-            <template slot="items" slot-scope="props">
-              <td class="text-xs-left">{{ props.item.org }}</td>
-              <td class="text-xs-left">{{ props.item.qty }}</td>
-              <td class="text-xs-left">
-                <v-btn icon class="mx-0" @click.prevent= addSeller(props.item)>
-                  <v-icon color="teal">add_circle</v-icon>
-                </v-btn>
-                  {{ props.item.qtyDelta }}
-                <v-btn icon class="mx-0" @click.prevent= subSeller(props.item)>
-                  <v-icon color="teal">remove_circle</v-icon>
-                </v-btn>
-              </td>
-            </template>
-          </v-data-table>
-        </v-flex>
-        <v-layout v-if=changed justify-center mt-2>
-          <v-btn dark @click.prevent="submit()">Submit</v-btn>
-          <v-btn dark @click.prevent="reset()">Reset</v-btn>
-          <v-btn dark @click.prevent="clear()">Clear</v-btn>
-        </v-layout>
-        <!-- End Seller Inventory table -->
-      </v-layout>
-      <!-- End Show UPC Detail Information -->
+          <!-- Locatin Inventory table -->
+          <v-card>
+            <v-card-title class="title font-weight-light blue-grey lighten-5">
+              <span style='margin-right:1.25em; display:inline-block;'>
+                Step 3 : Choose Upgrade quantity</span>
+            </v-card-title>
+            <v-card-text>
+              <v-layout row>
+                  <v-flex lg6 ma-2>
+                    <v-card>
+                      <v-card-title class="title font-weight-light cyan lighten-4">
+                        Location Inventory
+                        <v-spacer></v-spacer>
+                        <span > Total Upgrade {{total4Loc}}</span>
+                      </v-card-title>
+                      <v-data-table
+                        :headers="locInvHeader"
+                        :items="locInv"
+                        :rows-per-page-items="rowsPerPageItems"
+                        class="elevation-1"
+                        >
+                        <template slot="items" slot-scope="props">
+                          <td class="text-xs-left">{{ props.item.loc }}</td>
+                          <td class="text-xs-left">{{ props.item.qty }}</td>
+                          <td class="text-xs-left">
+                            <v-btn icon class="mx-0" @click.prevent= addLoc(props.item)>
+                              <v-icon color="teal">add_circle</v-icon>
+                            </v-btn>
+                              {{ props.item.qtyDelta }}
+                            <v-btn icon class="mx-0" @click.prevent= subLoc(props.item)>
+                              <v-icon color="teal">remove_circle</v-icon>
+                            </v-btn>
+                          </td>
+                        </template>
+                      </v-data-table>
+                    </v-card>
+                  </v-flex>
+                  <!-- End Locatin Inventory table -->
+                  <!-- Seller Inventory table -->
+                  <v-flex lg6 ma-2>
+                    <v-card-title class="title font-weight-light cyan lighten-4">
+                      Seller Inventory
+                      <v-spacer></v-spacer>
+                      <span > Total Upgrade {{total4Seller}}</span>
+                    </v-card-title>
+                    <v-data-table
+                      :headers="sellerInvHead"
+                      :items="sellerInv"
+                      :rows-per-page-items="rowsPerPageItems"
+                      class="elevation-1"
+                      >
+                      <template slot="items" slot-scope="props">
+                        <td class="text-xs-left">{{ props.item.org }}</td>
+                        <td class="text-xs-left">{{ props.item.qty }}</td>
+                        <td class="text-xs-left">
+                          <v-btn icon class="mx-0" @click.prevent= addSeller(props.item)>
+                            <v-icon color="teal">add_circle</v-icon>
+                          </v-btn>
+                            {{ props.item.qtyDelta }}
+                          <v-btn icon class="mx-0" @click.prevent= subSeller(props.item)>
+                            <v-icon color="teal">remove_circle</v-icon>
+                          </v-btn>
+                        </td>
+                      </template>
+                    </v-data-table>
+                  </v-flex>
+                </v-layout>
+              </v-card-text>
+            </v-card>
+            <v-layout v-if=changed justify-center mt-2>
+              <v-btn dark @click.prevent="submit()">Submit</v-btn>
+              <v-btn dark @click.prevent="reset()">Reset</v-btn>
+              <v-btn dark @click.prevent="clear()">Clear</v-btn>
+            </v-layout>
+            <!-- End Seller Inventory table -->
+          </v-layout>
+        <!-- End Show UPC Detail Information -->
     </v-layout>
   </div>
 </template>
