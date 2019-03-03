@@ -20,7 +20,7 @@ export default {
   updateProduct (data) {
     return Api().post('/receiveUpdate', data)
   },
-  deleteProduct (data) {
+  deleteInvReceive (data) {
     return Api().post('/receiveDelete', data)
   },
   deleteConfig (data) {
@@ -28,5 +28,8 @@ export default {
   },
   getUPCsByOrig (data) {
     return Api().post('/products/getUPCsByOrig', data)
+  },
+  deleteProduct (data) {
+    return Api().post('/products/deleteProduct', data)
   }
 }

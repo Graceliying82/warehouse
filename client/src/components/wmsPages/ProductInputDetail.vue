@@ -27,17 +27,11 @@
         <!-- First Row -->
         <h2>Basic Infomation</h2>
         <v-layout row mx-5>
-          <v-flex mr-5 md4>
+          <v-flex mr-5 md8>
             <v-text-field
               v-model="prdBasic.UPC"
               label="UPC"
               required
-            ></v-text-field>
-          </v-flex>
-          <v-flex mx-5 md4>
-            <v-text-field
-              v-model="prdBasic.prdNm"
-              label="Product Name"
             ></v-text-field>
           </v-flex>
           <v-flex mx-5 md4>
@@ -59,6 +53,12 @@
         <!-- Second Row -->
         <v-layout row>
           <v-flex mx-5 md4>
+            <v-text-field
+              v-model="prdBasic.prdNm"
+              label="Product Name"
+            ></v-text-field>
+          </v-flex>
+          <v-flex mx-5 md4>
           <v-text-field
             v-model="prdBasic.brdNm"
             label="Brand Name"
@@ -77,10 +77,11 @@
             ></v-text-field>
           </v-flex>
           <v-flex mx-5 md4>
-            <v-text-field
+            <v-select
+              :items ="SchemaDBValues['color']"
               v-model="prdBasic.color"
               label="Color"
-            ></v-text-field>
+              ></v-select>
           </v-flex>
         </v-layout>
         <!-- Third Row -->
@@ -255,30 +256,30 @@ export default {
         'height': 0, // By inch
         'weight': 0, // By oz
         'volume': 0, // By ml
-        'color': 'N/A',
-        'brdNm': 'N/A', // Brand Name
-        'modNo': 'N/A', // Model No
-        'modYr': 'N/A', // Model year
+        'color': 'NA',
+        'brdNm': 'NA', // Brand Name
+        'modNo': 'NA', // Model No
+        'modYr': 'NA', // Model year
         'note': '',
-        'cat': 'N/A', // category
+        'cat': 'NA', // category
         'cstmiz': false // customizable
       },
       CategoryChoice: [],
       DvdChoice: ['No', 'Yes'],
       csmzChoice: [true, false],
       computerSpec: {
-        'ramSz': 'N/A', // Ram Size
-        'ramType': 'N/A', // Ram Size
-        'optSys': 'N/A', // operation system
+        'ramSz': 'NA', // Ram Size
+        'ramType': 'NA', // Ram Size
+        'optSys': 'NA', // operation system
         'dvd': 'No',
         'caddy': 'No',
-        'sdSize': 'N/A', // sd card size
-        'hd1Size': 'N/A', // hard drive #1 size
-        'hd1Type': 'N/A', // hard drive #1 type
-        'hd2Size': 'N/A', // hard drive #2 size
-        'hd2Type': 'N/A' // hard drive #2 type
+        'sdSize': 'NA', // sd card size
+        'hd1Size': 'NA', // hard drive #1 size
+        'hd1Type': 'NA', // hard drive #1 type
+        'hd2Size': 'NA', // hard drive #2 size
+        'hd2Type': 'NA' // hard drive #2 type
       },
-      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'hdType', 'hdSize', 'cat'],
+      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'hdType', 'hdSize', 'cat', 'color'],
       SchemaDBValues: {
         'ramType': [],
         'ramSz': [],
@@ -286,7 +287,8 @@ export default {
         'dvd': ['Yes', 'No'],
         'hdType': [],
         'hdSize': [],
-        'cat': []
+        'cat': [],
+        'color': []
       },
       rules: {
         valuePos: val => val >= 0 || 'Not a valid number'
@@ -315,23 +317,23 @@ export default {
       this.prdBasic.height = 0
       this.prdBasic.weight = 0
       this.prdBasic.volume = 0
-      this.prdBasic.color = 'N/A'
-      this.prdBasic.brdNm = 'N/A'
-      this.prdBasic.modNo = 'N/A'
-      this.prdBasic.modYr = 'N/A'
+      this.prdBasic.color = 'NA'
+      this.prdBasic.brdNm = 'NA'
+      this.prdBasic.modNo = 'NA'
+      this.prdBasic.modYr = 'NA'
       this.prdBasic.note = ''
-      this.prdBasic.cat = 'N/A'
+      this.prdBasic.cat = 'NA'
       this.prdBasic.cstmiz = false
-      this.computerSpec.ramSz = 'N/A'
-      this.computerSpec.ramType = 'N/A'
-      this.computerSpec.optSys = 'N/A'
+      this.computerSpec.ramSz = 'NA'
+      this.computerSpec.ramType = 'NA'
+      this.computerSpec.optSys = 'NA'
       this.computerSpec.dvd = 'No'
       this.computerSpec.caddy = 'No'
-      this.computerSpec.sdSize = 'N/A'
-      this.computerSpec.hd1Size = 'N/A'
-      this.computerSpec.hd1Type = 'N/A'
-      this.computerSpec.hd2Size = 'N/A'
-      this.computerSpec.hd2Type = 'N/A'
+      this.computerSpec.sdSize = 'NA'
+      this.computerSpec.hd1Size = 'NA'
+      this.computerSpec.hd1Type = 'NA'
+      this.computerSpec.hd2Size = 'NA'
+      this.computerSpec.hd2Type = 'NA'
     },
     reset () {
       this.clearData()
@@ -347,7 +349,9 @@ export default {
       this.prdBasic = result
       this.prdBasic.UPC = result._id
       if (this.prdBasic.cat === 'Computer') {
-        this.computerSpec = result.compSpec
+        if (result.compSpec) {
+          this.computerSpec = result.compSpec
+        }
         this.computerCategroy = true
       }
     },
@@ -389,12 +393,11 @@ export default {
     trimData () {
       this.prdBasic.UPC = this.prdBasic.UPC.trim()
       this.prdBasic.prdNm = this.prdBasic.prdNm.trim()
-      this.prdBasic.length = parseInt(this.prdBasic.length)
-      this.prdBasic.width = parseInt(this.prdBasic.width)
-      this.prdBasic.height = parseInt(this.prdBasic.height)
-      this.prdBasic.weight = parseInt(this.prdBasic.weight)
-      this.prdBasic.volume = parseInt(this.prdBasic.volume)
-      this.prdBasic.color = this.prdBasic.color.trim()
+      this.prdBasic.length = Math.ceil(this.prdBasic.length)
+      this.prdBasic.width = Math.ceil(this.prdBasic.width)
+      this.prdBasic.height = Math.ceil(this.prdBasic.height)
+      this.prdBasic.weight = Math.ceil(this.prdBasic.weight)
+      this.prdBasic.volume = Math.ceil(this.prdBasic.volume)
       this.prdBasic.brdNm = this.prdBasic.brdNm.trim()
       this.prdBasic.modNo = this.prdBasic.modNo.trim()
       this.prdBasic.modYr = this.prdBasic.modYr.trim()

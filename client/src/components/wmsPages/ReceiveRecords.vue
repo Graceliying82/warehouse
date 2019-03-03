@@ -341,7 +341,7 @@ export default {
     async deleteDialog2 () {
       this.dialog2 = false
       try {
-        await Product.deleteProduct({
+        await Product.deleteInvReceive({
           '_id': this.items[this.editedIndex]._id,
           UPC: this.items[this.editedIndex].UPC
         })

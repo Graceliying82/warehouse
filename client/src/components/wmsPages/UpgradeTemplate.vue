@@ -307,8 +307,8 @@ export default {
       schemaSelect: '',
       paraChoice: '',
       schemaValues: [],
-      SchemaHeader: ['Ram Type', 'Ram Size', 'OS', 'SD Card Size', 'HD Type', 'HD Size', 'Category'],
-      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'sdSize', 'hdType', 'hdSize', 'cat'],
+      SchemaHeader: ['Ram Type', 'Ram Size', 'OS', 'SD Card Size', 'HD Type', 'HD Size', 'Category', 'Color'],
+      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'sdSize', 'hdType', 'hdSize', 'cat', 'color'],
       SchemaDBValues: {
         'ramType': [],
         'ramSz': [],
@@ -318,7 +318,8 @@ export default {
         'sdSize': [],
         'hdType': [],
         'hdSize': [],
-        'cat': []
+        'cat': [],
+        'color': []
       },
       SchemaValueChoosed: {
         'ramType': '',

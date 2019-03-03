@@ -12,13 +12,10 @@
         >
           Notice
         </v-card-title>
-
         <v-card-text>
           This action may take a while to finish. Please wait
         </v-card-text>
-
         <v-divider></v-divider>
-
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -34,32 +31,81 @@
     <!-- End Dialog -->
     <v-layout row>
       <v-flex>
-        <panel title = "Products and Inventory" ma-5>
-          <v-layout justify-start>
-          <v-btn dark @click.prevent="checkBalanceMan()">
-            Check Balance
-          </v-btn>
-          </v-layout>
-            <v-data-table
-              :headers="headers"
-              :items="products"
-              :rows-per-page-items="rowsPerPageItems"
-            >
-            <template slot="items" slot-scope="props">
-              <tr  @click="showDetail(props.item)"
-                v-bind:class = props.item.style>
-                <td class="text-xs-left">{{ props.item.UPC }}</td>
-                <td class="text-xs-left">
-                  {{ props.item.prdNm }}
-                </td>
-                <td class="text-xs-left">{{ props.item.qty }}</td>
-                <td class="text-xs-left">{{ props.item.balance }}</td>
-              </tr>
-            </template>
-          </v-data-table>
-        </panel>
+        <v-layout column>
+          <panel title = "Products and Inventory" ma-5>
+            <v-layout justify-start>
+            <v-btn dark @click.prevent="checkBalanceMan()">
+              Check Balance
+            </v-btn>
+            </v-layout>
+              <v-data-table
+                :headers="headers"
+                :items="products"
+                :rows-per-page-items="rowsPerPageItems"
+              >
+              <template slot="items" slot-scope="props">
+                <tr  @click="showDetail(props.item)"
+                  v-bind:class = props.item.style>
+                  <td class="text-xs-left">{{ props.item.UPC }}</td>
+                  <td class="text-xs-left">
+                    {{ props.item.prdNm }}
+                  </td>
+                  <td class="text-xs-left">{{ props.item.qty }}</td>
+                  <td class="text-xs-left">{{ props.item.balance }}</td>
+                </tr>
+              </template>
+            </v-data-table>
+          </panel>
+          <v-card v-if="$store.state.isSupervisor" ma-2>
+            <v-card-title class="title font-weight-light blue-grey lighten-5">
+              <span style='margin-right:1.25em; display:inline-block;'>Products with No Inventory</span>
+            </v-card-title>
+            <v-card-text>
+              <v-data-table
+                :headers="noInvHeaders"
+                :items="noInvPrd"
+                :rows-per-page-items="rowsPerPageItems"
+              >
+                <template slot="items" slot-scope="props">
+                  <td class="text-xs-left">{{ props.item.UPC }}</td>
+                  <td class="text-xs-left">{{ props.item.prdNm }}</td>
+                  <td class="text-xs-left">{{ props.item.qty }}</td>
+                  <td class="text-xs-left">
+                    <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
+                      <v-icon color="teal">delete_forever</v-icon>
+                    </v-btn>
+                  </td>
+                </template>
+              </v-data-table>
+            </v-card-text>
+          </v-card>
+          <!-- Dialog to show Alert-->
+          <v-dialog v-model="showAlertDialog" max-width="1000px">
+            <v-card>
+              <v-card-text>
+                  <h2 pt-8>{{message1}}</h2>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+          <!--Dialog to confirm Delete-->
+          <v-dialog v-model="dialogDelete" max-width="800px">
+            <v-card>
+              <v-card-text>
+                  <h1 pt-8>Delete Confirmation</h1>
+                  <p>You will delete Product </p>
+                  <p style="color:red;">{{deletePrdNm}} </p>
+                  <p style="color:red;">{{deleteUPC}}</p>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" flat @click.native="closeDialog">Cancel</v-btn>
+                <v-btn color="blue darken-1" flat @click.native="deleteDialog">Confirm</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-layout>
       </v-flex>
-      <v-flex ml-5>
+      <v-flex ml-5 v-if="$store.state.isSupervisor">
         <v-layout justify-center column>
           <!-- Show Detail -->
           <v-flex>
@@ -157,6 +203,7 @@
 
 <script>
 import ProductInv from '@/services/productInv'
+import Product from '@/services/Product'
 export default {
   data () {
     return {
@@ -173,9 +220,20 @@ export default {
         { text: 'Balance', value: 'balance' }
       ],
       products: [],
+      noInvHeaders: [
+        { text: 'UPC', align: 'left', value: 'UPC' },
+        { text: 'Product Name', align: 'left', value: 'prdNm' },
+        { text: 'Quantity', align: 'left', value: 'qty' },
+        { text: 'Action', align: 'left', value: 'UPC' }
+      ],
+      noInvPrd: [],
       showDetailPanel: false,
       alertType1: 'success',
       showAlert1: false,
+      showAlertDialog: false,
+      dialogDelete: false,
+      deletePrdNm: '',
+      deleteUPC: '',
       message1: '',
       UPC1: '',
       savedUPC: '',
@@ -217,6 +275,10 @@ export default {
       this.alertType1 = type
       this.showAlert1 = true
     },
+    setAlertDialog (message) {
+      this.message1 = message
+      this.showAlertDialog = true
+    },
     clearData () {
       this.dialog = false
       this.showDetailPanel = false
@@ -231,9 +293,40 @@ export default {
       this.clearAlert()
       this.clearData()
     },
+    deleteItem (item) {
+      this.deletePrdNm = item.prdNm
+      this.deleteUPC = item.UPC
+      this.dialogDelete = true
+    },
+    closeDialog () {
+      this.dialogDelete = false
+    },
+    async deleteDialog () {
+      // console.log(this.deletePrdNm + ' ' + this.deleteUPC)
+      try {
+        await Product.deleteProduct({'UPC': this.deleteUPC})
+        await this.getAllProductInventory()
+        this.dialogDelete = false
+        this.setAlertDialog('Product deleted')
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
     async getAllProductInventory () {
       try {
-        this.products = (await ProductInv.getAllProductInventory()).data
+        let result = (await ProductInv.getAllProductInventory()).data
+        this.products = result.prdWithInv
+        this.noInvPrd = result.prdWOInv
         // console.log(this.products)
         for (let aPrd of this.products) {
           if (aPrd.balance === 'unbalanced') {

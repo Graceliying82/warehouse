@@ -187,6 +187,7 @@ export default {
         let result = (await Product.getProductsByFilter(this.filter.cat)).data
         if (this.filter.cat === 'Computer') {
           this.computers = result
+          console.log(this.computers)
         } else {
           this.basics = result
         }
@@ -204,6 +205,9 @@ export default {
           this.setAlert('error', error.response.data.error)
         }
       }
+    },
+    deleteItem () {
+      console.log('Delete')
     },
     navigateTo (route) {
       this.$router.push(route)

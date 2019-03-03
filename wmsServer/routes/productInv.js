@@ -16,13 +16,13 @@ module.exports = {
   async getAllProductInventory(req, res, next) {
     const prodCollection = req.db.collection("product");
     const invCollection = req.db.collection("inventory");
-    const result = [];
+    let prdWithInv = [];
+    let prdWOInv = [];
     try {
       const productArray = await prodCollection.find({}, { _id: 1, prdNm: 1 }).toArray();
       const inventoryArray = await invCollection.find({qty: { $gt: 0 }}, { _id: 1, qty: 1 }).toArray();
       for (let prod of productArray) {
         let qty = 0;
-        let status = '';
         for (let inv of inventoryArray) {
           if (inv._id === prod._id) {
             balance = inv.balance
@@ -31,12 +31,17 @@ module.exports = {
           }
         }
         if (qty === 0) {
+          let prod1 = {UPC: prod._id, prdNm: prod.prdNm, qty: qty}
+          prdWOInv.push(prod1)
           continue
         }
-        let prodInv = { UPC: prod._id, prdNm: prod.prdNm, qty: qty, balance: balance};
-        result.push(prodInv);
+        let prod2 = { UPC: prod._id, prdNm: prod.prdNm, qty: qty, balance: balance};
+        prdWithInv.push(prod2);
       }
-      res.send(result);
+      res.send({
+        'prdWOInv': prdWOInv,
+        'prdWithInv': prdWithInv
+      });
       res.end();
     } catch (error) {
       console.log("query all product inventory: " + error);

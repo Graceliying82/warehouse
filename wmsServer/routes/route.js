@@ -37,9 +37,10 @@ module.exports = (app) => {
   app.get('/products/:id', Product.get)
   app.put('/products', Product.put)
   app.post('/receiveUpdate', Product.updateProduct)
-  app.post('/receiveDelete', Product.deleteProduct)
+  app.post('/receiveDelete', Product.deleteInvReceive)
   app.post('/products/deleteConfig', Product.deleteConfig)
   app.post('/products/getUPCsByOrig', Product.getUPCsByOrig)
+  app.post('/products/deleteProduct', Product.deleteProduct)
 
   // from inventory
   app.post('/inventory', Inventory.post)
