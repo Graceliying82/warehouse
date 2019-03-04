@@ -187,7 +187,66 @@ module.exports = {
       next(error);
     }
   },
-
+  // Input a UPC for upgrading. Will return a list of UPCs with the same original UPC and under the same orgNm
+  async getUPCFamilyListByOrg (req, res, next) {
+    // input: Base UPC for upgrade and Organization Name
+    const prodCollection = req.db.collection("product");
+    const sellerInvCollection = req.db.collection("sellerInv");
+    const invCollection = req.db.collection("inventory");
+    const locInvCollection = req.db.collection("locationInv");
+    let result = [];
+    try {
+      let basePrd = await prodCollection.findOne({_id: req.body.UPC});
+      let tempUPCList = await prodCollection.find({origUPC: basePrd.origUPC}).project({ _id: 1}).toArray();
+      let UPCFamilyList = [];
+      for (let atemp of tempUPCList) {
+        UPCFamilyList.push(atemp._id);
+      };
+      let sellerInvList = await sellerInvCollection.find({ "_id.UPC": { $in: UPCFamilyList }, "_id.org": req.body.orgNm }).project({ _id: 1, qty: 1 }).toArray();
+      let locInvList = await locInvCollection.find({ "_id.UPC": { $in: UPCFamilyList } }).project({ _id: 1, qty: 1 }).toArray();
+      let invList = await invCollection.find({ _id: { $in: UPCFamilyList }}).project({ _id: 1, qty: 1 }).toArray();
+      let productList = await prodCollection.find({ _id: { $in: UPCFamilyList } }, { _id: 1, prdNm: 1 }).toArray();
+      for (var aUPC of UPCFamilyList) {
+        const aProInv = {};
+        aProInv.UPC = aUPC;
+        for (var aProd of productList) {
+          if (aProd._id === aUPC) {
+            aProInv.prdNm = aProd.prdNm;
+            break;
+          }
+        }
+        for (var aInv of invList) {
+          if (aInv._id === aUPC) {
+            aProInv.qty = aInv.qty;
+            aProInv.balance = aInv.balance
+          }
+        }
+        aProInv.sellerInventory = [];
+        for (var aSellInv of sellerInvList) {
+          if ((aSellInv._id.UPC === aUPC) && (aSellInv.qty > 0)) {
+            aProInv.sellerInventory.push({ org: aSellInv._id.org, qty: aSellInv.qty });
+          }
+        }
+        aProInv.locationInventory = [];
+        for (var aLocInv of locInvList) {
+          if ((aLocInv._id.UPC === aUPC) && (aLocInv.qty > 0)) {
+            aProInv.locationInventory.push({ loc: aLocInv._id.loc, qty: aLocInv.qty });
+          }
+        }
+        if (aProInv.sellerInventory.length > 0) {
+          result.push(aProInv);
+        }
+      }
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("query product inventory: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
   async getSellerInvByUPC(req, res, next) {
     let UPCs = req.params.UPC.split(",");
     const prodCollection = req.db.collection("product");

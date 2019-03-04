@@ -26,6 +26,7 @@ module.exports = (app) => {
   app.post('/prodInvAdjustBatch', ProductInv.postInvUpdate)
   app.post('/locInvMoveBatch', ProductInv.moveInvBatch) //move inventory
   app.post('/prodInvCheckBalance/', ProductInv.checkBalanceOfPrdInv)
+  app.post('/prodInv/getUPCFamilyListByOrg', ProductInv.getUPCFamilyListByOrg)
 
   // from user
   app.post('/users', User.post)

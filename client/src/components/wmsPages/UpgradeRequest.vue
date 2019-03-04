@@ -1,7 +1,7 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-layout justify-center column ma-5>
-      <panel title='Step 1: Input base UPC for upgrading'>
+      <panel title='Step 1: Input a Target UPC for upgrading'>
         <v-flex lg6>
           <v-alert
             v-show = showAlert1
@@ -12,12 +12,22 @@
         </v-flex>
         <v-flex>
           <v-layout mx-5 >
-              <v-text-field
-                label="UPC"
-                v-model="UPCInput"
-                id="UPC"
-                clearable
-              ></v-text-field>
+              <v-flex mr-5>
+                <v-text-field
+                  label="UPC"
+                  v-model="UPCInput"
+                  id="UPC"
+                  clearable
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field
+                  label="Organization Name"
+                  v-model="orgNm"
+                  id="UPC"
+                  clearable
+                ></v-text-field>
+              </v-flex>
               <v-btn dark @click="find()">Find</v-btn>
             </v-layout>
         </v-flex>
@@ -173,6 +183,7 @@ export default {
       // Items can be cleaned up
       message1: '',
       UPCInput: '',
+      orgNmInput: '',
       // Detail info
       UPCInvList: [],
       locInv: [],
@@ -240,6 +251,10 @@ export default {
     async find () {
       this.clearAlert()
       if (this.UPCInput === '') {
+        this.setAlert('error', ' Missing UPC')
+        return
+      }
+      if (this.orgNmInput === '') {
         this.setAlert('error', ' Missing UPC')
         return
       }
