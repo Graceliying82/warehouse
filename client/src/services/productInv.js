@@ -15,11 +15,8 @@ export default {
   },
   prodInvAdjustBatch (data) {
     return Api().post('/prodInvAdjustBatch', data)
+  },
+  getUPCFamilyListByOrg (data) {
+    return Api().post('/prodInv/getUPCFamilyListByOrg', data)
   }
-  // get () {
-  //   return Api().get('/locations')
-  // },
-  // checkLocationExisted (locID) {
-  //   return Api().get('/locations'+ '?locID=' + locID)
-  // }
 }

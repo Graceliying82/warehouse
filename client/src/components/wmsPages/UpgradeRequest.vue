@@ -1,6 +1,6 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-    <v-layout justify-center column ma-5>
+    <v-layout justify-center column mx-5>
       <panel title='Step 1: Input a Target UPC for upgrading'>
         <v-flex lg6>
           <v-alert
@@ -16,15 +16,13 @@
                 <v-text-field
                   label="UPC"
                   v-model="UPCInput"
-                  id="UPC"
                   clearable
                 ></v-text-field>
               </v-flex>
               <v-flex>
                 <v-text-field
                   label="Organization Name"
-                  v-model="orgNm"
-                  id="UPC"
+                  v-model="orgNmInput"
                   clearable
                 ></v-text-field>
               </v-flex>
@@ -36,58 +34,25 @@
         <v-layout v-if=showDetail column>
           <v-card>
             <v-card-title class="title font-weight-light blue-grey lighten-5">
-              <span style='margin-right:1.25em; display:inline-block;'>Step 2 : Choose configrations for target UPC</span>
+              <span style='margin-right:1.25em; display:inline-block;'>Target Product information</span>
             </v-card-title>
             <v-card-text>
               <v-layout row justify-space-around>
                 <v-flex lg6 mr-3>
                   <v-text-field
-                    label='Current UPC'
-                    v-model="UPCInvList.UPC"
-                    box
+                    label='Target UPC'
+                    v-model="upgradeInfo.targetUPC"
+                    outline
                     readonly
                   ></v-text-field>
                 </v-flex >
-                <v-flex lg3 mx-3>
+                <v-flex lg6 mx-3>
                   <v-text-field
-                    label='Product Name'
-                    v-model="UPCInvList.prdNm"
-                    box
+                    label='Organization Name'
+                    v-model="upgradeInfo.orgNm"
+                    outline
                     readonly
                   ></v-text-field>
-                </v-flex >
-                <v-flex lg3 ml-3>
-                  <v-text-field
-                    label='Total'
-                    v-model="UPCInvList.qty"
-                    box
-                    readonly
-                  ></v-text-field>
-                </v-flex >
-              </v-layout>
-              <!-- Upgrade Choice -->
-              <!-- End Upgrade Choice -->
-              <v-layout row justify-space-around>
-                <v-flex lg3>
-                  <v-select
-                    :items ="memItems"
-                    v-model="selectMem"
-                    label="Memory"
-                  ></v-select>
-                </v-flex >
-                <v-flex lg3>
-                  <v-select
-                    :items ="HDItems"
-                    v-model="selectHD"
-                    label="Hard Drive"
-                  ></v-select>
-                </v-flex >
-                <v-flex lg3>
-                  <v-select
-                    :items ="cdItems"
-                    v-model="cdDrive"
-                    label="Hard Drive"
-                  ></v-select>
                 </v-flex >
               </v-layout>
             </v-card-text>
@@ -96,69 +61,52 @@
           <v-card>
             <v-card-title class="title font-weight-light blue-grey lighten-5">
               <span style='margin-right:1.25em; display:inline-block;'>
-                Step 3 : Choose Upgrade quantity</span>
+                Step 2 : Choose qualified base products</span>
             </v-card-title>
             <v-card-text>
-              <v-layout row>
-                  <v-flex lg6 ma-2>
-                    <v-card>
-                      <v-card-title class="title font-weight-light cyan lighten-4">
-                        Location Inventory
-                        <v-spacer></v-spacer>
-                        <span > Total Upgrade {{total4Loc}}</span>
-                      </v-card-title>
-                      <v-data-table
-                        :headers="locInvHeader"
-                        :items="locInv"
-                        :rows-per-page-items="rowsPerPageItems"
-                        class="elevation-1"
-                        >
-                        <template slot="items" slot-scope="props">
-                          <td class="text-xs-left">{{ props.item.loc }}</td>
-                          <td class="text-xs-left">{{ props.item.qty }}</td>
-                          <td class="text-xs-left">
-                            <v-btn icon class="mx-0" @click.prevent= addLoc(props.item)>
-                              <v-icon color="teal">add_circle</v-icon>
-                            </v-btn>
-                              {{ props.item.qtyDelta }}
-                            <v-btn icon class="mx-0" @click.prevent= subLoc(props.item)>
-                              <v-icon color="teal">remove_circle</v-icon>
-                            </v-btn>
-                          </td>
-                        </template>
-                      </v-data-table>
-                    </v-card>
-                  </v-flex>
-                  <!-- End Locatin Inventory table -->
-                  <!-- Seller Inventory table -->
-                  <v-flex lg6 ma-2>
-                    <v-card-title class="title font-weight-light cyan lighten-4">
-                      Seller Inventory
-                      <v-spacer></v-spacer>
-                      <span > Total Upgrade {{total4Seller}}</span>
-                    </v-card-title>
-                    <v-data-table
-                      :headers="sellerInvHead"
-                      :items="sellerInv"
-                      :rows-per-page-items="rowsPerPageItems"
-                      class="elevation-1"
-                      >
-                      <template slot="items" slot-scope="props">
-                        <td class="text-xs-left">{{ props.item.org }}</td>
-                        <td class="text-xs-left">{{ props.item.qty }}</td>
-                        <td class="text-xs-left">
-                          <v-btn icon class="mx-0" @click.prevent= addSeller(props.item)>
-                            <v-icon color="teal">add_circle</v-icon>
-                          </v-btn>
-                            {{ props.item.qtyDelta }}
-                          <v-btn icon class="mx-0" @click.prevent= subSeller(props.item)>
-                            <v-icon color="teal">remove_circle</v-icon>
-                          </v-btn>
-                        </td>
-                      </template>
-                    </v-data-table>
-                  </v-flex>
-                </v-layout>
+              <template v-for="(aUPC, index) in UPCFamilyList">
+                  <v-layout row :key="index + '-layout'">
+                    <v-flex lg6 ma-2>
+                      <p :key= "index + '-UPC'">UPC: {{aUPC.UPC}}</p>
+                      <p :key= "index + '-QTY'">Available Quantity: {{aUPC.qty}}</p>
+                      <p style="color:red;font-weight:bold" v-if=aUPC.isTarget>This is target Product</P>
+                    </v-flex>
+                    <v-flex lg6 ma-2>
+                      <v-card>
+                        <v-card-title class="title font-weight-light cyan lighten-4">
+                          Location Inventory
+                          <v-spacer></v-spacer>
+                          <span v-if="!aUPC.isTarget"> Total Upgrade {{aUPC.totalUpg}}</span>
+                        </v-card-title>
+                        <v-data-table
+                          :headers="locInvHeader"
+                          :items="aUPC.locationInventory"
+                          :rows-per-page-items="rowsPerPageItems"
+                          class="elevation-1"
+                          >
+                          <template slot="items" slot-scope="props">
+                            <td class="text-xs-left">{{ props.item.loc }}</td>
+                            <td class="text-xs-left">{{ props.item.qty }}</td>
+                            <td class="text-xs-left" v-if="!aUPC.isTarget">
+                              <v-btn icon class="mx-0"
+                                v-if="!aUPC.isTarget"
+                                @click.prevent= addLoc(props.item,aUPC)>
+                                <v-icon color="teal">add_circle</v-icon>
+                              </v-btn>
+                                {{ props.item.qtyDelta }}
+                              <v-btn icon class="mx-0"
+                                v-if="!aUPC.isTarget"
+                                @click.prevent= subLoc(props.item,aUPC)>
+                                <v-icon color="teal">remove_circle</v-icon>
+                              </v-btn>
+                            </td>
+                          </template>
+                        </v-data-table>
+                      </v-card>
+                    </v-flex>
+                  </v-layout>
+                  <v-divider :key="index + '-divider'" ></v-divider>
+                </template>
               </v-card-text>
             </v-card>
             <v-layout v-if=changed justify-center mt-2>
@@ -184,35 +132,21 @@ export default {
       message1: '',
       UPCInput: '',
       orgNmInput: '',
+      upgradeInfo: {
+        'targetUPC': '',
+        'orgNm': '',
+        'qty': 0,
+        'baseUPCList': [] // upc: '123', qty: 1
+      },
       // Detail info
-      UPCInvList: [],
-      locInv: [],
-      sellerInv: [],
+      UPCFamilyList: [],
       showDetail: false,
-      total4Seller: 0,
-      total4Loc: 0,
       changed: false,
-      // Select Items
-      selectMem: '',
-      selectHD: '',
-      cdDrive: '',
-      memItems: ['8g', '16g', '64g', '128g'],
-      HDItems: ['256g', '512g', '1T'],
-      cdItems: ['Dvd'],
       // tabel headers
       locInvHeader: [
         { text: 'Location', align: 'left', value: 'loc' },
         { text: 'Quantity', align: 'left', value: 'qty' },
         { text: 'Upgrade Qty', align: 'left', value: 'qtyDelta' }
-      ],
-      sellerInvHead: [
-        {
-          text: 'Organization Name',
-          align: 'left',
-          value: 'org'
-        },
-        { text: 'Quantity', value: 'qty' },
-        { text: 'Upgrade Qty', value: 'qtyDelta' }
       ],
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       // Handle barcode scanner input
@@ -237,31 +171,22 @@ export default {
     },
     clearData () {
       this.UPCInput = ''
-      this.UPCInvList = []
-      this.locInv = []
-      this.sellerInv = []
       this.showDetail = false
-      this.total4Seller = 0
-      this.total4Loc = 0
-      this.changed = false
-      this.selectMem = ''
-      this.selectHD = ''
-      this.cdDrive = ''
+      this.UPCFamilyList = []
     },
     async find () {
       this.clearAlert()
+      console.log('Here')
       if (this.UPCInput === '') {
         this.setAlert('error', ' Missing UPC')
         return
       }
       if (this.orgNmInput === '') {
-        this.setAlert('error', ' Missing UPC')
+        this.setAlert('error', ' Missing Organization Name')
         return
       }
       try {
-        await this.getDetailByUPC(this.UPCInput)
-        console.log(this.UPCInvList)
-        this.UPCInput = ''
+        await this.getUPCFamilyListByOrg(this.UPCInput, this.orgNmInput)
         this.showDetail = true
       } catch (error) {
         if (!error.response) {
@@ -277,20 +202,33 @@ export default {
         }
       }
     },
-    setDelta (list) {
-      for (let item of list) {
-        item.qtyDelta = 0
+    setDelta () {
+      for (let item of this.UPCFamilyList) {
+        item.totalUpg = 0
+        if (item.UPC === this.upgradeInfo.targetUPC) {
+          item.isTarget = true
+        } else {
+          item.isTarget = false
+        }
+        for (let aLocInv of item.locationInventory) {
+          aLocInv.qtyDelta = 0
+        }
       }
     },
-    async getDetailByUPC (UPC) {
+    async getUPCFamilyListByOrg (baseUPC, orgNm) {
       try {
-        this.UPCInvList = (await ProductInv.getByUPC(UPC)).data[0]
-        this.locInv = this.UPCInvList.locationInventory
-        this.sellerInv = this.UPCInvList.sellerInventory
+        this.UPCFamilyList = (await ProductInv.getUPCFamilyListByOrg({
+          'UPC': baseUPC,
+          'orgNm': orgNm
+        })).data
+        console.log(this.UPCFamilyList)
+        this.upgradeInfo.targetUPC = this.UPCInput
+        this.upgradeInfo.orgNm = this.orgNmInput
+        this.UPCInput = ''
+        this.orgNmInput = ''
         // Delta are qty for upgrade
-        this.setDelta(this.locInv)
-        this.setDelta(this.sellerInv)
-        this.UPCInvList.qtyDelta = 0
+        this.setDelta()
+        console.log(this.UPCFamilyList)
       } catch (error) {
         if (!error.response) {
           // network error
@@ -305,20 +243,21 @@ export default {
         }
       }
     },
-
-    addLoc (item) {
+    addLoc (item, aUPC) {
       this.clearAlert()
       this.changed = true
       item.qtyDelta += 1
-      this.total4Loc += 1
+      aUPC.totalUpg += 1
+      this.$forceUpdate()
     },
-    subLoc (item) {
+    subLoc (item, aUPC) {
       this.clearAlert()
       if (item.qtyDelta > 0) {
         this.changed = true
         item.qtyDelta -= 1
-        this.total4Loc -= 1
+        aUPC.totalUpg -= 1
       }
+      this.$forceUpdate()
     },
     addSeller (item) {
       this.clearAlert()
@@ -335,17 +274,18 @@ export default {
       }
     },
     submit () {
-      console.log(this.UPCInvList)
+      let totalQty = 0
+      for (let aUPC of this.UPCFamilyList) {
+        totalQty += aUPC.totalUpg
+        this.upgradeInfo.baseUPCList.push({'UPC': aUPC.UPC, 'qty': aUPC.totalUpg})
+      }
+      this.upgradeInfo.qty = totalQty
+      console.log(this.upgradeInfo)
+      this.clear()
     },
     reset () {
-      this.total4Loc = 0
-      this.total4Seller = 0
-      for (let aLoc of this.locInv) {
-        aLoc.qtyDelta = 0
-      }
-      for (let aSeller of this.sellerInv) {
-        aSeller.qtyDelta = 0
-      }
+      this.setDelta()
+      this.$forceUpdate()
     },
     clear () {
       this.clearAlert()
