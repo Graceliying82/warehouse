@@ -1,3 +1,4 @@
+const nextKey = require('./nextKey');
 //query inventory for upc, for upc + location, for upc + seller org,...
 
 //receive, pickup, shipment
@@ -36,7 +37,7 @@ module.exports = {
       req.body.crtStmp = createTime.getTime() // add a create timestamp
       req.body.mdfTm = req.body.crtTm; //add data modify Time
       req.body.mdfStmp = req.body.crtStmp; // add a modify timestamp
-      let ogNm = req.body.orgNm;
+      let orgNm = req.body.orgNm;
       for (var i = 0; i < req.body.rcIts.length; i++) {
         let proQ = req.body.rcIts[i];
         let aUPC = proQ.UPC;
@@ -53,9 +54,10 @@ module.exports = {
         if (prod) {
           req.body.rcIts[i].prdNm = prod.prdNm;
         } else { //no product found
+          let apid = await nextKey.key("product",req.db);
           await prodCollection.insertOne(
             {
-              _id: aUPC, prdNm: "", status: 0, crtTm: req.body.crtTm, crtStmp: req.body.crtStmp }
+              _id: aUPC, prdNm: "", status: 0, pid: apid, crtTm: req.body.crtTm, crtStmp: req.body.crtStmp }
           )
         }
         await invCollection.findOneAndUpdate(
@@ -80,7 +82,7 @@ module.exports = {
         );
         await sellerInvCollection.findOneAndUpdate(
           {
-            _id: { UPC: aUPC, org: ogNm }
+            _id: { UPC: aUPC, org: orgNm }
           }, //query
           {
             $inc: { qty: aQty},

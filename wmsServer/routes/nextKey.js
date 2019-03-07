@@ -7,6 +7,9 @@ module.exports = {
             {$inc:{sequence_value:1}},
             {upsert: true, returnNewDocument: true }
         );
+        if (!sequenceDocument.value) {
+          return 0;
+        }
         return sequenceDocument.value.sequence_value;
     }
 }

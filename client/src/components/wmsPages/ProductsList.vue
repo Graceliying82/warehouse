@@ -37,6 +37,7 @@
             })">
           <td class="text-xs-left">{{ props.item._id }}</td>
           <td class="text-xs-left">{{ props.item.prdNm }}</td>
+          <td class="text-xs-left">{{ props.item.pid }}</td>
           <td class="text-xs-left">{{ props.item.length }}</td>
           <td class="text-xs-left">{{ props.item.width }}</td>
           <td class="text-xs-left">{{ props.item.height }}</td>
@@ -70,6 +71,7 @@
                 })">
             <td class="text-xs-left">{{ props.item._id }}</td>
             <td class="text-xs-left">{{ props.item.prdNm }}</td>
+            <td class="text-xs-left">{{ props.item.pid }}</td>
             <td class="text-xs-left">{{ props.item.length }}</td>
             <td class="text-xs-left">{{ props.item.width }}</td>
             <td class="text-xs-left">{{ props.item.height }}</td>
@@ -119,6 +121,7 @@ export default {
       headersBasics: [
         { text: 'UPC', align: 'left', value: '_id' },
         { text: 'Product Name', align: 'left', value: 'prdNm' },
+        { text: 'PID', align: 'left', value: 'pid' },
         { text: 'Length(inch)', align: 'left', value: 'length' },
         { text: 'Width(inch)', align: 'left', value: 'width' },
         { text: 'Height(inch)', align: 'left', value: 'height' },
@@ -136,6 +139,7 @@ export default {
       headersComputer: [
         { text: 'UPC', align: 'left', value: '_id' },
         { text: 'Product Name', align: 'left', value: 'prdNm' },
+        { text: 'PID', align: 'left', value: 'pid' },
         { text: 'Length(inch)', align: 'left', value: 'length' },
         { text: 'Width(inch)', align: 'left', value: 'width' },
         { text: 'Height(inch)', align: 'left', value: 'height' },

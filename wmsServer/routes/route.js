@@ -7,6 +7,7 @@ const Location = require('./location')
 const ProductInv = require('./productInv')
 const Shipment = require('./shipment')
 const TempSchema = require('./tempSchema')
+const Upgrade = require('./upgrade')
 module.exports = (app) => {
   // from Login
   app.post('/login', Login.post)
@@ -42,6 +43,7 @@ module.exports = (app) => {
   app.post('/products/deleteConfig', Product.deleteConfig)
   app.post('/products/getUPCsByOrig', Product.getUPCsByOrig)
   app.post('/products/deleteProduct', Product.deleteProduct)
+  app.post('/products/giveOldPrdPid', Product.giveOldPrdPid)
 
   // from inventory
   app.post('/inventory', Inventory.post)
@@ -58,6 +60,9 @@ module.exports = (app) => {
   app.get('/shipments', Shipment.get)  //startdate, enddate, status - query parameter like inventory get
   app.get('/shipments/:Id', Shipment.getByShipmentId)
   app.post('/shipment/ship', Shipment.ship) //ship a shipment
+
+  // from upgrade
+  app.post('/upgrade', Upgrade.post)
 
   //from tempSchema
   app.post('/tempschema', TempSchema.post)

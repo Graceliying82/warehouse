@@ -192,49 +192,54 @@ module.exports = {
     // input: Base UPC for upgrade and Organization Name
     const prodCollection = req.db.collection("product");
     const sellerInvCollection = req.db.collection("sellerInv");
-    const invCollection = req.db.collection("inventory");
-    const locInvCollection = req.db.collection("locationInv");
     let result = [];
     try {
       let basePrd = await prodCollection.findOne({_id: req.body.UPC});
+      if (!basePrd) {
+        const error = new Error('UPC Not Found. Please check');
+        error.status = 400;
+        return next(error)
+      }
+      if (!basePrd.origUPC) {
+        const error = new Error('This Product is not upgradable. Please use Upgrade Products Generator to create upgrade products first.');
+        error.status = 400;
+        return next(error)
+      }
       let tempUPCList = await prodCollection.find({origUPC: basePrd.origUPC}).project({ _id: 1}).toArray();
       let UPCFamilyList = [];
       for (let atemp of tempUPCList) {
         UPCFamilyList.push(atemp._id);
       };
       let sellerInvList = await sellerInvCollection.find({ "_id.UPC": { $in: UPCFamilyList }, "_id.org": req.body.orgNm }).project({ _id: 1, qty: 1 }).toArray();
-      let locInvList = await locInvCollection.find({ "_id.UPC": { $in: UPCFamilyList } }).project({ _id: 1, qty: 1 }).toArray();
-      let invList = await invCollection.find({ _id: { $in: UPCFamilyList }}).project({ _id: 1, qty: 1 }).toArray();
-      let productList = await prodCollection.find({ _id: { $in: UPCFamilyList } }, { _id: 1, prdNm: 1 }).toArray();
+      let productList = await prodCollection.find({ _id: { $in: UPCFamilyList } }, { _id: 1, prdNm: 1, pid: 1 }).toArray();
+      let targetUPCAdded = false
       for (var aUPC of UPCFamilyList) {
         const aProInv = {};
         aProInv.UPC = aUPC;
         for (var aProd of productList) {
           if (aProd._id === aUPC) {
             aProInv.prdNm = aProd.prdNm;
+            aProInv.pid = aProd.pid
             break;
           }
         }
-        for (var aInv of invList) {
-          if (aInv._id === aUPC) {
-            aProInv.qty = aInv.qty;
-            aProInv.balance = aInv.balance
-          }
-        }
-        aProInv.sellerInventory = [];
         for (var aSellInv of sellerInvList) {
-          if ((aSellInv._id.UPC === aUPC) && (aSellInv.qty > 0)) {
-            aProInv.sellerInventory.push({ org: aSellInv._id.org, qty: aSellInv.qty });
+          if ((aSellInv._id.UPC === aUPC)) {
+              if (aProInv.UPC === req.body.UPC) {
+                targetUPCAdded = true
+                aProInv.qty = aSellInv.qty;
+                result.push(aProInv);
+                break;
+              } else if ((aSellInv.qty > 0)) {
+                aProInv.qty = aSellInv.qty;
+                result.push(aProInv);
+                break;
+              }
           }
         }
-        aProInv.locationInventory = [];
-        for (var aLocInv of locInvList) {
-          if ((aLocInv._id.UPC === aUPC) && (aLocInv.qty > 0)) {
-            aProInv.locationInventory.push({ loc: aLocInv._id.loc, qty: aLocInv.qty });
-          }
-        }
-        if (aProInv.sellerInventory.length > 0) {
-          result.push(aProInv);
+        if ((req.body.includeTarget) && (!targetUPCAdded) && (aProInv.UPC === req.body.UPC)) {
+          aProInv.qty = 0;
+          result.push(aProInv)
         }
       }
       res.send(result);

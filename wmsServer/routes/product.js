@@ -3,6 +3,34 @@ const nextKey = require('./nextKey');
 var ObjectId = require('mongodb').ObjectID
 module.exports = {
   //  Get Products
+  async giveOldPrdPid (req, res, next) {
+    // This function is reserved for upgrade old system (without PID) to a new System (with PID)
+    const prdCollection = req.db.collection("product");
+    try {
+      let prdList = await prdCollection.find().toArray();
+      for (let aprd of prdList) {
+        if (!aprd.pid) {
+          let pid = await nextKey.key("product",req.db);
+          prdCollection.findOneAndUpdate(
+            {
+              _id: aprd._id
+            }, //query
+            {
+              $set: { pid: pid}
+            }
+          );
+        }
+      }
+      res.send('success');
+      res.end();
+    } catch (error) {
+      console.log("Get User error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again';
+      };
+      next(error);
+    }
+  },
   async get(req, res, next) {
     const prdCollection = req.db.collection("product");
     try {
@@ -94,6 +122,13 @@ module.exports = {
       let modifyTime = new Date();
       let mdfTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
       let mdfStmp = modifyTime.getTime();
+      let aprd = await prdCollection.findOne({_id: req.body.UPC});
+      let apid = 0;
+      if (aprd) {
+        apid = aprd.pid
+      } else {
+        apid = await nextKey.key("product",req.db);
+      }
       await prdCollection.findOneAndUpdate(
         { // query
           _id: req.body.UPC
@@ -117,7 +152,8 @@ module.exports = {
             origUPC: req.body.origUPC,
             cstmiz: req.body.cstmiz,
             compSpec: req.body.compSpec,
-            cfgLists: req.body.cfgLists
+            cfgLists: req.body.cfgLists,
+            pid: apid
           }
         },
         { upsert: true }
