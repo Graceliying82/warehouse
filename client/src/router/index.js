@@ -13,7 +13,7 @@ import InventoryLocations from '@/components/wmsPages/InventoryLocations'
 import UpgradeTemplate from '@/components/wmsPages/UpgradeTemplate'
 import UpgradeApprove from '@/components/wmsPages/UpgradeApprove'
 import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
-import UpgradeRequestRecord from '@/components/wmsPages/UpgradeRequestRecord'
+import UpgradeRequestList from '@/components/wmsPages/UpgradeRequestList'
 import UpgradePrdGen from '@/components/wmsPages/UpgradePrdGen'
 import Inventory from '@/components/wmsPages/Inventory'
 import ProductsList from '@/components/wmsPages/ProductsList'
@@ -96,9 +96,9 @@ export default new Router({
       component: UpgradeRequest
     },
     {
-      path: '/upgradeRequestRecord',
-      name: 'upgradeRequestRecord',
-      component: UpgradeRequestRecord
+      path: '/upgradeRequestList',
+      name: 'upgradeRequestList',
+      component: UpgradeRequestList
     },
     {
       path: '/upgradePrdGen',
