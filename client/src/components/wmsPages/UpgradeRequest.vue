@@ -129,8 +129,8 @@
 </template>
 
 <script>
-import ProductInv from '@/services/productInv'
-import Upgrade from '@/services/upgrade'
+import ProductInv from '@/services/ProductInvService'
+import Upgrade from '@/services/UpgradeService'
 export default {
   data () {
     return {

@@ -1,15 +1,22 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-layout>
-      <v-flex xs8>
+      <v-flex>
           <v-alert
-            v-show = showAlert1
-            :type = alertType1
+            v-show = showAlert
+            :type = alertType
             outline>
-              {{message1}}
+              {{message}}
             </v-alert>
         </v-flex>
     </v-layout>
+    <v-dialog v-model="showAlertDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message}}</h2>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -18,20 +25,25 @@
 export default {
   data () {
     return {
-      alertType1: 'success',
-      showAlert1: false,
-      message1: ''
+      alertType: 'success',
+      showAlert: false,
+      message: '',
+      showAlertDialog: false
     }
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.message1 = ''
+      this.showAlert = false
+      this.message = ''
     },
     setAlert (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
+    },
+    setAlertDialog (message) {
+      this.message = message
+      this.showAlertDialog = true
     }
   }
 }

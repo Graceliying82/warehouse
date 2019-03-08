@@ -62,7 +62,8 @@ module.exports = (app) => {
   app.post('/shipment/ship', Shipment.ship) //ship a shipment
 
   // from upgrade
-  app.post('/upgrade', Upgrade.post)
+  app.post('/upgrades', Upgrade.post)
+  app.get('/upgrades', Upgrade.get)
 
   //from tempSchema
   app.post('/tempschema', TempSchema.post)

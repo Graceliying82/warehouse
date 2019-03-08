@@ -280,8 +280,8 @@
 </template>
 
 <script>
-import Product from '@/services/Product'
-import Tempschema from '@/services/Tempschema'
+import Product from '@/services/ProductService'
+import Tempschema from '@/services/TempschemaService'
 export default {
   data () {
     return {

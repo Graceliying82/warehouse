@@ -231,7 +231,7 @@
 
 <script>
 import * as csv from 'csvtojson'
-import Shipment from '@/services/Shipment'
+import Shipment from '@/services/ShipmentService'
 export default {
   data () {
     return {

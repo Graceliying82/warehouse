@@ -1,7 +1,7 @@
 const nextKey = require('./nextKey');
 module.exports = {
   // create a upgrade task
-  // id; taskID; targetUPC; prdNm; pid; orgNm; qty; baseUPC [upc; pid, qty]; crtTm; crtStmp; status(create/finish/cancel); log;
+  // id; taskID; targetUPC; prdNm; pid; orgNm; qty; baseUPC [upc; pid, qty]; crtTm; crtStmp; status(active/finish/cancel); log;
   async post(req, res, next) {
     try {
       const upgradeCollection = req.db.collection("upgrade");
@@ -12,7 +12,7 @@ module.exports = {
       req.body.mdfTm = req.body.crtTm; //add data modify Time
       req.body.mdfStmp = req.body.crtStmp; // add a modify timestamp
       req.body.taskID = await nextKey.key("upgrade",req.db);
-      req.body.status = 'create'
+      req.body.status = 'active'
       await upgradeCollection.insertOne(req.body)
       for (let item of req.body.baseUPCList) {
         await sellerInvCollection.findOneAndUpdate(
@@ -34,5 +34,25 @@ module.exports = {
       };
       next(error);
     }
-  }
+  },
+  async get(req, res, next) {
+    try {
+      const upgradeCollection = req.db.collection("upgrade");
+      // req.query.status
+      let result = ''
+      if (req.query.status) {
+        result = await upgradeCollection.find({status: req.query.status}).toArray()
+      } else {
+        result = await upgradeCollection.find().toArray()
+      }
+      res.send(result);
+      res.end()
+    } catch (error) {
+      console.log("receive error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
 }

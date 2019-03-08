@@ -202,8 +202,8 @@
 </template>
 
 <script>
-import ProductInv from '@/services/productInv'
-import Product from '@/services/Product'
+import ProductInv from '@/services/ProductInvService'
+import Product from '@/services/ProductService'
 export default {
   data () {
     return {

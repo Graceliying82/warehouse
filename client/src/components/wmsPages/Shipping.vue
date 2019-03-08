@@ -122,7 +122,7 @@
 </template>
 
 <script>
-import Shipment from '@/services/Shipment'
+import Shipment from '@/services/ShipmentService'
 export default {
   data () {
     return {

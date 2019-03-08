@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import Users from '@/services/Users'
+import Users from '@/services/UsersService'
 export default {
   data () {
     return {

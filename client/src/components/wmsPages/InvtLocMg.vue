@@ -93,8 +93,8 @@
 </template>
 
 <script>
-import Location from '@/services/Location'
-import ProductInv from '@/services/productInv'
+import Location from '@/services/LocationService'
+import ProductInv from '@/services/ProductInvService'
 export default {
   data () {
     return {

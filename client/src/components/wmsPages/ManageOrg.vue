@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import Org from '@/services/Org'
+import Org from '@/services/OrgService'
 export default {
   data () {
     return {

@@ -10,7 +10,7 @@
           </v-alert>
       </v-flex>
       <!-- Filters -->
-      <v-layout row>
+      <v-layout>
         <v-flex mx-5 sm2>
           <v-select
             :items ="CategoryChoice"
@@ -19,7 +19,6 @@
             v-on:change="chooseCategory()"
             required></v-select>
         </v-flex>
-        <v-btn dark @click.prevent="getByFilter">Get Products</v-btn>
       </v-layout>
       <!-- Data Table for basic infomation -->
       <v-layout v-if="!computerChoosed">
@@ -103,15 +102,15 @@
 </template>
 
 <script>
-import Product from '@/services/Product'
-import Tempschema from '@/services/Tempschema'
+import Product from '@/services/ProductService'
+import Tempschema from '@/services/TempschemaService'
 export default {
   data () {
     return {
       alertType1: 'success',
       showAlert1: false,
       message1: '',
-      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
+      rowsPerPageItems: [5, 10, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       CategoryChoice: [],
       filter: {
         cat: 'All'
@@ -175,7 +174,7 @@ export default {
       this.alertType1 = type
       this.showAlert1 = true
     },
-    chooseCategory () {
+    async chooseCategory () {
       if (this.filter.cat === 'Computer') {
         this.computerChoosed = true
         this.catChoosed = 'Computer'
@@ -185,6 +184,7 @@ export default {
           this.catChoosed = ''
         }
       }
+      await this.getByFilter()
     },
     async getByFilter () {
       try {

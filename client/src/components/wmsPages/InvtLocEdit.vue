@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import Location from '@/services/Location'
+import Location from '@/services/LocationService'
 export default {
   data () {
     return {

@@ -135,8 +135,8 @@
 </template>
 
 <script>
-import Shipment from '@/services/Shipment'
-import ProductInv from '@/services/productInv'
+import Shipment from '@/services/ShipmentService'
+import ProductInv from '@/services/ProductInvService'
 export default {
   data () {
     return {
