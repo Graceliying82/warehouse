@@ -289,7 +289,7 @@ export default {
         this.upgradeInfo.baseUPCList = []
         for (let aUPC of this.UPCFamilyList) {
           if (aUPC.upgQty > 0) {
-            this.upgradeInfo.baseUPCList.push({'UPC': aUPC.UPC, 'PID': aUPC.pid, 'qty': aUPC.upgQty})
+            this.upgradeInfo.baseUPCList.push({'UPC': aUPC.UPC, 'pid': aUPC.pid, 'qty': aUPC.upgQty})
           }
         }
         await Upgrade.post(this.upgradeInfo)

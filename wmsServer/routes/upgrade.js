@@ -1,4 +1,5 @@
 const nextKey = require('./nextKey');
+var ObjectId = require('mongodb').ObjectID
 module.exports = {
   // create a upgrade task
   // id; taskID; targetUPC; prdNm; pid; orgNm; qty; baseUPC [upc; pid, qty]; crtTm; crtStmp; status(active/finish/cancel); log;
@@ -46,6 +47,48 @@ module.exports = {
         result = await upgradeCollection.find().toArray()
       }
       res.send(result);
+      res.end()
+    } catch (error) {
+      console.log("receive error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
+  async cancelReq(req, res, next) {
+    try {
+      const upgradeCollection = req.db.collection("upgrade");
+      const sellerInvCollection = req.db.collection("sellerInv");
+      let o_id = ObjectId(req.body._id);
+      let modifyTime = new Date()
+      req.body.mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST'
+      req.body.mdfStmp = modifyTime.getTime()
+      let result = await upgradeCollection.findOne({_id: o_id})
+      if ((result) && (result.status !== 'cancel')) {
+        for (let item of result.baseUPCList) {
+          await sellerInvCollection.findOneAndUpdate(
+            {
+              _id: { UPC: item.UPC, org: result.orgNm }
+            }, //query
+            {
+              $inc: { qty: item.qty},
+              $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+            },
+            { upsert: true }
+          );
+        }
+
+      }
+      await upgradeCollection.findOneAndUpdate(
+        {
+          _id: o_id
+        },
+        {
+          $set: { status: 'cancel', mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+        },
+      )
+      res.send('OK');
       res.end()
     } catch (error) {
       console.log("receive error: " + error);

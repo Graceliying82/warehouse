@@ -9,5 +9,8 @@ export default {
   },
   get () {
     return Api().get('/upgrades')
+  },
+  cancelReq (data) {
+    return Api().post('/upgrades/cancelReq', data)
   }
 }

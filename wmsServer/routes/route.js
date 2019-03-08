@@ -64,6 +64,7 @@ module.exports = (app) => {
   // from upgrade
   app.post('/upgrades', Upgrade.post)
   app.get('/upgrades', Upgrade.get)
+  app.post('/upgrades/cancelReq', Upgrade.cancelReq)
 
   //from tempSchema
   app.post('/tempschema', TempSchema.post)
