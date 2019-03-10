@@ -39,6 +39,7 @@
             <template slot="items" slot-scope="props">
               <tr>
                 <td class="text-xs-left">{{ props.item.taskID }}</td>
+                <td class="text-xs-left">{{ props.item.urgent }}</td>
                 <td class="text-xs-left">{{ props.item.orgNm }}</td>
                 <td class="text-xs-left">{{ props.item.prdNm }}</td>
                 <td class="text-xs-left">{{ props.item.pid }}</td>
@@ -109,6 +110,7 @@ export default {
       statusFilter: 'active',
       headersUpgrade: [
         { text: 'Task ID', align: 'left', value: 'taskID' },
+        { text: 'Urgent', align: 'left', value: 'urgent' },
         { text: 'orgNm', align: 'left', value: 'orgNm' },
         { text: 'Product Name', align: 'left', value: 'prdNm' },
         { text: 'PID', align: 'left', value: 'pid' },
@@ -198,7 +200,6 @@ export default {
         // Add item to batch list.
       }
       item.picked = true
-
     }
   },
   async mounted () {

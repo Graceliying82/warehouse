@@ -12,14 +12,14 @@
         </v-flex>
         <v-flex>
           <v-layout>
-              <v-flex mr-3>
+              <v-flex mx-3>
                 <v-text-field
                   label="UPC"
                   v-model="UPCInput"
                   clearable
                 ></v-text-field>
               </v-flex>
-              <v-flex ml-3>
+              <v-flex mx-3>
                 <v-text-field
                   label="Organization Name"
                   v-model="orgNmInput"
@@ -38,7 +38,7 @@
             </v-card-title>
             <v-card-text>
               <v-layout row justify-space-around>
-                <v-flex lg9 mr-3>
+                <v-flex lg9 mx-3>
                   <v-text-field
                     label='Target UPC'
                     v-model="upgradeInfo.targetUPC"
@@ -56,7 +56,7 @@
                 </v-flex >
               </v-layout>
               <v-layout row justify-space-around>
-                <v-flex lg6 mr-3>
+                <v-flex lg3 mx-3>
                   <v-text-field
                     label='Product Name'
                     v-model="upgradeInfo.prdNm"
@@ -80,6 +80,14 @@
                     readonly
                   ></v-text-field>
                 </v-flex >
+                <v-flex lg3 mx-3>
+                  <v-select
+                  :items="urgencyChoice"
+                  v-model="upgradeInfo.urgent"
+                  label="Urgent"
+                  outline>
+                  </v-select>
+                </v-flex>
               </v-layout>
             </v-card-text>
           </v-card>
@@ -146,6 +154,7 @@ export default {
         'prdNm': '',
         'pid': '',
         'qty': 0,
+        'urgent': false,
         'baseUPCList': [] // upc: '123', qty: 1
       },
       // Detail info
@@ -161,6 +170,7 @@ export default {
         { text: 'Upgrade Qty', align: 'left', value: 'upgQty' }
       ],
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
+      urgencyChoice: [true, false],
       // Handle barcode scanner input
       attributes: {
         barcode: '',
