@@ -12,5 +12,9 @@ export default {
   },
   cancelReq (data) {
     return Api().post('/upgrades/cancelReq', data)
+  },
+  // app.get('/upgrades/getUpdPrdNeedInstr', Upgrade.getUpdPrdNeedInstr)
+  getUpdPrdNeedInstr () {
+    return Api().get('/upgrades/getUpdPrdNeedInstr')
   }
 }

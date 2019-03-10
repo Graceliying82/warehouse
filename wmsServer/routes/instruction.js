@@ -1,6 +1,6 @@
 module.exports = {
   //  Get instruction
-  async get (req, res, next) {
+  async getByID (req, res, next) {
     const dbCollection = req.db.collection("instruction");
     try {
       var result = await dbCollection.findOne({_id: {fromUPC: req.body.fromUPC, toUPC: req.body.toUPC}})
@@ -37,7 +37,7 @@ module.exports = {
         },
         { upsert: true }
       )
-      res.send(result)
+      res.send('Success!')
       res.end()
     } catch (error) {
       console.log("Get Org error: " + error)

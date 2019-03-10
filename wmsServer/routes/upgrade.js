@@ -98,4 +98,33 @@ module.exports = {
       next(error);
     }
   },
+  async getUpdPrdNeedInstr (req, res, next) {
+    try {
+      const upgradeCollection = req.db.collection("upgrade");
+      const instructionCollection = req.db.collection("instruction");
+      let upgList = await upgradeCollection.find({'status': 'active'}).toArray();
+      let retList = [];
+      for (let aUpg of upgList) {
+        let toUPC = aUpg.targetUPC;
+        for (let aBase of aUpg.baseUPCList) {
+          let fromUPC = aBase.UPC;
+          let inst = await instructionCollection.findOne({_id: {'fromUPC': fromUPC, 'toUPC': toUPC}});
+          if (!inst) {
+            retList.push({
+              'fromUPC': fromUPC, 
+              'toUPC': toUPC
+            })
+          }
+        }
+      }
+      res.send(retList);
+      res.end()
+    } catch (error) {
+      console.log("receive error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  }
 }

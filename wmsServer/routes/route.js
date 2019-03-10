@@ -8,6 +8,7 @@ const ProductInv = require('./productInv')
 const Shipment = require('./shipment')
 const TempSchema = require('./tempSchema')
 const Upgrade = require('./upgrade')
+const Instruction = require('./instruction')
 module.exports = (app) => {
   // from Login
   app.post('/login', Login.post)
@@ -65,6 +66,11 @@ module.exports = (app) => {
   app.post('/upgrades', Upgrade.post)
   app.get('/upgrades', Upgrade.get)
   app.post('/upgrades/cancelReq', Upgrade.cancelReq)
+  app.get('/upgrades/getUpdPrdNeedInstr', Upgrade.getUpdPrdNeedInstr)
+
+  // from instructions
+  app.post('/instructions', Instruction.post)
+  app.post('/instructions/getByID', Instruction.getByID)
 
   //from tempSchema
   app.post('/tempschema', TempSchema.post)

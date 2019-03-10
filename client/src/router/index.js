@@ -11,7 +11,7 @@ import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
 import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
 import InventoryLocations from '@/components/wmsPages/InventoryLocations'
 import UpgradeTemplate from '@/components/wmsPages/UpgradeTemplate'
-import UpgradeApprove from '@/components/wmsPages/UpgradeApprove'
+import UpgradeInstructions from '@/components/wmsPages/UpgradeInstructions'
 import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
 import UpgradeRequestList from '@/components/wmsPages/UpgradeRequestList'
 import UpgradePrdGen from '@/components/wmsPages/UpgradePrdGen'
@@ -86,9 +86,9 @@ export default new Router({
       component: UpgradeTemplate
     },
     {
-      path: '/upgradeApprove',
-      name: 'upgradeApprove',
-      component: UpgradeApprove
+      path: '/upgradeInstructions',
+      name: 'upgradeInstructions',
+      component: UpgradeInstructions
     },
     {
       path: '/upgradeRequest',

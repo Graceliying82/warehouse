@@ -194,12 +194,12 @@ export default {
           this.setAlertDialog('Invalide input')
           return
         }
-        this.toUPC = this.toUPCInput.trim()
+        this.upIns.toUPC = this.toUPCInput.trim()
         this.upIns.fromUPC = this.fromUPCInput.trim()
         this.toUPCInput = ''
         this.fromUPCInput = ''
-        let result = (await Product.findInstructionByFromTo({
-          'toUPC': this.toUPC,
+        let result = (await Instruction.getByID({
+          'toUPC': this.upIns.toUPC,
           'fromUPC': this.upIns.fromUPC
         })).data
         if (result) {
@@ -228,22 +228,20 @@ export default {
     addInstruction (item) {
       this.showInstructions = true
       this.upIns.fromUPC = item.fromUPC
-      this.toUPC = item.toUPC
+      this.upIns.toUPC = item.toUPC
       this.clearInstruction()
     },
     async submit () {
       try {
         this.showAlert = false
-        let toPrd = (await Product.getProductByUPC(this.toUPC)).data
+        let toPrd = (await Product.getProductByUPC(this.upIns.toUPC)).data
         let fromPrd = (await Product.getProductByUPC(this.upIns.fromUPC)).data
         if (!toPrd) {
-          this.setAlertDialog('UPC ' + this.toUPC + ' Not found!')
+          this.setAlertDialog('UPC ' + this.upIns.toUPC + ' Not found!')
         } else if (!fromPrd) {
           this.setAlertDialog('UPC ' + this.upIns.fromUPC + ' Not found!')
         } else {
-          toPrd.upIns = this.upIns
-          toPrd.UPC = toPrd._id
-          await Product.put(toPrd)
+          await Instruction.post(this.upIns)
           await this.getUpdPrdNeedInstr()
           this.setAlertDialog('Done')
         }
