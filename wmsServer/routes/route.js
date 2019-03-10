@@ -71,6 +71,7 @@ module.exports = (app) => {
   // from instructions
   app.post('/instructions', Instruction.post)
   app.post('/instructions/getByID', Instruction.getByID)
+  app.get('/instructions', Instruction.get)
 
   //from tempSchema
   app.post('/tempschema', TempSchema.post)

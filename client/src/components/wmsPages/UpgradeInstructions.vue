@@ -18,7 +18,15 @@
           </v-card-text>
         </v-card>
       </v-dialog>
-      <panel title='Upgrade Requests Need Instructions'>
+      <v-layout>
+        <v-select
+          :items="actionChoice"
+          v-model="action"
+          label="Please Choose What to Do"
+          @change="changeAction()"
+          required></v-select>
+      </v-layout>
+      <panel title='Upgrade Requests Need Instructions' v-if=showAction0>
         <v-data-table
             :headers="headersNeedInstr"
             :items="needInstrList"
@@ -33,11 +41,8 @@
             </template>
           </v-data-table>
       </panel>
-      <v-flex>
-        <v-card>
-          <v-card-title class="title font-weight-light blue-grey lighten-5">
-            <span style='margin-right:1.25em; display:inline-block;'>Search Instruction By From To UPCs</span>
-          </v-card-title>
+      <v-flex v-if=showAction1>
+        <panel title='Search Instruction By From To UPCs'>
           <v-layout row>
             <v-flex xs6 ma-2>
               <v-text-field
@@ -53,9 +58,30 @@
             </v-flex>
             <v-btn dark @click.prevent="findInstructionByFromTo">find</v-btn>
           </v-layout>
-        </v-card>
+        </panel>
       </v-flex>
-      <v-flex v-if=showInstructions mt-3>
+      <v-flex v-if=showAction2>
+        <panel title='Get Instruction Lists'>
+          <v-data-table
+            :headers="headersInstr"
+            :items="instrList"
+            :rows-per-page-items="rowsPerPageItems"
+            class="elevation-1"
+          >
+            <template slot="items" slot-scope="props">
+              <tr @click.prevent="getInstruction(props.item)">
+                <td class="text-xs-left">{{ props.item._id.fromUPC }}</td>
+                <td class="text-xs-left">{{ props.item._id.toUPC }}</td>
+                <td class="text-xs-left">{{ props.item.reqParts }}</td>
+                <td class="text-xs-left">{{ props.item.offParts }}</td>
+                <td class="text-xs-left">{{ props.item.steps }}</td>
+                <td class="text-xs-left">{{ props.item.note }}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </panel>
+      </v-flex>
+      <v-flex v-if=showInstruction mt-3>
         <v-card>
           <v-card-title class="title font-weight-light blue-grey lighten-5">
             <span style='margin-right:1.25em; display:inline-block;'>Add Instructions</span>
@@ -129,14 +155,31 @@ export default {
       showAlert: false,
       message: '',
       showAlertDialog: false,
-      showInstructions: false,
+      showAction0: true,
+      showAction1: false,
+      showAction2: false,
+      showInstruction: false,
       fromUPCInput: '',
       toUPCInput: '',
       headersNeedInstr: [
         { text: 'From UPC', align: 'left', value: 'fromUPC' },
         { text: 'To UPC', align: 'left', value: 'toUPC' }
       ],
+      headersInstr: [
+        { text: 'From UPC', align: 'left', value: '_id.fromUPC' },
+        { text: 'To UPC', align: 'left', value: '_id.toUPC' },
+        { text: 'Require Parts', align: 'left', value: 'reqParts' },
+        { text: 'Took Off Parts', align: 'left', value: 'offParts' },
+        { text: 'Steps', align: 'left', value: 'steps' },
+        { text: 'Note', align: 'left', value: 'note' }
+      ],
       needInstrList: [],
+      instrList: [],
+      actionChoice: [
+        'Show Upgrade Request Need Instrunctions',
+        'Search Instruction By From To UPCs',
+        'Get Instruction Lists'],
+      action: '',
       rowsPerPageItems: [10, 20, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       upIns: {
         toUPC: '',
@@ -163,10 +206,46 @@ export default {
       this.showAlertDialog = true
     },
     clearInstruction () {
+      this.clearAlert()
       this.upIns.reqParts = ''
       this.upIns.offParts = ''
       this.upIns.steps = ''
       this.upIns.note = ''
+    },
+    clearShows () {
+      this.showAction0 = false
+      this.showAction1 = false
+      this.showAction2 = false
+    },
+    async getInstructionList () {
+      try {
+        this.instrList = (await Instruction.get()).data
+        // console.log(this.instrList)
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    changeAction () {
+      this.clearShows()
+      this.clearAlert()
+      if (this.action === this.actionChoice[0]) {
+        this.showAction0 = true
+      } else if (this.action === this.actionChoice[1]) {
+        this.showAction1 = true
+      } else if (this.action === this.actionChoice[2]) {
+        this.showAction2 = true
+        this.getInstructionList()
+      }
     },
     async getUpdPrdNeedInstr () {
       // call the server to get products which needs update instructions
@@ -210,7 +289,7 @@ export default {
         } else {
           this.setAlertDialog('Instruction Not Existed.')
         }
-        this.showInstructions = true
+        this.showInstruction = true
       } catch (error) {
         if (!error.response) {
           // network error
@@ -226,10 +305,19 @@ export default {
       }
     },
     addInstruction (item) {
-      this.showInstructions = true
+      this.showInstruction = true
       this.upIns.fromUPC = item.fromUPC
       this.upIns.toUPC = item.toUPC
       this.clearInstruction()
+    },
+    getInstruction (item) {
+      this.showInstruction = true
+      this.upIns.fromUPC = item._id.fromUPC
+      this.upIns.toUPC = item._id.toUPC
+      this.upIns.reqParts = item.reqParts
+      this.upIns.offParts = item.offParts
+      this.upIns.steps = item.steps
+      this.upIns.note = item.note
     },
     async submit () {
       try {
@@ -262,6 +350,7 @@ export default {
   },
   async mounted () {
     this.getUpdPrdNeedInstr()
+    this.action = this.actionChoice[0]
   }
 }
 </script>

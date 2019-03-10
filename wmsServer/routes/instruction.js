@@ -1,9 +1,25 @@
 module.exports = {
-  //  Get instruction
+  //  Get instruction by from to UPC
   async getByID (req, res, next) {
     const dbCollection = req.db.collection("instruction");
     try {
       var result = await dbCollection.findOne({_id: {fromUPC: req.body.fromUPC, toUPC: req.body.toUPC}})
+      res.send(result)
+      res.end()
+    } catch (error) {
+      console.log("Get Org error: " + error)
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error)
+    }
+  },
+
+  // get All instruction List
+  async get (req, res, next) {
+    const dbCollection = req.db.collection("instruction");
+    try {
+      var result = await dbCollection.find().toArray()
       res.send(result)
       res.end()
     } catch (error) {
