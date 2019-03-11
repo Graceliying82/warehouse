@@ -120,44 +120,48 @@ module.exports = {
     const prdCollection = req.db.collection("product");
     try {
       let modifyTime = new Date();
-      let mdfTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
-      let mdfStmp = modifyTime.getTime();
+      req.body.crtTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      req.body.crtStmp = modifyTime.getTime();
+      req.body.mdfTm = req.body.crtTm;
+      req.body.mdfStmp = req.body.crtStmp;
       let aprd = await prdCollection.findOne({_id: req.body.UPC});
       let apid = 0;
       if (aprd) {
+        // Product found. Update
         apid = aprd.pid
+        await prdCollection.findOneAndUpdate(
+          { // query
+            _id: req.body.UPC
+          }, 
+          { // update
+            $set: {
+              mdfTm: req.body.mdfTm, 
+              mdfStmp: req.body.mdfStmp,
+              prdNm: req.body.prdNm,
+              length: req.body.length,
+              width: req.body.width,
+              height: req.body.height,
+              weight: req.body.weight,
+              volume: req.body.volume,
+              color: req.body.color,
+              brdNm: req.body.brdNm,
+              modNo: req.body.modNo,
+              modYr: req.body.modYr,
+              note: req.body.note,
+              cat: req.body.cat,
+              origUPC: req.body.origUPC,
+              cstmiz: req.body.cstmiz,
+              compSpec: req.body.compSpec,
+              cfgLists: req.body.cfgLists,
+              pid: apid
+            }
+          },
+        );
       } else {
-        apid = await nextKey.key("product",req.db);
+        // Product doesn't existed. Create a New one.
+        req.body.pid = await nextKey.key("product",req.db);
+        await prdCollection.insertOne(req.body);
       }
-      await prdCollection.findOneAndUpdate(
-        { // query
-          _id: req.body.UPC
-        }, 
-        { // update
-          $set: { 
-            mdfTm: mdfTm, 
-            mdfStmp: mdfStmp,
-            prdNm: req.body.prdNm,
-            length: req.body.length,
-            width: req.body.width,
-            height: req.body.height,
-            weight: req.body.weight,
-            volume: req.body.volume,
-            color: req.body.color,
-            brdNm: req.body.brdNm,
-            modNo: req.body.modNo,
-            modYr: req.body.modYr,
-            note: req.body.note,
-            cat: req.body.cat,
-            origUPC: req.body.origUPC,
-            cstmiz: req.body.cstmiz,
-            compSpec: req.body.compSpec,
-            cfgLists: req.body.cfgLists,
-            pid: apid
-          }
-        },
-        { upsert: true }
-      );
       res.send('Success!');
       res.end();
     } catch (error) {

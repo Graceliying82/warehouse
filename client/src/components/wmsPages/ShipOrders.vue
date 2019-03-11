@@ -16,9 +16,19 @@
         <v-btn dark @click.prevent="cancelDialog">cancel</v-btn>
       </v-card>
     </v-dialog>
+    <v-layout mx-5>
+      <v-flex sm6>
+        <v-select
+          :items="actionChoice"
+          v-model="action"
+          label="Please Choose What to Do"
+          @change="changeAction()"
+          required></v-select>
+      </v-flex>
+    </v-layout>
     <v-layout column>
       <!-- Show Orders For Shipping-->
-        <v-layout row>
+        <v-layout column v-if=showAction0>
           <!-- Show OrderIDs-->
           <v-flex mx-5>
           <panel title="Show Orders for Shipping">
@@ -106,6 +116,12 @@
                     </td>
                     <td
                       class="text-xs-left">
+                      <v-btn icon class="mx-0" @click="upgrade(props.item)">
+                        <v-icon color="teal">settings_input_component</v-icon>
+                      </v-btn>
+                    </td>
+                    <td
+                      class="text-xs-left">
                       <v-btn icon class="mx-0" @click="deleteItem(props.item)">
                         <v-icon color="teal">delete_forever</v-icon>
                       </v-btn>
@@ -116,9 +132,9 @@
           </panel>
           </v-flex>
           <!-- End Show OrderIDs-->
-          <v-flex>
+          <v-flex mt-5>
             <v-btn dark
-              v-if = showDetailPanel
+              v-if = showOrderInv
               @click.prevent="printContent()">Print Detail</v-btn>
             <v-flex >
               <v-text-field
@@ -130,13 +146,13 @@
             </v-flex>
             <!-- Show Order Detail-->
             <div id="printable">
-            <v-flex v-if = showDetailPanel>
-              <div class="font-weight-bold text-xs-left">Order ID: {{orderID4Detail}} </div>
-              <div class="font-weight-bold text-xs-left">Tracking NO: {{tracking4Detail}}</div>
-              <div class="font-weight-bold text-xs-left">Org Name : {{orgNm4Detail}}</div>
-              <div class="font-weight-bold text-xs-left">Status : {{status4Detail}}</div>
+            <v-flex v-if = showOrderInv>
+              <div class="font-weight-bold text-xs-left">Order ID: {{orderBasic.orderID}} </div>
+              <div class="font-weight-bold text-xs-left">Tracking NO: {{orderBasic.tracking}}</div>
+              <div class="font-weight-bold text-xs-left">Org Name : {{orderBasic.orgNm}}</div>
+              <div class="font-weight-bold text-xs-left">Status : {{orderBasic.status}}</div>
               <br>
-              <v-flex v-for = "(detail, i) in orderDetail" :key = i my-2>
+              <v-flex v-for = "(detail, i) in orderBasic.orderDetail" :key = i my-2>
                 <v-card color = 'grey lighten-4'>
                   <v-card-title>
                   <v-flex ma-2>
@@ -168,83 +184,85 @@
         </v-layout>
         <!-- Upload orders-->
         <v-flex mx-5>
-            <v-alert
-              v-show = showAlert
-              :type = alertType
-              outline>
-                {{message}}
-              </v-alert>
-            </v-flex>
-        <v-flex ma-5>
-          <panel title = 'Upload Orders'>
-            <input type= "file" id="orderFile" @change='readFile($event)' accept=".csv">
-          </panel>
-          <v-card>
-            <v-data-table
-              :headers="ordersHeaders"
-              :items="orderUpload"
-              :rows-per-page-items="rowsPerPageItems"
-              class="elevation-1"
-            >
-            <template slot="items" slot-scope="props">
-                <td
-                  class="text-xs-left">{{ props.item.status }}</td>
-                <td
-                  class="text-xs-left">{{ props.item.OrderID }}</td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.TrackingNo }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.OrgName }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.UPC1 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.Qty1 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.UPC2 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.Qty2 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.UPC3 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.Qty3 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.UPC4 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.Qty4 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.UPC5 }}
-                </td>
-                <td
-                  class="text-xs-left">
-                  {{ props.item.Qty5 }}
-                </td>
-              </template>
-            </v-data-table>
-          </v-card>
-          <v-btn dark v-if='uploadButton' @click.prevent="upload">Upload to Server</v-btn>
-          <v-btn dark @click.prevent="reset">Reset</v-btn>
+          <v-alert
+            v-show = showAlert
+            :type = alertType
+            outline>
+              {{message}}
+            </v-alert>
         </v-flex>
+        <div v-if="showAction1">
+          <v-flex ma-5>
+            <panel title = 'Upload Orders'>
+              <input type= "file" id="orderFile" @change='readFile($event)' accept=".csv">
+            </panel>
+            <v-card>
+              <v-data-table
+                :headers="ordersHeaders"
+                :items="orderUpload"
+                :rows-per-page-items="rowsPerPageItems"
+                class="elevation-1"
+              >
+              <template slot="items" slot-scope="props">
+                  <td
+                    class="text-xs-left">{{ props.item.status }}</td>
+                  <td
+                    class="text-xs-left">{{ props.item.OrderID }}</td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.TrackingNo }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.OrgName }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.UPC1 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.Qty1 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.UPC2 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.Qty2 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.UPC3 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.Qty3 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.UPC4 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.Qty4 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.UPC5 }}
+                  </td>
+                  <td
+                    class="text-xs-left">
+                    {{ props.item.Qty5 }}
+                  </td>
+                </template>
+              </v-data-table>
+            </v-card>
+            <v-btn dark v-if='uploadButton' @click.prevent="upload">Upload to Server</v-btn>
+            <v-btn dark @click.prevent="reset">Reset</v-btn>
+          </v-flex>
+        </div>
         <!-- End Upload orders-->
       <!-- End Show Orders For Shipping-->
     </v-layout>
@@ -257,6 +275,13 @@ import Shipment from '@/services/ShipmentService'
 export default {
   data () {
     return {
+      actionChoice: [
+        'Show Orders for Shipping',
+        'Upload Orders'
+      ],
+      action: '',
+      showAction0: true,
+      showAction1: false,
       ordersHeaders: [
         {
           text: 'Data Check',
@@ -282,7 +307,8 @@ export default {
         { text: 'TrackingNo', align: 'left', value: 'trNo' },
         { text: 'OrgName', align: 'left', value: 'orgNm' },
         { text: 'Status', align: 'left', value: 'status' },
-        { text: 'Upgrade', align: 'left', value: 'TrackingNo' },
+        { text: 'Fast Upgrade', align: 'left', value: 'TrackingNo' },
+        { text: 'Config Upgrade', align: 'left', value: 'TrackingNo' },
         { text: 'Delete', align: 'left', value: 'TrackingNo' }
       ],
       locInvHeader: [
@@ -290,12 +316,14 @@ export default {
         { text: 'Quantity', align: 'left', value: 'qty' }
       ],
       locInvs: [],
-      orderDetail: [],
-      showDetailPanel: false,
-      orderID4Detail: '',
-      tracking4Detail: '',
-      orgNm4Detail: '',
-      status4Detail: '',
+      showOrderInv: false,
+      orderBasic: {
+        orderID: '',
+        tracking: '',
+        orgNm: '',
+        status: '',
+        orderDetail: []
+      },
       trackingMan: '',
       orderForShip: [],
       menu: false,
@@ -309,6 +337,7 @@ export default {
       showAlert: false,
       message: '',
       message4Delete: '',
+      showAlertDialog: false,
       item4Delete: '',
       showDeleteDialog: false,
       orderUpload: [],
@@ -330,6 +359,19 @@ export default {
     setAlertDialog (message) {
       this.message = message
       this.showAlertDialog = true
+    },
+    clearShows () {
+      this.showAction0 = false
+      this.showAction1 = false
+    },
+    changeAction () {
+      this.clearShows()
+      this.clearAlert()
+      if (this.action === this.actionChoice[0]) {
+        this.showAction0 = true
+      } else if (this.action === this.actionChoice[1]) {
+        this.showAction1 = true
+      }
     },
     reset () {
       this.clearAlert()
@@ -362,7 +404,7 @@ export default {
       await Shipment.deleteByTracking({id: this.item4Delete._id})
       await this.changeFilter()
       this.showDeleteDialog = false
-      this.showAlertDialog('Delete Order success')
+      this.setAlertDialog('Delete Order success')
     },
     // Wrap up FileReader as a promise
     readUploadedFileAsText (inputFile) {
@@ -542,13 +584,14 @@ export default {
       }
     },
     async showDetail (trackingNo) {
-      this.showDetailPanel = true
+      this.showOrderInv = true
       let result = (await Shipment.getByShipmentId(trackingNo)).data
-      this.orderDetail = result.rcIts
-      this.orderID4Detail = result.orderID
-      this.tracking4Detail = result._id
-      this.orgNm4Detail = result.orgNm
-      this.status4Detail = result.status
+      console.log(result)
+      this.orderBasic.orderID = result.orderID
+      this.orderBasic.tracking = result._id
+      this.orderBasic.orgNm = result.orgNm
+      this.orderBasic.status = result.status
+      this.orderBasic.orderDetail = result.rcIts
     },
     async showDetail4Item (item) {
       await this.showDetail(item._id)
@@ -575,6 +618,7 @@ export default {
   created () {
     // console.log('Come here!')
     this.changeFilter()
+    this.action = this.actionChoice[0]
   }
 }
 </script>

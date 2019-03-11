@@ -1,3 +1,4 @@
+const nextKey = require('./nextKey');
 module.exports = {
   async post(req, res, next) {
     try {
@@ -86,6 +87,9 @@ module.exports = {
     const sellerInvCollection = req.db.collection("sellerInv");
     const prdCollection = req.db.collection("product");
     try {
+      let createTime = new Date()
+      req.body.crtTm = new Date(createTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST'
+      req.body.crtStmp = createTime.getTime() // add a create timestamp
       let shipment = await shipCollection.findOne({ _id: req.params.Id });
       if (shipment === null) {
         console.log('Tracking No ' + req.params.Id + ' is not found')
@@ -110,11 +114,20 @@ module.exports = {
               anItem.warning = false;
               anItem.sellerInv = sellerInvQty.qty;
             }
-            let prod = await prdCollection.findOne({_id:anItem.UPC},{prdNm:1});
+            let prod = await prdCollection.findOne({_id:anItem.UPC},{prdNm:1, pid: 1});
             if (prod){
               anItem.prdNm = prod.prdNm;
+              anItem.pid = prod.pid;
             } else {
-              anItem.prdNm = "N/A";
+              // create a product
+              let apid = await nextKey.key("product",req.db);
+              await prodCollection.insertOne(
+                {
+                  _id: anItem.UPC, prdNm: "", pid: apid, crtTm: req.body.crtTm, crtStmp: req.body.crtStmp
+                }
+              )
+              anItem.prdNm = "";
+              anItem.pid = apid;
             }
           };
           if ((notEnough) && (shipment.status === 'ready')) {

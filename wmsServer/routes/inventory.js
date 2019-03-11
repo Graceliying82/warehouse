@@ -57,7 +57,7 @@ module.exports = {
           let apid = await nextKey.key("product",req.db);
           await prodCollection.insertOne(
             {
-              _id: aUPC, prdNm: "", status: 0, pid: apid, crtTm: req.body.crtTm, crtStmp: req.body.crtStmp }
+              _id: aUPC, prdNm: "", pid: apid, crtTm: req.body.crtTm, crtStmp: req.body.crtStmp }
           )
         }
         await invCollection.findOneAndUpdate(
