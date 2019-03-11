@@ -12,6 +12,10 @@ export default {
     return Api().get('/shipments/' + id)
   },
   ship (data) {
-    return Api().post('/shipment/ship', data)
+    return Api().post('/shipments/ship', data)
+  },
+  // app.post('/shipment/deleteByTracking', Shipment.deleteByTracking)
+  deleteByTracking (data) {
+    return Api().post('/shipments/deleteByTracking', data)
   }
 }

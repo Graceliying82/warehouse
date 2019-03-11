@@ -1,5 +1,21 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
+    <v-dialog v-model="showAlertDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message}}</h2>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showDeleteDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message4Delete}}</h2>
+        </v-card-text>
+        <v-btn dark @click.prevent="confirmDialog">confirm</v-btn>
+        <v-btn dark @click.prevent="cancelDialog">cancel</v-btn>
+      </v-card>
+    </v-dialog>
     <v-layout column>
       <!-- Show Orders For Shipping-->
         <v-layout row>
@@ -83,7 +99,13 @@
                       {{ props.item.status }}
                     </td>
                     <td
-                      class="justify-center layout px-0">
+                      class="text-xs-left">
+                      <v-btn icon class="mx-0" @click="upgrade(props.item)">
+                        <v-icon color="teal">build</v-icon>
+                      </v-btn>
+                    </td>
+                    <td
+                      class="text-xs-left">
                       <v-btn icon class="mx-0" @click="deleteItem(props.item)">
                         <v-icon color="teal">delete_forever</v-icon>
                       </v-btn>
@@ -147,10 +169,10 @@
         <!-- Upload orders-->
         <v-flex mx-5>
             <v-alert
-              v-show = showAlert1
-              :type = alertType1
+              v-show = showAlert
+              :type = alertType
               outline>
-                {{message1}}
+                {{message}}
               </v-alert>
             </v-flex>
         <v-flex ma-5>
@@ -260,7 +282,8 @@ export default {
         { text: 'TrackingNo', align: 'left', value: 'trNo' },
         { text: 'OrgName', align: 'left', value: 'orgNm' },
         { text: 'Status', align: 'left', value: 'status' },
-        { text: 'Actions', align: 'left', value: 'TrackingNo' }
+        { text: 'Upgrade', align: 'left', value: 'TrackingNo' },
+        { text: 'Delete', align: 'left', value: 'TrackingNo' }
       ],
       locInvHeader: [
         { text: 'Location', align: 'left', value: 'loc' },
@@ -282,9 +305,12 @@ export default {
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       endDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
-      alertType1: 'success',
-      showAlert1: false,
-      message1: '',
+      alertType: 'success',
+      showAlert: false,
+      message: '',
+      message4Delete: '',
+      item4Delete: '',
+      showDeleteDialog: false,
       orderUpload: [],
       serverOrder: [],
       uploadButton: false,
@@ -293,19 +319,50 @@ export default {
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.message1 = ''
+      this.showAlert = false
+      this.message = ''
     },
     setAlert (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
+    },
+    setAlertDialog (message) {
+      this.message = message
+      this.showAlertDialog = true
     },
     reset () {
       this.clearAlert()
       this.orderUpload = []
       this.serverOrder = []
       this.uploadButton = false
+    },
+    upgrade (item) {
+      if (item.status === 'shipped') {
+        this.setAlertDialog('Order :' + item.orderID + ' has been shipped. A shipped order can not upgrade.')
+      } else if (item.status === 'upgrade') {
+        this.setAlertDialog('Order :' + item.orderID + ' is upgrading.')
+      }
+    },
+    deleteItem (item) {
+      if (item.status === 'shipped') {
+        this.setAlertDialog('Shipped order can not be deleted')
+      } else if (item.status === 'upgrade') {
+        this.setAlertDialog('Upgrade order can not be deleted')
+      } else {
+        this.message4Delete = 'Delete Order: ' + item.orderID + ' Tracking No: ' + item._id
+        this.item4Delete = item
+        this.showDeleteDialog = true
+      }
+    },
+    cancelDialog () {
+      this.showDetail4Item = false
+    },
+    async confirmDialog () {
+      await Shipment.deleteByTracking({id: this.item4Delete._id})
+      await this.changeFilter()
+      this.showDeleteDialog = false
+      this.showAlertDialog('Delete Order success')
     },
     // Wrap up FileReader as a promise
     readUploadedFileAsText (inputFile) {

@@ -270,5 +270,20 @@ module.exports = {
       };
       next(error);
     }
+  },
+  // Delete a shipment record by trackingNo
+  async deleteByTracking (req, res, next) {
+    try {
+      const shipCollection = req.db.collection("shipment");
+      await shipCollection.deleteOne({"_id": req.body.id});
+      res.send("Delete Order success");
+      res.end();
+    } catch (error) {
+      console.log("delete shipment: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
   }
 }
