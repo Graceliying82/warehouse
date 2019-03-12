@@ -614,7 +614,6 @@ export default {
       try {
         this.prdBasic.cfgLists = this.configLists
         this.prdBasic.origUPC = this.newPrdBasic.origUPC
-        this.prdBasic.UPC = this.prdBasic._id
         // console.log(this.prdBasic)
         await Product.put(this.prdBasic)
         this.setAlertDialog('Update product information successfully.')
@@ -660,7 +659,7 @@ export default {
           this.setAlertDialog('This may take a while. Please wait')
           for (let aPrd of this.generatedPrds) {
             await Product.put({
-              'UPC': aPrd.UPC,
+              '_id': aPrd.UPC,
               'origUPC': this.newPrdBasic.UPC,
               'prdNm': this.prdBasic.prdNm,
               'length': this.prdBasic.length,

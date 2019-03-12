@@ -110,7 +110,7 @@
                     </td>
                     <td
                       class="text-xs-left">
-                      <v-btn icon class="mx-0" @click="upgrade(props.item)">
+                      <v-btn icon class="mx-0" @click="fastUpgrade(props.item)">
                         <v-icon color="teal">build</v-icon>
                       </v-btn>
                     </td>
@@ -154,21 +154,26 @@
               <br>
               <v-flex v-for = "(detail, i) in orderBasic.orderDetail" :key = i my-2>
                 <v-card color = 'grey lighten-4'>
-                  <v-card-title>
-                  <v-flex ma-2>
-                    <v-list-tile-content>
-                      <v-list-tile-sub-title >UPC  :  {{ detail.UPC }}</v-list-tile-sub-title>
-                      <v-list-tile-sub-title>Required by this order  :  {{ detail.qty }}</v-list-tile-sub-title>
-                      <v-list-tile-sub-title>Seller Inventroy  :  {{ detail.sellerInv }}</v-list-tile-sub-title>
-                      <v-list-tile-sub-title style="color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</v-list-tile-sub-title>
-                    </v-list-tile-content>
-                  </v-flex>
-                  </v-card-title>
+                  <v-layout>
+                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>UPC:</b></p>
+                    <p style="margin-right:5em; margin-top:2em;">{{ detail.UPC }}</p>
+                    <p style="margin-right: 1em; margin-top:2em;"><b>PID:</b></p>
+                    <p style="margin-top:2em; margin-right:5em;">{{ detail.pid }}</p>
+                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Required by this order:</b></p>
+                    <p style="margin-right:5em; margin-top:2em;">{{ detail.qty }}</p>
+                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Seller Inventroy:</b></p>
+                    <p style="margin-right:5em; margin-top:2em;">{{ detail.sellerInv }}</p>
+                  </v-layout>
+                  <v-layout>
+                    <p style="margin-left:2em;color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</p>
+                  </v-layout>
                   <v-layout column>
                     <template v-for="(alocInv,index) in detail.locInv">
                       <v-layout :key="index">
-                        <v-list-tile-sub-title :key="index+ '-loc'">Location  :  {{ alocInv._id.loc }}</v-list-tile-sub-title>
-                        <v-list-tile-sub-title :key="index+ '-qty'">Quantity  :  {{ alocInv.qty }}</v-list-tile-sub-title>
+                        <p style="margin-right:1em; margin-left:2em;" :key="index+ '-loc'">
+                          <b>Location  :  </b>{{ alocInv._id.loc }}</p>
+                        <p style="margin-right:1em; margin-left:2em;" :key="index+ '-qty'">
+                          <b>Quantity  :  {{ alocInv.qty }}</b></p>
                       </v-layout>
                     </template>
                     <br>
@@ -379,11 +384,22 @@ export default {
       this.serverOrder = []
       this.uploadButton = false
     },
-    upgrade (item) {
+    checkOrderStatus (item) {
       if (item.status === 'shipped') {
         this.setAlertDialog('Order :' + item.orderID + ' has been shipped. A shipped order can not upgrade.')
+        return false
       } else if (item.status === 'upgrade') {
         this.setAlertDialog('Order :' + item.orderID + ' is upgrading.')
+        return false
+      }
+      return true
+    },
+    upgrade (item) {
+      if (this.checkOrderStatus(item)) {
+      }
+    },
+    fastUpgrade (item) {
+      if (this.checkOrderStatus(item)) {
       }
     },
     deleteItem (item) {
@@ -398,7 +414,7 @@ export default {
       }
     },
     cancelDialog () {
-      this.showDetail4Item = false
+      this.showDeleteDialog = false
     },
     async confirmDialog () {
       await Shipment.deleteByTracking({id: this.item4Delete._id})
@@ -586,7 +602,7 @@ export default {
     async showDetail (trackingNo) {
       this.showOrderInv = true
       let result = (await Shipment.getByShipmentId(trackingNo)).data
-      console.log(result)
+      // console.log(result)
       this.orderBasic.orderID = result.orderID
       this.orderBasic.tracking = result._id
       this.orderBasic.orgNm = result.orgNm
@@ -595,7 +611,7 @@ export default {
     },
     async showDetail4Item (item) {
       await this.showDetail(item._id)
-      item.status = this.status4Detail
+      item.status = this.orderBasic.status
     },
     showDetailMan () {
       this.showDetail(this.trackingMan.trim())

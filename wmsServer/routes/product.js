@@ -124,14 +124,14 @@ module.exports = {
       req.body.crtStmp = modifyTime.getTime();
       req.body.mdfTm = req.body.crtTm;
       req.body.mdfStmp = req.body.crtStmp;
-      let aprd = await prdCollection.findOne({_id: req.body.UPC});
+      let aprd = await prdCollection.findOne({_id: req.body._id});
       let apid = 0;
       if (aprd) {
         // Product found. Update
         apid = aprd.pid
         await prdCollection.findOneAndUpdate(
           { // query
-            _id: req.body.UPC
+            _id: req.body._id
           }, 
           { // update
             $set: {

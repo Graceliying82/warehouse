@@ -29,7 +29,7 @@
         <v-layout row mx-5>
           <v-flex mr-5 md8>
             <v-text-field
-              v-model="prdBasic.UPC"
+              v-model="prdBasic._id"
               label="UPC"
               required
             ></v-text-field>
@@ -310,7 +310,7 @@ export default {
       this.productItems = ''
       this.showPrd = false
       this.computerCategroy = false
-      this.prdBasic.UPC = ''
+      this.prdBasic._id = ''
       this.prdBasic.prdNm = ''
       this.prdBasic.length = 0
       this.prdBasic.width = 0
@@ -341,13 +341,13 @@ export default {
     },
     handleNewPrd (result) {
       // Method to handle New Product
-      this.prdBasic.UPC = result._id
+      this.prdBasic._id = result._id
       this.prdBasic.prdNm = result.prdNm
     },
     handleKnownPrd (result) {
       // Method to handle New Product
       this.prdBasic = result
-      this.prdBasic.UPC = result._id
+      this.prdBasic._id = result._id
       if (this.prdBasic.cat === 'Computer') {
         if (result.compSpec) {
           this.computerSpec = result.compSpec
@@ -391,7 +391,7 @@ export default {
       }
     },
     trimData () {
-      this.prdBasic.UPC = this.prdBasic.UPC.trim()
+      this.prdBasic._id = this.prdBasic._id.trim()
       this.prdBasic.prdNm = this.prdBasic.prdNm.trim()
       this.prdBasic.length = Math.ceil(this.prdBasic.length)
       this.prdBasic.width = Math.ceil(this.prdBasic.width)
@@ -401,7 +401,6 @@ export default {
       this.prdBasic.brdNm = this.prdBasic.brdNm.trim()
       this.prdBasic.modNo = this.prdBasic.modNo.trim()
       this.prdBasic.modYr = this.prdBasic.modYr.trim()
-      this.prdBasic.note = this.prdBasic.note.trim()
       this.prdBasic.cat = this.prdBasic.cat.trim()
       // if (this.prdBasic.cat === 'Computer') {
       //   this.computerSpec.ramSz = this.computerSpec.ramSz.trim()
@@ -416,7 +415,8 @@ export default {
       // }
     },
     async submit () {
-      if (this.prdBasic.UPC === '') {
+      console.log('Here')
+      if (this.prdBasic._id === '') {
         this.setAlert('error', 'UPC is required!')
       } else {
         try {

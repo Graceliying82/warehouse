@@ -121,7 +121,7 @@ module.exports = {
             } else {
               // create a product
               let apid = await nextKey.key("product",req.db);
-              await prodCollection.insertOne(
+              await prdCollection.insertOne(
                 {
                   _id: anItem.UPC, prdNm: "", pid: apid, crtTm: req.body.crtTm, crtStmp: req.body.crtStmp
                 }
