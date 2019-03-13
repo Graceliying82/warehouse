@@ -38,7 +38,7 @@ module.exports = {
     }
   },
   //startDate, endDate, status are mandatory, 
-  //valid status = all, ready, update, ship
+  //valid status = all, ready, upgrade, ship
   async get(req, res, next) {
     const shipmentCollection = req.db.collection("shipment");
     try {
@@ -98,7 +98,8 @@ module.exports = {
         if (shipment.rcIts) {
           let notEnough = false
           let rcIts = shipment.rcIts;
-          for (let anItem of rcIts) {
+          for (i =0; i < rcIts.length; i ++) {
+            let anItem = rcIts[i];
             let locInv = await locInvCollection.find({"_id.UPC": anItem.UPC,qty: {$gt:0}}, {"_id.loc": 1, qty: 1}).toArray();
             anItem.locInv = locInv;
             let sellerInvQty = await sellerInvCollection.findOne({ "_id.UPC": anItem.UPC, "_id.org": shipment.orgNm }, { qty: 1});
@@ -128,28 +129,50 @@ module.exports = {
               )
               anItem.prdNm = "";
               anItem.pid = apid;
+            };
+            if ((notEnough) && (anItem.status !== 'upgrade')) {
+              await shipCollection.findOneAndUpdate(
+                {
+                  _id: req.params.Id,
+                  "rcIts.UPC": anItem.UPC
+                }, //query
+                {
+                  $set: { "rcIts.$.status": 'backOrder' },
+                },
+              );
+              anItem.status = 'backOrder';
+            } else if ((!notEnough) && (anItem.status !== 'upgrade')) {
+              await shipCollection.findOneAndUpdate(
+                {
+                  _id: req.params.Id,
+                  "rcIts.UPC": anItem.UPC
+                }, //query
+                {
+                  $set: { "rcIts.$.status": 'ready' },
+                },
+              );
+              anItem.status = 'ready';
             }
           };
-          if ((notEnough) && (shipment.status === 'ready')) {
+          
+          if ((notEnough) && (shipment.status === 'upgrade')) {
             await shipCollection.findOneAndUpdate(
               {
                 _id: req.params.Id
               }, //query
               {
                 $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp, status: 'backOrder' },
-              },
-              { upsert: true }
+              }
             );
-            shipment.status = 'backOrder'
-          } else if ((!notEnough) && (shipment.status === 'backOrder')) {
+            shipment.status = 'backOrder';
+          } else if ((!notEnough) && (shipment.status === 'upgrade')) {
             await shipCollection.findOneAndUpdate(
               {
                 _id: req.params.Id
               }, //query
               {
                 $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp, status: 'ready' },
-              },
-              { upsert: true }
+              }
             );
             shipment.status = 'ready'
           }

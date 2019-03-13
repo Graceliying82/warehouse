@@ -658,6 +658,7 @@ export default {
         if (this.generatedPrds.length > 0) {
           this.setAlertDialog('This may take a while. Please wait')
           for (let aPrd of this.generatedPrds) {
+            console.log(aPrd.UPC)
             await Product.put({
               '_id': aPrd.UPC,
               'origUPC': this.newPrdBasic.UPC,

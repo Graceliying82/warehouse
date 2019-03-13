@@ -145,7 +145,7 @@
                 ></v-text-field>
             </v-flex>
             <!-- Show Order Detail-->
-            <div id="printable">
+            <div>
             <v-flex v-if = showOrderInv>
               <div class="font-weight-bold text-xs-left">Order ID: {{orderBasic.orderID}} </div>
               <div class="font-weight-bold text-xs-left">Tracking NO: {{orderBasic.tracking}}</div>
@@ -163,20 +163,18 @@
                     <p style="margin-right:5em; margin-top:2em;">{{ detail.qty }}</p>
                     <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Seller Inventroy:</b></p>
                     <p style="margin-right:5em; margin-top:2em;">{{ detail.sellerInv }}</p>
+                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Status:</b></p>
+                    <p style="margin-right:5em; margin-top:2em;">{{ detail.status }}</p>
                   </v-layout>
                   <v-layout>
                     <p style="margin-left:2em;color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</p>
                   </v-layout>
-                  <v-layout column>
-                    <template v-for="(alocInv,index) in detail.locInv">
-                      <v-layout :key="index">
-                        <p style="margin-right:1em; margin-left:2em;" :key="index+ '-loc'">
-                          <b>Location  :  </b>{{ alocInv._id.loc }}</p>
-                        <p style="margin-right:1em; margin-left:2em;" :key="index+ '-qty'">
-                          <b>Quantity  :  {{ alocInv.qty }}</b></p>
-                      </v-layout>
-                    </template>
-                    <br>
+                  <v-layout justify-center>
+                    <v-btn dark color="blue-grey" @click.prevent="upgrade(orderBasic, detail.UPC, detail.qty)">
+                      Upgrade&nbsp;&nbsp;
+                      <v-icon right dark>build</v-icon>
+                  </v-btn>
+                    <v-btn color="teal" dark @click.prevent="fastUpgrade(orderBasic, detail.UPC, detail.qty)">One-click Upgrade</v-btn>
                   </v-layout>
                 </v-card>
               </v-flex>
@@ -271,15 +269,50 @@
         <!-- End Upload orders-->
       <!-- End Show Orders For Shipping-->
     </v-layout>
+    <div id="printable" v-show=false>
+      <h2>Detail of Order Inventory</h2>
+      <p>
+        <b>Order ID:&nbsp;</b>{{orderBasic.orderID}}&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>Tracking NO:&nbsp;</b>{{orderBasic.tracking}}&nbsp;&nbsp;&nbsp;&nbsp;
+      </p>
+      <p>
+        <b>Org Name:&nbsp;</b>{{orderBasic.orgNm}}&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>Status:&nbsp;</b>{{orderBasic.status}}&nbsp;&nbsp;&nbsp;&nbsp;
+      </p>
+      <v-divider></v-divider>
+      <div v-for = "(detail, i) in orderBasic.orderDetail" :key = i my-2>
+        <p><b>UPC:&nbsp;</b>&nbsp;{{ detail.UPC }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>PID:&nbsp;</b>{{ detail.pid }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Required by this order:&nbsp;</b>&nbsp;{{ detail.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Seller Inventroy:&nbsp;</b>{{ detail.sellerInv }}
+        </p>
+        <table  :key ="i+ '-tb'">
+            <tr :key="i+ '-hd'">
+              <th>Location</th>
+              <th>Quantity</th>
+            </tr>
+            <tr v-for="(alocInv,index) in detail.locInv" :key="index+ '-ct'">
+              <th>{{ alocInv._id.loc }}</th>
+              <th>{{ alocInv.qty }}</th>
+            </tr>
+        </table>
+        <v-divider></v-divider>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import * as csv from 'csvtojson'
 import Shipment from '@/services/ShipmentService'
+import ProductInv from '@/services/ProductInvService'
 export default {
   data () {
     return {
+      // <p :key="index+ '-p'">
+      //       <b>Location:&nbsp;</b>{{ alocInv._id.loc }}&nbsp;&nbsp;&nbsp;&nbsp;
+      //       <b>Quantity:&nbsp;</b>{{ alocInv.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+      //     </P>
       actionChoice: [
         'Show Orders for Shipping',
         'Upload Orders'
@@ -394,12 +427,22 @@ export default {
       }
       return true
     },
-    upgrade (item) {
+    upgrade (item, UPC, qty) {
       if (this.checkOrderStatus(item)) {
       }
     },
-    fastUpgrade (item) {
+    async fastUpgrade (item, UPC, qty) {
       if (this.checkOrderStatus(item)) {
+        console.log(item)
+        console.log(UPC + '  ' + qty)
+        let upgradable = (await ProductInv.checkUpgradable({
+          'trNo': item.tracking,
+          'targetUPC': UPC,
+          'qty': qty,
+          'orgNm': item.orgNm,
+          'urgent': true
+        })).data
+        console.log(upgradable)
       }
     },
     deleteItem (item) {
@@ -624,7 +667,18 @@ export default {
       frame.width = 0
       frame.height = 0
       document.body.appendChild(frame)
-      frame.contentWindow.document.write(printcontent)
+      frame.contentWindow.document.write(`
+        <html>
+          <head>
+            <title>
+              Inventory List
+            </title>
+          </head>
+          <body>
+           ${printcontent}
+          </body>
+        </html>
+      `)
       frame.contentWindow.document.close()
       frame.contentWindow.focus()
       frame.contentWindow.print()
@@ -641,4 +695,15 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+/* @media print {
+  .orientation {width: 100% !important;}
+  .h2 {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif !important;
+  }
+  .table {
+    border: 1px solid black !important;
+    border-collapse: collapse !important;
+    color: red !important;
+  }
+} */
 </style>
