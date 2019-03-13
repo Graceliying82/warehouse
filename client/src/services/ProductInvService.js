@@ -18,8 +18,5 @@ export default {
   },
   getUPCFamilyListByOrg (data) {
     return Api().post('/prodInv/getUPCFamilyListByOrg', data)
-  },
-  checkUpgradable (data) {
-    return Api().post('/prodInv/checkUpgradable', data)
   }
 }

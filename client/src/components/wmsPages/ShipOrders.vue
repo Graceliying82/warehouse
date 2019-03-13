@@ -110,18 +110,6 @@
                     </td>
                     <td
                       class="text-xs-left">
-                      <v-btn icon class="mx-0" @click="fastUpgrade(props.item)">
-                        <v-icon color="teal">build</v-icon>
-                      </v-btn>
-                    </td>
-                    <td
-                      class="text-xs-left">
-                      <v-btn icon class="mx-0" @click="upgrade(props.item)">
-                        <v-icon color="teal">settings_input_component</v-icon>
-                      </v-btn>
-                    </td>
-                    <td
-                      class="text-xs-left">
                       <v-btn icon class="mx-0" @click="deleteItem(props.item)">
                         <v-icon color="teal">delete_forever</v-icon>
                       </v-btn>
@@ -148,10 +136,41 @@
             <div>
             <v-flex v-if = showOrderInv>
               <div class="font-weight-bold text-xs-left">Order ID: {{orderBasic.orderID}} </div>
-              <div class="font-weight-bold text-xs-left">Tracking NO: {{orderBasic.tracking}}</div>
+              <div class="font-weight-bold text-xs-left">Tracking NO: {{orderBasic._id}}</div>
               <div class="font-weight-bold text-xs-left">Org Name : {{orderBasic.orgNm}}</div>
               <div class="font-weight-bold text-xs-left">Status : {{orderBasic.status}}</div>
               <br>
+              <v-card color = 'grey lighten-4'>
+                <v-data-table
+                  :headers="detailHeader"
+                  :items="orderBasic.orderDetail"
+                  :rows-per-page-items="rowsPerPageItems"
+                  class="elevation-1"
+                  >
+                    <template  slot="items" slot-scope="props">
+                      <tr style="color:red;" v-if=props.item.warning>
+                        <td class="text-xs-left">{{ props.item.UPC }}</td>
+                        <td class="text-xs-left">{{ props.item.pid }}</td>
+                        <td class="text-xs-left">{{ props.item.qty }}</td>
+                        <td class="text-xs-left">{{ props.item.sellerInv }}</td>
+                        <td class="text-xs-left">{{ props.item.status }}</td>
+                        <td class="text-xs-left">{{ props.item.taskID }}</td>
+                        <td
+                          class="text-xs-left">
+                          <v-btn icon class="mx-0" @click="fastUpgrade(orderBasic, props.item)">
+                            <v-icon color="teal">build</v-icon>
+                          </v-btn>
+                        </td>
+                        <td
+                          class="text-xs-left">
+                          <v-btn icon class="mx-0" @click="upgrade(orderBasic, props.item)">
+                            <v-icon color="teal">settings_input_component</v-icon>
+                          </v-btn>
+                        </td>
+                      </tr>
+                    </template>
+                </v-data-table>
+              </v-card>
               <v-flex v-for = "(detail, i) in orderBasic.orderDetail" :key = i my-2>
                 <v-card color = 'grey lighten-4'>
                   <v-layout>
@@ -161,10 +180,14 @@
                     <p style="margin-top:2em; margin-right:5em;">{{ detail.pid }}</p>
                     <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Required by this order:</b></p>
                     <p style="margin-right:5em; margin-top:2em;">{{ detail.qty }}</p>
+                  </v-layout>         
+                  <v-layout>
                     <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Seller Inventroy:</b></p>
                     <p style="margin-right:5em; margin-top:2em;">{{ detail.sellerInv }}</p>
                     <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Status:</b></p>
                     <p style="margin-right:5em; margin-top:2em;">{{ detail.status }}</p>
+                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Upgrade TaskID:</b></p>
+                    <p style="margin-right:5em; margin-top:2em;">{{ detail.taskID }}</p>
                   </v-layout>
                   <v-layout>
                     <p style="margin-left:2em;color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</p>
@@ -174,7 +197,7 @@
                       Upgrade&nbsp;&nbsp;
                       <v-icon right dark>build</v-icon>
                   </v-btn>
-                    <v-btn color="teal" dark @click.prevent="fastUpgrade(orderBasic, detail.UPC, detail.qty)">One-click Upgrade</v-btn>
+                    <v-btn color="teal" dark @click.prevent="fastUpgrade(orderBasic, detail.UPC, detail.qty, detail.status)">One-click Upgrade</v-btn>
                   </v-layout>
                 </v-card>
               </v-flex>
@@ -273,7 +296,7 @@
       <h2>Detail of Order Inventory</h2>
       <p>
         <b>Order ID:&nbsp;</b>{{orderBasic.orderID}}&nbsp;&nbsp;&nbsp;&nbsp;
-        <b>Tracking NO:&nbsp;</b>{{orderBasic.tracking}}&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>Tracking NO:&nbsp;</b>{{orderBasic._id}}&nbsp;&nbsp;&nbsp;&nbsp;
       </p>
       <p>
         <b>Org Name:&nbsp;</b>{{orderBasic.orgNm}}&nbsp;&nbsp;&nbsp;&nbsp;
@@ -305,7 +328,7 @@
 <script>
 import * as csv from 'csvtojson'
 import Shipment from '@/services/ShipmentService'
-import ProductInv from '@/services/ProductInvService'
+import Upgrade from '@/services/UpgradeService'
 export default {
   data () {
     return {
@@ -345,19 +368,24 @@ export default {
         { text: 'TrackingNo', align: 'left', value: 'trNo' },
         { text: 'OrgName', align: 'left', value: 'orgNm' },
         { text: 'Status', align: 'left', value: 'status' },
-        { text: 'Fast Upgrade', align: 'left', value: 'TrackingNo' },
-        { text: 'Config Upgrade', align: 'left', value: 'TrackingNo' },
         { text: 'Delete', align: 'left', value: 'TrackingNo' }
       ],
-      locInvHeader: [
-        { text: 'Location', align: 'left', value: 'loc' },
-        { text: 'Quantity', align: 'left', value: 'qty' }
+      detailHeader: [
+        { text: 'UPC', align: 'left', value: 'UPC' },
+        { text: 'PID', align: 'left', value: 'pid' },
+        { text: 'Required Qty', align: 'left', value: 'qty' },
+        { text: 'Seller Inventory', align: 'left', value: 'sellerInv' },
+        { text: 'status', align: 'left', value: 'status' },
+        { text: 'Upgrade TaskID', align: 'left', value: 'taskID' },
+        { text: 'Fast Upgrade', align: 'left', value: 'TrackingNo' },
+        { text: 'Config Upgrade', align: 'left', value: 'TrackingNo' },
+        { text: 'Cancel', align: 'left', value: 'TrackingNo' }
       ],
       locInvs: [],
       showOrderInv: false,
       orderBasic: {
         orderID: '',
-        tracking: '',
+        _id: '',
         orgNm: '',
         status: '',
         orderDetail: []
@@ -366,7 +394,7 @@ export default {
       orderForShip: [],
       menu: false,
       slider: 1,
-      statusType: ['ready', 'backOrder', 'all'],
+      statusType: ['ready', 'backOrder', 'upgrade', 'all'],
       statusTypeFilter: 'ready',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
@@ -417,32 +445,34 @@ export default {
       this.serverOrder = []
       this.uploadButton = false
     },
-    checkOrderStatus (item) {
+    checkOrderStatus (item, status) {
       if (item.status === 'shipped') {
         this.setAlertDialog('Order :' + item.orderID + ' has been shipped. A shipped order can not upgrade.')
         return false
-      } else if (item.status === 'upgrade') {
+      } else if (status === 'upgrade') {
+        // this status is not the status of whole order. It's status of one UPC
         this.setAlertDialog('Order :' + item.orderID + ' is upgrading.')
         return false
       }
       return true
     },
-    upgrade (item, UPC, qty) {
-      if (this.checkOrderStatus(item)) {
+    upgrade (orderBasic, orderDetail) {
+      if (this.checkOrderStatus(orderBasic)) {
       }
     },
-    async fastUpgrade (item, UPC, qty) {
-      if (this.checkOrderStatus(item)) {
-        console.log(item)
-        console.log(UPC + '  ' + qty)
-        let upgradable = (await ProductInv.checkUpgradable({
-          'trNo': item.tracking,
-          'targetUPC': UPC,
-          'qty': qty,
-          'orgNm': item.orgNm,
+    async fastUpgrade (orderBasic, orderDetail) {
+      if (this.checkOrderStatus(orderBasic, orderDetail.status)) {
+        let result = (await Upgrade.fastUpgrade({
+          'trNo': orderBasic._id,
+          'targetUPC': orderDetail.UPC,
+          'qty': orderDetail.qty,
+          'orgNm': orderBasic.orgNm,
           'urgent': true
         })).data
-        console.log(upgradable)
+        this.setAlertDialog(result.message)
+        if (result.upgradable === true) {
+          await this.showDetail4Item(orderBasic)
+        }
       }
     },
     deleteItem (item) {
@@ -647,7 +677,7 @@ export default {
       let result = (await Shipment.getByShipmentId(trackingNo)).data
       // console.log(result)
       this.orderBasic.orderID = result.orderID
-      this.orderBasic.tracking = result._id
+      this.orderBasic._id = result._id
       this.orderBasic.orgNm = result.orgNm
       this.orderBasic.status = result.status
       this.orderBasic.orderDetail = result.rcIts

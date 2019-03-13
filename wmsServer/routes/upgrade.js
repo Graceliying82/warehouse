@@ -126,5 +126,97 @@ module.exports = {
       };
       next(error);
     }
-  }
+  },
+  // input:
+  // 'targetUPC': UPC,
+  // 'qty': qty,
+  // 'orgNm': item.orgNm
+  // 'urgent': true/false
+  // if targetUPC doesn't has a origUPC or origUPC equals to targetUPC, this product is not fast upgradable (fast upgrade)
+  // should return false
+  // if a targetUPC has a origUPC but qty of origUPC < qty required for upgrade, this product is not fast upgradable
+  // should return false
+  // else return true.
+  async fastUpgrade (req, res, next) {
+    const prodCollection = req.db.collection("product");
+    const sellerInvCollection = req.db.collection("sellerInv");
+    const shipmentCollection = req.db.collection("shipment");
+    const upgradeCollection = req.db.collection("upgrade");
+    try {
+      let upgradable = true
+      let message = ''
+      let targetPrd = await prodCollection.findOne({ _id: req.body.targetUPC });
+      if ((!targetPrd.origUPC) || (targetPrd.origUPC === req.body.targetUPC)) {
+        upgradable = false
+        message = 'This product is qualify for One-click Upgrade. Please try regular upgrade.'
+      } else {
+        let sellerInv = await sellerInvCollection.findOne({ _id: {UPC: targetPrd.origUPC, org: req.body.orgNm}});
+        if ((!sellerInv) || (sellerInv.qty < req.body.qty)) {
+          upgradable = false;
+          message = 'Not enough seller inventory for One-click upgrade. Please try regular upgrade.'
+        } else {
+          upgradable = true;
+          let upgradeInfo = {}
+          let createTime = new Date()
+          upgradeInfo.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
+          upgradeInfo.crtStmp = createTime.getTime() // add a create timestamp
+          upgradeInfo.mdfTm = upgradeInfo.crtTm; //add data modify Time
+          upgradeInfo.mdfStmp = upgradeInfo.crtStmp; // add a modify timestamp
+          upgradeInfo.targetUPC = req.body.targetUPC;
+          upgradeInfo.orgNm = req.body.orgNm;
+          upgradeInfo.prdNm = targetPrd.prdNm;
+          upgradeInfo.pid = targetPrd.pid;
+          upgradeInfo.qty = req.body.qty;
+          upgradeInfo.status = 'active';
+          upgradeInfo.taskID = await nextKey.key("upgrade",req.db);
+          upgradeInfo.urgent = req.body.urgent;
+          upgradeInfo.baseUPCList = [];
+          upgradeInfo.trNo = req.body.trNo;
+          let origPrd = await prodCollection.findOne({ _id:  targetPrd.origUPC});
+          upgradeInfo.baseUPCList.push({
+            'UPC': targetPrd.origUPC,
+            'pid': origPrd.pid,
+            'qty': req.body.qty
+          })
+          await sellerInvCollection.findOneAndUpdate(
+            {
+              _id: {UPC: targetPrd.origUPC, org: req.body.orgNm}
+            }, //query
+            {
+              $inc: { qty: -req.body.qty},
+              $set: { mdfTm: upgradeInfo.mdfTm, mdfStmp: upgradeInfo.mdfStmp }
+            },
+          );
+          await upgradeCollection.insertOne(upgradeInfo);
+          message = 'Creat a upgrade successfully.';
+          await shipmentCollection.findOneAndUpdate(
+            {
+              _id: req.body.trNo,
+              "rcIts.UPC": req.body.targetUPC
+            }, //query
+            {
+              $set: {
+                status: 'upgrade',
+                "rcIts.$.status": 'upgrade',
+                "rcIts.$.taskID": upgradeInfo.taskID,
+                mdfTm: upgradeInfo.mdfTm,
+                mdfStmp: upgradeInfo.mdfStmp
+              }
+            },
+          );
+        }
+      }
+      res.send({
+        'upgradable': upgradable,
+        'message': message
+      });
+      res.end();
+    } catch (error) {
+      console.log("query product inventory: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
 }

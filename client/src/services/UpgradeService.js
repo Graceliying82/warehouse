@@ -16,5 +16,8 @@ export default {
   // app.get('/upgrades/getUpdPrdNeedInstr', Upgrade.getUpdPrdNeedInstr)
   getUpdPrdNeedInstr () {
     return Api().get('/upgrades/getUpdPrdNeedInstr')
+  },
+  fastUpgrade (data) {
+    return Api().post('/upgrades/fastUpgrade', data)
   }
 }
