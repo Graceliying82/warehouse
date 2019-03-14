@@ -175,7 +175,9 @@
                         </td>
                         <td
                           class="text-xs-left">
-                          <v-btn icon class="mx-0">
+                          <v-btn icon class="mx-0"
+                            @click.prevent="configUpgrade(orderBasic, props.item)"
+                          >
                             <v-icon color="teal">build</v-icon>
                           </v-btn>
                         </td>
@@ -426,6 +428,9 @@ export default {
       this.serverOrder = []
       this.uploadButton = false
     },
+    navigateTo (route) {
+      this.$router.push(route)
+    },
     checkOrderStatus (item, status) {
       if (item.status === 'shipped') {
         this.setAlertDialog('Order :' + item.orderID + ' has been shipped. A shipped order can not upgrade.')
@@ -437,9 +442,19 @@ export default {
       }
       return true
     },
-    upgrade (orderBasic, orderDetail) {
-      if (this.checkOrderStatus(orderBasic)) {
+    configUpgrade (orderBasic, orderDetail) {
+      if (orderDetail.status === 'upgrade') {
+        this.setAlertDialog('Error: Product ' + orderDetail.UPC + ' is upgrading.')
       }
+      navigateTo({
+        name: 'upgradeRequest',
+        params: {
+          targetUPC: orderDetail.UPC,
+          orgNm: orderBasic.orgNm,
+          trNo: orderBasic._id,
+          orderQty: orderDetail.qty
+        }
+      })
     },
     async fastUpgrade (orderBasic, orderDetail, urgent) {
       if (orderDetail.status === 'upgrade') {
@@ -687,7 +702,7 @@ export default {
       this.orderBasic.orgNm = result.orgNm
       this.orderBasic.status = result.status
       this.orderBasic.orderDetail = result.rcIts
-      console.log(this.orderBasic)
+      // console.log(this.orderBasic)
     },
     async showDetail4Item (item) {
       await this.showDetail(item._id)

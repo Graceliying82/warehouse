@@ -26,7 +26,7 @@
                   clearable
                 ></v-text-field>
               </v-flex>
-              <v-btn dark @click="find()">Find</v-btn>
+              <v-btn dark @click="findByInput()">Find</v-btn>
             </v-layout>
         </v-flex>
       </panel>
@@ -56,7 +56,7 @@
                 </v-flex >
               </v-layout>
               <v-layout row justify-space-around>
-                <v-flex lg3 mx-3>
+                <v-flex lg4 mx-3>
                   <v-text-field
                     label='Product Name'
                     v-model="upgradeInfo.prdNm"
@@ -64,7 +64,7 @@
                     readonly
                   ></v-text-field>
                 </v-flex >
-                <v-flex lg3 mx-3>
+                <v-flex lg4 mx-3>
                   <v-text-field
                     label='PID'
                     v-model="upgradeInfo.pid"
@@ -72,7 +72,7 @@
                     readonly
                   ></v-text-field>
                 </v-flex >
-                <v-flex lg3 mx-3>
+                <v-flex lg4 mx-3>
                   <v-text-field
                     label='Total Upgrade'
                     v-model="upgradeInfo.qty"
@@ -80,13 +80,30 @@
                     readonly
                   ></v-text-field>
                 </v-flex >
-                <v-flex lg3 mx-3>
+                <v-flex lg4 mx-3>
                   <v-select
                   :items="urgencyChoice"
                   v-model="upgradeInfo.urgent"
                   label="Urgent"
                   outline>
                   </v-select>
+                </v-flex>
+              </v-layout>
+              <v-layout v-if=hasOrder>
+                <v-flex lg4 mx-3>
+                  <v-text-field
+                  v-model="upgradeInfo.trNo"
+                  label="Shipping Tracking"
+                  readonly
+                  outline>
+                  </v-text-field>
+                </v-flex>
+                <v-flex lg4 mx-3>
+                  <v-text-field
+                  v-model="orderQty"
+                  label="Quantity Required By Order"
+                  outline>
+                  </v-text-field>
                 </v-flex>
               </v-layout>
             </v-card-text>
@@ -155,12 +172,15 @@ export default {
         'pid': '',
         'qty': 0,
         'urgent': false,
+        'trNo': '',
         'baseUPCList': [] // upc: '123', qty: 1
       },
+      orderQty: 0,
       // Detail info
       UPCFamilyList: [],
       showDetail: true,
       changed: false,
+      hasOrder: false,
       // tabel headers
       header: [
         { text: 'UPC', align: 'left', value: 'UPC' },
@@ -200,7 +220,12 @@ export default {
       this.upgradeInfo.prdNm = ''
       this.upgradeInfo.pid = ''
       this.upgradeInfo.qty = 0
+      this.upgradeInfo.urgent = false
+      this.upgradeInfo.trNo = ''
+      this.orderQty = 0
+      this.hasOrder = false
       this.upgradeInfo.baseUPCList = []
+      this.hasOrder = false
     },
     clearData () {
       this.UPCInput = ''
@@ -223,7 +248,7 @@ export default {
       this.changed = true
       this.$forceUpdate()
     },
-    async find () {
+    async findByInput () {
       this.clearAlert()
       this.resetData()
       // console.log('Here')
@@ -266,16 +291,15 @@ export default {
     },
     async getUPCFamilyListByOrg (targetUPC, orgNm) {
       try {
+        this.upgradeInfo.targetUPC = targetUPC
+        this.upgradeInfo.orgNm = orgNm
+        this.UPCInput = ''
+        this.orgNmInput = ''
         this.UPCFamilyList = (await ProductInv.getUPCFamilyListByOrg({
           'UPC': targetUPC,
           'orgNm': orgNm,
           'includeTarget': true
         })).data
-        // console.log(this.UPCFamilyList)
-        this.upgradeInfo.targetUPC = this.UPCInput
-        this.upgradeInfo.orgNm = this.orgNmInput
-        this.UPCInput = ''
-        this.orgNmInput = ''
         // Delta are qty for upgrade
         this.setDelta()
         // console.log(this.UPCFamilyList)
@@ -419,6 +443,25 @@ export default {
   },
   created () {
     this.barcodeInit(this.onBarcodeScanned)
+    // params: {
+    //   targetUPC: props.item.UPC,
+    //   orgNm: orderBasic.orgNm,
+    //   trNo: orderBasic._id
+    // }
+    const targetUPC = this.$store.state.route.params.targetUPC
+    const orgNm = this.$store.state.route.params.orgNm
+    const trNo = this.$store.state.route.params.trNo
+    const orderQty = this.$store.state.route.params.orderQty
+    if (targetUPC && orgNm) {
+      this.getUPCFamilyListByOrg(targetUPC, orgNm)
+    }
+    if (trNo) {
+      this.hasOrder = true
+      this.upgradeInfo.trNo = trNo
+    }
+    if (orderQty) {
+      this.orderQty = orderQty
+    }
   },
   destroyed () {
     this.barcodeDestroy()

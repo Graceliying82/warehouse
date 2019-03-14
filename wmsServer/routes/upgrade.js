@@ -47,6 +47,7 @@ module.exports = {
     try {
       const upgradeCollection = req.db.collection("upgrade");
       const sellerInvCollection = req.db.collection("sellerInv");
+      const shipCollection = req.db.collection("shipment");
       let createTime = new Date()
       req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
       req.body.crtStmp = createTime.getTime() // add a create timestamp
@@ -64,6 +65,25 @@ module.exports = {
             $inc: { qty: -item.qty},
             $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
           },
+        );
+      }
+      if (req.body.trNo) {
+        // Has a shipment related to this upgrade. Need to update shipment information too
+        // trNo: req.body.trNo; taskID: req.body.taskID;
+        await shipCollection.findOneAndUpdate(
+          {
+            _id: req.body.trNo,
+            "rcIts.UPC": req.body.targetUPC
+          },
+          {
+            $set: {
+              status: 'upgrade',
+              "rcIts.$.status": 'upgrade',
+              "rcIts.$.taskID": req.body.taskID,
+              mdfTm: req.body.crtTm,
+              mdfStmp: req.body.crtStmp
+            }
+          }
         );
       }
       res.send('Upgrade task created.');

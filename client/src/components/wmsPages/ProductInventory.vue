@@ -47,9 +47,8 @@
                 <tr  @click="showDetail(props.item)"
                   v-bind:class = props.item.style>
                   <td class="text-xs-left">{{ props.item.UPC }}</td>
-                  <td class="text-xs-left">
-                    {{ props.item.prdNm }}
-                  </td>
+                  <td class="text-xs-left">{{ props.item.prdNm }}</td>
+                  <td class="text-xs-left">{{ props.item.pid }}</td>
                   <td class="text-xs-left">{{ props.item.qty }}</td>
                   <td class="text-xs-left">{{ props.item.balance }}</td>
                 </tr>
@@ -69,6 +68,7 @@
                 <template slot="items" slot-scope="props">
                   <td class="text-xs-left">{{ props.item.UPC }}</td>
                   <td class="text-xs-left">{{ props.item.prdNm }}</td>
+                  <td class="text-xs-left">{{ props.item.pid }}</td>
                   <td class="text-xs-left">{{ props.item.qty }}</td>
                   <td class="text-xs-left">
                     <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
@@ -216,6 +216,7 @@ export default {
           value: 'UPC'
         },
         { text: 'Product Name', value: 'prdNm' },
+        { text: 'PID', align: 'left', value: 'pid' },
         { text: 'Quantity', value: 'qty' },
         { text: 'Balance', value: 'balance' }
       ],
@@ -223,6 +224,7 @@ export default {
       noInvHeaders: [
         { text: 'UPC', align: 'left', value: 'UPC' },
         { text: 'Product Name', align: 'left', value: 'prdNm' },
+        { text: 'PID', align: 'left', value: 'pid' },
         { text: 'Quantity', align: 'left', value: 'qty' },
         { text: 'Action', align: 'left', value: 'UPC' }
       ],

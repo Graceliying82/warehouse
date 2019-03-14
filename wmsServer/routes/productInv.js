@@ -32,11 +32,11 @@ module.exports = {
           }
         }
         if (qty === 0) {
-          let prod1 = {UPC: prod._id, prdNm: prod.prdNm, qty: qty}
+          let prod1 = {UPC: prod._id, prdNm: prod.prdNm, pid: prod.pid, qty: qty}
           prdWOInv.push(prod1)
           continue
         }
-        let prod2 = { UPC: prod._id, prdNm: prod.prdNm, qty: qty, balance: balance};
+        let prod2 = { UPC: prod._id, prdNm: prod.prdNm, pid: prod.pid, qty: qty, balance: balance};
         prdWithInv.push(prod2);
       }
       res.send({
