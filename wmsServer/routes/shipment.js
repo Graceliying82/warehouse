@@ -140,6 +140,7 @@ module.exports = {
   async getByShipmentId(req, res, next) {
     const shipCollection = req.db.collection("shipment");
     const prdCollection = req.db.collection("product");
+    const sellerInvCollection = req.db.collection("sellerInv")
     try {
       let createTime = new Date()
       req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
@@ -149,12 +150,29 @@ module.exports = {
       await module.exports.calcShipStatus(req.db, req.params.Id);
       let shipment = await shipCollection.findOne({ _id: req.params.Id });
       if (shipment === null) {
-        console.log('Tracking No ' + req.params.Id + ' is not found')
-        shipment = []
+        console.log('Tracking No ' + req.params.Id + ' is not found');
+        shipment = [];
       } else {
         if (shipment.rcIts) {
           for (i =0; i < shipment.rcIts.length; i++) {
             let prod = await prdCollection.findOne({_id: shipment.rcIts[i].UPC});
+            let sellerInv = await sellerInvCollection.findOne({
+              _id: { UPC: shipment.rcIts[i].UPC, org: shipment.orgNm }
+            })
+            // Add availability
+            if (sellerInv) {
+              shipment.rcIts[i].sellerInv = sellerInv.qty;
+              if (sellerInv.qty < shipment.rcIts[i].qty) {
+                shipment.rcIts[i].enough = false;
+              } else {
+                shipment.rcIts[i].enough = true;
+              }
+            } else {
+              // No seller inventory
+              shipment.rcIts[i].sellerInv = 0
+              shipment.rcIts[i].enough = false;
+            };
+            // Add PID
             if (prod){
               shipment.rcIts[i].prdNm = prod.prdNm;
               shipment.rcIts[i].pid = prod.pid;

@@ -195,18 +195,18 @@ module.exports = {
     const sellerInvCollection = req.db.collection("sellerInv");
     let result = [];
     try {
-      let basePrd = await prodCollection.findOne({_id: req.body.UPC});
-      if (!basePrd) {
+      let targetPrd = await prodCollection.findOne({_id: req.body.UPC});
+      if (!targetPrd) {
         const error = new Error('UPC Not Found. Please check');
         error.status = 400;
         return next(error)
       }
-      if (!basePrd.origUPC) {
+      if (!targetPrd.origUPC) {
         const error = new Error('This Product is not upgradable. Please use Upgrade Products Generator to create upgrade products first.');
         error.status = 400;
         return next(error)
       }
-      let tempUPCList = await prodCollection.find({origUPC: basePrd.origUPC}).project({ _id: 1}).toArray();
+      let tempUPCList = await prodCollection.find({origUPC: targetPrd.origUPC}).project({ _id: 1}).toArray();
       let UPCFamilyList = [];
       for (let atemp of tempUPCList) {
         UPCFamilyList.push(atemp._id);

@@ -1,5 +1,45 @@
 const nextKey = require('./nextKey');
 var ObjectId = require('mongodb').ObjectID
+// async function cancelUpgrade (db, upgradeID) {
+//   let createTime = new Date()
+//   let mdfTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
+//   let mdfStmp = createTime.getTime() // add a create timestamp
+//   try {
+//     const upgradeCollection = db.collection("upgrade");
+//     const sellerInvCollection = db.collection("sellerInv");
+//     let o_id = ObjectId(upgradeID);
+//     let result = await upgradeCollection.findOne({_id: o_id})
+//     if ((result) && (result.status !== 'cancel')) {
+//       for (let item of result.baseUPCList) {
+//         await sellerInvCollection.findOneAndUpdate(
+//           {
+//             _id: { UPC: item.UPC, org: result.orgNm }
+//           }, //query
+//           {
+//             $inc: { qty: item.qty},
+//             $set: { 'mdfTm': mdfTm, 'mdfStmp': mdfStmp }
+//           },
+//           { upsert: true }
+//         );
+//       }
+
+//     }
+//     await upgradeCollection.findOneAndUpdate(
+//       {
+//         _id: o_id
+//       },
+//       {
+//         $set: { 'status': 'cancel', 'mdfTm': mdfTm, 'mdfStmp': mdfStmp }
+//       },
+//     )
+//   } catch (error) {
+//     console.log("receive error: " + error);
+//     if (error.message === null) {
+//       error.message = 'Fail to access database! Try again'
+//     };
+//     next(error);
+//   }
+// }
 module.exports = {
   // create a upgrade task
   // id; taskID; targetUPC; prdNm; pid; orgNm; qty; baseUPC [upc; pid, qty]; crtTm; crtStmp; status(active/finish/cancel); log;
@@ -56,40 +96,78 @@ module.exports = {
       next(error);
     }
   },
-  async cancelReq(req, res, next) {
+  // cancel by upgrade _id or by taskID
+  async cancelUpgrade(req, res, next) {
     try {
       const upgradeCollection = req.db.collection("upgrade");
       const sellerInvCollection = req.db.collection("sellerInv");
-      let o_id = ObjectId(req.body._id);
-      let modifyTime = new Date()
-      req.body.mdfTm = new Date(modifyTime.toLocaleString()+ ' UTC').toISOString().split('.')[0] +' EST'
-      req.body.mdfStmp = modifyTime.getTime()
-      let result = await upgradeCollection.findOne({_id: o_id})
-      if ((result) && (result.status !== 'cancel')) {
-        for (let item of result.baseUPCList) {
+      const shipmentCollection = req.db.collection("shipment");
+      let createTime = new Date();
+      let mdfTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      let mdfStmp = createTime.getTime(); // add a create timestamp
+      let result = ''
+      if (req.body._id) {
+        // Cancelled by upgrade _id only. 
+        let o_id = ObjectId(req.body._id);
+        result = await upgradeCollection.findOneAndUpdate(
+          {
+            _id: o_id,
+            status: 'active'
+          },
+          {
+            $set: { 'status': 'cancel', 'mdfTm': mdfTm, 'mdfStmp': mdfStmp }
+          },
+          {
+            returnOriginal: true
+          }
+        );
+      } else if (req.body.taskID) {
+        // Cancelled by upgrade taskID
+        result = await upgradeCollection.findOneAndUpdate(
+          {
+            taskID: req.body.taskID,
+            status: 'active'
+          },
+          {
+            $set: { 'status': 'cancel', 'mdfTm': mdfTm, 'mdfStmp': mdfStmp }
+          },
+          {
+            returnOriginal: true
+          }
+        );
+      }
+      // result point to document before updating.
+      if (result.value) {
+        for (let item of result.value.baseUPCList) {
           await sellerInvCollection.findOneAndUpdate(
             {
-              _id: { UPC: item.UPC, org: result.orgNm }
+              _id: { UPC: item.UPC, org: result.value.orgNm }
             }, //query
             {
               $inc: { qty: item.qty},
-              $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+              $set: { 'mdfTm': mdfTm, 'mdfStmp': mdfStmp }
             },
             { upsert: true }
           );
         }
-
+        if (result.value.taskID) {
+          await shipmentCollection.findOneAndUpdate(
+            {
+              'rcIts.taskID': result.value.taskID
+            },
+            {
+              $set: {
+                'rcIts.$.status': 'ready',
+                'rcIts.$.taskID': '',
+                'mdfTm': mdfTm, 
+                'mdfStmp': mdfStmp
+              }
+            }
+          )
+        }
       }
-      await upgradeCollection.findOneAndUpdate(
-        {
-          _id: o_id
-        },
-        {
-          $set: { status: 'cancel', mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
-        },
-      )
       res.send('OK');
-      res.end()
+      res.end();
     } catch (error) {
       console.log("receive error: " + error);
       if (error.message === null) {
@@ -219,4 +297,44 @@ module.exports = {
       next(error);
     }
   },
+  // // Cancel an upgrade with shipment information
+  // // input: shipmentID; UPC; taskID
+  // async cancelUpgradeWithShip(req, res, next) {
+  //   const upgradeCollection = req.db.collection("upgrade");
+  //   const shipmentCollection = req.db.collection("shipment");
+  //   let createTime = new Date()
+  //   let mdfTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
+  //   let mdfStmp = createTime.getTime() // add a create timestamp
+  //   try {
+  //     let upgrade = await upgradeCollection.findOne({taskID: req.body.taskID});
+  //     if ((!upgrade)) {
+  //       const error = new Error('Upgrade: ' + req.body.taskID + ' not found!');
+  //       error.status = 400;
+  //       return next(error)
+  //     }
+  //     await cancelUpgrade(req.db, upgrade._id);
+  //     await shipmentCollection.findOneAndUpdate(
+  //       {
+  //         _id: req.body.shipmentID,
+  //         'rcIts.UPC': req.body.UPC
+  //       },
+  //       {
+  //         $set: {
+  //           'rcIts.$.status': 'ready',
+  //           'rcIts.$.taskID': '',
+  //           'mdfTm': mdfTm, 
+  //           'mdfStmp': mdfStmp
+  //         }
+  //       }
+  //     )
+  //     res.send('Upgrade for shipment has been canceled.');
+  //     res.end()
+  //   } catch (error) {
+  //     console.log("receive error: " + error);
+  //     if (error.message === null) {
+  //       error.message = 'Fail to access database! Try again'
+  //     };
+  //     next(error);
+  //   }
+  // },
 }

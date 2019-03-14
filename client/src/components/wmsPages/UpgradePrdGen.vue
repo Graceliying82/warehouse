@@ -608,7 +608,7 @@ export default {
     },
     async genProducts () {
       await this.genProductsList()
-      await this.removeCreatedPrd()
+      // await this.removeCreatedPrd()
     },
     async save () {
       try {

@@ -132,6 +132,14 @@
                 v-on:keydown.enter="showDetailMan"
                 ></v-text-field>
             </v-flex>
+            <v-flex mx-5>
+              <v-alert
+                v-show = showAlert
+                :type = alertType
+                outline>
+                  {{message}}
+                </v-alert>
+            </v-flex>
             <!-- Show Order Detail-->
             <div>
             <v-flex v-if = showOrderInv>
@@ -148,59 +156,36 @@
                   class="elevation-1"
                   >
                     <template  slot="items" slot-scope="props">
-                      <tr style="color:red;" v-if=props.item.warning>
+                      <tr :style="props.item.enough? '': 'color:red;'">
                         <td class="text-xs-left">{{ props.item.UPC }}</td>
                         <td class="text-xs-left">{{ props.item.pid }}</td>
                         <td class="text-xs-left">{{ props.item.qty }}</td>
                         <td class="text-xs-left">{{ props.item.sellerInv }}</td>
+                        <td class="text-xs-left" >{{ props.item.enough }}</td>
                         <td class="text-xs-left">{{ props.item.status }}</td>
                         <td class="text-xs-left">{{ props.item.taskID }}</td>
                         <td
                           class="text-xs-left">
-                          <v-btn icon class="mx-0" @click="fastUpgrade(orderBasic, props.item)">
+                          <v-btn icon class="mx-0" @click.prevent="fastUpgrade(orderBasic, props.item)">
                             <v-icon color="teal">build</v-icon>
                           </v-btn>
                         </td>
                         <td
                           class="text-xs-left">
-                          <v-btn icon class="mx-0" @click="upgrade(orderBasic, props.item)">
+                          <v-btn icon class="mx-0">
                             <v-icon color="teal">settings_input_component</v-icon>
+                          </v-btn>
+                        </td>
+                        <td
+                          class="text-xs-left">
+                          <v-btn icon class="mx-0" @click.prevent="cancelUpgrade(orderBasic, props.item)">
+                            <v-icon color="teal">cancel</v-icon>
                           </v-btn>
                         </td>
                       </tr>
                     </template>
                 </v-data-table>
               </v-card>
-              <v-flex v-for = "(detail, i) in orderBasic.orderDetail" :key = i my-2>
-                <v-card color = 'grey lighten-4'>
-                  <v-layout>
-                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>UPC:</b></p>
-                    <p style="margin-right:5em; margin-top:2em;">{{ detail.UPC }}</p>
-                    <p style="margin-right: 1em; margin-top:2em;"><b>PID:</b></p>
-                    <p style="margin-top:2em; margin-right:5em;">{{ detail.pid }}</p>
-                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Required by this order:</b></p>
-                    <p style="margin-right:5em; margin-top:2em;">{{ detail.qty }}</p>
-                  </v-layout>         
-                  <v-layout>
-                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Seller Inventroy:</b></p>
-                    <p style="margin-right:5em; margin-top:2em;">{{ detail.sellerInv }}</p>
-                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Status:</b></p>
-                    <p style="margin-right:5em; margin-top:2em;">{{ detail.status }}</p>
-                    <p style="margin-right:1em; margin-left:2em; margin-top:2em;"><b>Upgrade TaskID:</b></p>
-                    <p style="margin-right:5em; margin-top:2em;">{{ detail.taskID }}</p>
-                  </v-layout>
-                  <v-layout>
-                    <p style="margin-left:2em;color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</p>
-                  </v-layout>
-                  <v-layout justify-center>
-                    <v-btn dark color="blue-grey" @click.prevent="upgrade(orderBasic, detail.UPC, detail.qty)">
-                      Upgrade&nbsp;&nbsp;
-                      <v-icon right dark>build</v-icon>
-                  </v-btn>
-                    <v-btn color="teal" dark @click.prevent="fastUpgrade(orderBasic, detail.UPC, detail.qty, detail.status)">One-click Upgrade</v-btn>
-                  </v-layout>
-                </v-card>
-              </v-flex>
             </v-flex>
             </div>
             <!-- End Show Order Detail-->
@@ -209,14 +194,6 @@
           <!-- End Show OrdersItems For Shipping-->
         </v-layout>
         <!-- Upload orders-->
-        <v-flex mx-5>
-          <v-alert
-            v-show = showAlert
-            :type = alertType
-            outline>
-              {{message}}
-            </v-alert>
-        </v-flex>
         <div v-if="showAction1">
           <v-flex ma-5>
             <panel title = 'Upload Orders'>
@@ -375,11 +352,12 @@ export default {
         { text: 'PID', align: 'left', value: 'pid' },
         { text: 'Required Qty', align: 'left', value: 'qty' },
         { text: 'Seller Inventory', align: 'left', value: 'sellerInv' },
+        { text: 'Enough', align: 'left', value: 'enough' },
         { text: 'status', align: 'left', value: 'status' },
         { text: 'Upgrade TaskID', align: 'left', value: 'taskID' },
         { text: 'Fast Upgrade', align: 'left', value: 'TrackingNo' },
         { text: 'Config Upgrade', align: 'left', value: 'TrackingNo' },
-        { text: 'Cancel', align: 'left', value: 'TrackingNo' }
+        { text: 'Cancel Upgrade', align: 'left', value: 'TrackingNo' }
       ],
       locInvs: [],
       showOrderInv: false,
@@ -461,6 +439,9 @@ export default {
       }
     },
     async fastUpgrade (orderBasic, orderDetail) {
+      if (orderDetail.status === 'upgrade') {
+        this.setAlertDialog('Error: Product ' + orderDetail.UPC + ' is upgrading.')
+      }
       if (this.checkOrderStatus(orderBasic, orderDetail.status)) {
         let result = (await Upgrade.fastUpgrade({
           'trNo': orderBasic._id,
@@ -472,6 +453,29 @@ export default {
         this.setAlertDialog(result.message)
         if (result.upgradable === true) {
           await this.showDetail4Item(orderBasic)
+        }
+      }
+    },
+    async cancelUpgrade (orderBasic, orderDetail) {
+      try {
+        if ((orderDetail.status !== 'upgrade')) {
+          this.setAlertDialog('Error: Product ' + orderDetail.UPC + ' is not upgrading. Can not be canceled.')
+        } else {
+          // Cancel upgrade Task. input: shipmentID; UPC; taskID
+          await Upgrade.cancelUpgrade({'taskID': orderDetail.taskID})
+          await this.showDetail(orderBasic._id)
+        }
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
         }
       }
     },
@@ -675,12 +679,12 @@ export default {
     async showDetail (trackingNo) {
       this.showOrderInv = true
       let result = (await Shipment.getByShipmentId(trackingNo)).data
-      // console.log(result)
-      this.orderBasic.orderID = result.orderID
       this.orderBasic._id = result._id
+      this.orderBasic.orderID = result.orderID
       this.orderBasic.orgNm = result.orgNm
       this.orderBasic.status = result.status
       this.orderBasic.orderDetail = result.rcIts
+      console.log(this.orderBasic)
     },
     async showDetail4Item (item) {
       await this.showDetail(item._id)

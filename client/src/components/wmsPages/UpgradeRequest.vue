@@ -264,10 +264,10 @@ export default {
         }
       }
     },
-    async getUPCFamilyListByOrg (baseUPC, orgNm) {
+    async getUPCFamilyListByOrg (targetUPC, orgNm) {
       try {
         this.UPCFamilyList = (await ProductInv.getUPCFamilyListByOrg({
-          'UPC': baseUPC,
+          'UPC': targetUPC,
           'orgNm': orgNm,
           'includeTarget': true
         })).data

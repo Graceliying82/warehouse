@@ -126,7 +126,7 @@ export default {
         { text: 'Quantity', align: 'left', value: 'qty' },
         { text: 'Base UPC', align: 'left', value: 'UPC' }
       ],
-      rowsPerPageItems: [5, 10, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
+      rowsPerPageItems: [15, 30, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
   },
   methods: {
@@ -151,8 +151,9 @@ export default {
     async cancel (item) {
       if (item.status !== 'cancel') {
         try {
-          await Upgrade.cancelReq({'_id': item._id})
+          await Upgrade.cancelUpgrade({'_id': item._id})
           await this.getUpgReqList()
+          this.setAlertDialog('Done')
         } catch (error) {
           if (!error.response) {
             // network error
@@ -166,8 +167,9 @@ export default {
             this.setAlert('error', error.response.data.error)
           }
         }
+      } else {
+        this.setAlertDialog('Can not cancel a canceled task.')
       }
-      this.setAlertDialog('Done')
     },
     async getUpgReqList () {
       try {
@@ -191,6 +193,7 @@ export default {
       }
     },
     chooseCategory () {
+      this.clearAlert()
       this.getUpgReqList()
     },
     batchPick (item) {

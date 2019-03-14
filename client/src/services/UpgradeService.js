@@ -10,8 +10,8 @@ export default {
   get () {
     return Api().get('/upgrades')
   },
-  cancelReq (data) {
-    return Api().post('/upgrades/cancelReq', data)
+  cancelUpgrade (data) {
+    return Api().post('/upgrades/cancelUpgrade', data)
   },
   // app.get('/upgrades/getUpdPrdNeedInstr', Upgrade.getUpdPrdNeedInstr)
   getUpdPrdNeedInstr () {
