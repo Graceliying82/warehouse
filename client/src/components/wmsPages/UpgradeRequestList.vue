@@ -37,7 +37,7 @@
             class="elevation-1"
           >
             <template slot="items" slot-scope="props">
-              <tr>
+              <tr :style="props.item.urgent? 'color:red;': ''">
                 <td class="text-xs-left">{{ props.item.taskID }}</td>
                 <td class="text-xs-left">{{ props.item.urgent }}</td>
                 <td class="text-xs-left">{{ props.item.orgNm }}</td>
@@ -47,13 +47,13 @@
                 <td class="text-xs-left">{{ props.item.qty }}</td>
                 <td class="text-xs-left">{{ props.item.targetUPC }}</td>
                 <td class="text-xs-left">
-                  <v-btn color="teal" dark @click.prevent="cancel(props.item)">Cancel</v-btn>
+                  <v-btn small color="teal" dark @click.prevent="cancel(props.item)">Cancel</v-btn>
                 </td>
                 <td class="text-xs-left">
-                  <v-btn color="teal" dark @click.prevent="show(props.item)">Show</v-btn>
+                  <v-btn small color="teal" dark @click.prevent="show(props.item)">Show</v-btn>
                 </td>
                 <td class="text-xs-left">
-                  <v-btn color="teal" dark @click.prevent="batchPick(props.item)">Batch</v-btn>
+                  <v-btn small color="teal" dark @click.prevent="batchPick(props.item)">Batch</v-btn>
                 </td>
               </tr>
             </template>
@@ -118,7 +118,7 @@ export default {
         { text: 'Total Items', align: 'left', value: 'qty' },
         { text: 'Target UPC', align: 'left', value: 'targetUPC' },
         { text: 'Cancel Task', align: 'left', value: '_id' },
-        { text: 'Show BaseUPC', align: 'left', value: '_id' },
+        { text: 'Base UPCs', align: 'left', value: '_id' },
         { text: 'Batch Pick', align: 'left', value: '_id' }
       ],
       headersBaseUPC: [

@@ -166,14 +166,17 @@
                         <td class="text-xs-left">{{ props.item.taskID }}</td>
                         <td
                           class="text-xs-left">
-                          <v-btn icon class="mx-0" @click.prevent="fastUpgrade(orderBasic, props.item)">
-                            <v-icon color="teal">build</v-icon>
+                          <v-btn dark small color="teal" class="mx-0" @click.prevent="fastUpgrade(orderBasic, props.item, true)">
+                            Urgent
+                          </v-btn>
+                           <v-btn dark small color="teal" class="mx-0" @click.prevent="fastUpgrade(orderBasic, props.item ,false)">
+                            Normal
                           </v-btn>
                         </td>
                         <td
                           class="text-xs-left">
                           <v-btn icon class="mx-0">
-                            <v-icon color="teal">settings_input_component</v-icon>
+                            <v-icon color="teal">build</v-icon>
                           </v-btn>
                         </td>
                         <td
@@ -438,7 +441,7 @@ export default {
       if (this.checkOrderStatus(orderBasic)) {
       }
     },
-    async fastUpgrade (orderBasic, orderDetail) {
+    async fastUpgrade (orderBasic, orderDetail, urgent) {
       if (orderDetail.status === 'upgrade') {
         this.setAlertDialog('Error: Product ' + orderDetail.UPC + ' is upgrading.')
       }
@@ -448,7 +451,7 @@ export default {
           'targetUPC': orderDetail.UPC,
           'qty': orderDetail.qty,
           'orgNm': orderBasic.orgNm,
-          'urgent': true
+          'urgent': urgent
         })).data
         this.setAlertDialog(result.message)
         if (result.upgradable === true) {
