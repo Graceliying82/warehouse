@@ -155,13 +155,15 @@ export default {
     show (item) {
       this.showChoseUPC = true
       this.chosedItem = item
-      console.log(item)
+      // console.log(item)
     },
     async cancel (item) {
       if (item.status !== 'cancel') {
         try {
           await Upgrade.cancelUpgrade({'_id': item._id})
           await this.getUpgReqList()
+          this.chosedItem = []
+          this.showChoseUPC = false
           this.setAlertDialog('Done')
         } catch (error) {
           if (!error.response) {
@@ -204,10 +206,13 @@ export default {
     chooseCategory () {
       this.clearAlert()
       this.getUpgReqList()
+      this.chosedItem = []
+      this.showChoseUPC = false
     },
     async finishUpgrade () {
       try {
         await Upgrade.finishUpgrade(this.chosedItem)
+        await this.getUpgReqList()
         this.chosedItem = []
         this.showChoseUPC = false
         this.setAlertDialog('Done!')

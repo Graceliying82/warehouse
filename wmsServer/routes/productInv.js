@@ -21,7 +21,7 @@ module.exports = {
     let prdWOInv = [];
     try {
       const productArray = await prodCollection.find({}, { _id: 1, prdNm: 1 }).toArray();
-      const inventoryArray = await invCollection.find({qty: { $gt: 0 }}, { _id: 1, qty: 1 }).toArray();
+      const inventoryArray = await invCollection.find({qty: { $ne: 0 }}, { _id: 1, qty: 1 }).toArray();
       for (let prod of productArray) {
         let qty = 0;
         for (let inv of inventoryArray) {
@@ -78,7 +78,7 @@ module.exports = {
 
     const locInvCollection = req.db.collection("locationInv");
     try {
-      let locInvArray = await locInvCollection.find({ "_id.loc": { $in: locIDArray }, qty: {$gt:0} }, { _id: 1, qty: 1 }).toArray();
+      let locInvArray = await locInvCollection.find({ "_id.loc": { $in: locIDArray }, qty: {$ne:0} }, { _id: 1, qty: 1 }).toArray();
 
       let UPCSet = [];
       for (let anLocInv of locInvArray) {
@@ -166,13 +166,13 @@ module.exports = {
         }
         aProInv.sellerInventory = [];
         for (var aSellInv of sellerInvList) {
-          if ((aSellInv._id.UPC === aUPC) && (aSellInv.qty > 0)) {
+          if ((aSellInv._id.UPC === aUPC) && (aSellInv.qty !== 0)) {
             aProInv.sellerInventory.push({ org: aSellInv._id.org, qty: aSellInv.qty });
           }
         }
         aProInv.locationInventory = [];
         for (var aLocInv of locInvList) {
-          if ((aLocInv._id.UPC === aUPC) && (aLocInv.qty > 0)) {
+          if ((aLocInv._id.UPC === aUPC) && (aLocInv.qty !== 0)) {
             aProInv.locationInventory.push({ loc: aLocInv._id.loc, qty: aLocInv.qty });
           }
         }
@@ -535,11 +535,11 @@ note:"this is a inventory change"
     const locInvCollection = req.db.collection("locationInv");
     try 
     {
-      let inventoryList = await invCollection.find({qty: { $gt: 0 }}).project({ _id: 1, qty: 1 }).toArray();
+      let inventoryList = await invCollection.find({qty: { $ne: 0 }}).project({ _id: 1, qty: 1 }).toArray();
       for (let aInv of inventoryList) {
         let total = 0;
         let balanced = true;
-        let locInvList = await locInvCollection.find({"_id.UPC" : aInv._id, qty: { $gt: 0 }}).toArray();
+        let locInvList = await locInvCollection.find({"_id.UPC" : aInv._id, qty: { $ne: 0 }}).toArray();
         for (let alocInv of locInvList) {
           total += alocInv.qty;
         }
@@ -547,7 +547,7 @@ note:"this is a inventory change"
           balanced = false;
         }
         total = 0;
-        let sellerList = await sellerInvCollection.find({"_id.UPC" : aInv._id, qty: { $gt: 0 }}).toArray();
+        let sellerList = await sellerInvCollection.find({"_id.UPC" : aInv._id, qty: { $ne: 0 }}).toArray();
         for (let aSeller of sellerList) {
           total += aSeller.qty
         }
