@@ -37,7 +37,7 @@
             class="elevation-1"
           >
             <template slot="items" slot-scope="props">
-              <tr :style="props.item.urgent? 'color:red;': ''">
+              <tr :style="props.item.urgent? 'color:red;': ''" @click.prevent="show(props.item)">
                 <td class="text-xs-left">{{ props.item.taskID }}</td>
                 <td class="text-xs-left">{{ props.item.urgent }}</td>
                 <td class="text-xs-left">{{ props.item.orgNm }}</td>
@@ -50,23 +50,33 @@
                   <v-btn small color="teal" dark @click.prevent="cancel(props.item)">Cancel</v-btn>
                 </td>
                 <td class="text-xs-left">
-                  <v-btn small color="teal" dark @click.prevent="show(props.item)">Show</v-btn>
-                </td>
-                <td class="text-xs-left">
                   <v-btn small color="teal" dark @click.prevent="batchPick(props.item)">Batch</v-btn>
                 </td>
               </tr>
             </template>
           </v-data-table>
         </v-flex>
-        <v-flex v-if=showBaseUPC>
+        <v-flex v-if=showChoseUPC>
           <v-card>
             <v-card-title class="title font-weight-light blue-grey lighten-5">
-              <span style='margin-right:1.25em; display:inline-block;'>Base UPCs Information: task {{choosedTaskID}}</span>
+              <span style='margin-right:1.25em; display:inline-block;'>Task Detail:</span>
             </v-card-title>
+            <v-layout>
+              <p style='margin-left:2em;margin-top:2em;'><b>Task ID:&nbsp;</b>&nbsp;{{chosedItem.taskID}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;margin-top:2em;'><b>Target UPC:&nbsp;</b>&nbsp;{{chosedItem.targetUPC}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;margin-top:2em;'><b>Target pid:&nbsp;</b>&nbsp;{{chosedItem.pid}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;margin-top:2em;'><b>Product Name:&nbsp;</b>&nbsp;{{chosedItem.prdNm}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;margin-top:2em;'><b>Status:&nbsp;</b>&nbsp;{{chosedItem.status}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+            </v-layout>
+            <v-layout>
+              <p style='margin-left:2em;'><b>Total Qty:&nbsp;</b>&nbsp;{{chosedItem.qty}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;'><b>Urgent:&nbsp;</b>&nbsp;{{chosedItem.urgent}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;'><b>Org Name:&nbsp;</b>&nbsp;{{chosedItem.orgNm}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+              <p style='margin-left:2em;'><b>Tracking No:&nbsp;</b>&nbsp;{{chosedItem.trNo}}&nbsp;&nbsp;&nbsp;&nbsp;</p>
+            </v-layout>
             <v-data-table
             :headers="headersBaseUPC"
-            :items="baseUPCList"
+            :items="chosedItem.baseUPCList"
             :rows-per-page-items="rowsPerPageItems"
             class="elevation-1"
           >
@@ -78,6 +88,7 @@
               </tr>
             </template>
           </v-data-table>
+          <v-btn dark @click="finishUpgrade">Finish Task</v-btn>
           </v-card>
         </v-flex>
         <v-flex v-if=showBatchPick>
@@ -101,11 +112,10 @@ export default {
       showAlert: false,
       message: '',
       showAlertDialog: false,
-      showBaseUPC: false,
+      showChoseUPC: false,
       showBatchPick: false,
       upgReqList: [],
-      baseUPCList: [],
-      choosedTaskID: '',
+      chosedItem: [],
       ReqStatusChoice: ['active', 'finish', 'cancel', 'all'],
       statusFilter: 'active',
       headersUpgrade: [
@@ -118,7 +128,6 @@ export default {
         { text: 'Total Items', align: 'left', value: 'qty' },
         { text: 'Target UPC', align: 'left', value: 'targetUPC' },
         { text: 'Cancel Task', align: 'left', value: '_id' },
-        { text: 'Base UPCs', align: 'left', value: '_id' },
         { text: 'Batch Pick', align: 'left', value: '_id' }
       ],
       headersBaseUPC: [
@@ -144,9 +153,9 @@ export default {
       this.showAlertDialog = true
     },
     show (item) {
-      this.showBaseUPC = true
-      this.baseUPCList = item.baseUPCList
-      this.choosedTaskID = item.taskID
+      this.showChoseUPC = true
+      this.chosedItem = item
+      console.log(item)
     },
     async cancel (item) {
       if (item.status !== 'cancel') {
@@ -196,8 +205,28 @@ export default {
       this.clearAlert()
       this.getUpgReqList()
     },
+    async finishUpgrade () {
+      try {
+        await Upgrade.finishUpgrade(this.chosedItem)
+        this.chosedItem = []
+        this.showChoseUPC = false
+        this.setAlertDialog('Done!')
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
     batchPick (item) {
-      this.showBaseUPC = false
+      this.showChoseUPC = false
       this.showBatchPick = true
       if (!item.picked) {
         // Add item to batch list.

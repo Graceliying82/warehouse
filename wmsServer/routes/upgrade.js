@@ -1,5 +1,6 @@
 const nextKey = require('./nextKey');
-var ObjectId = require('mongodb').ObjectID
+var ObjectId = require('mongodb').ObjectID;
+const productInv = require('./productInv');
 // async function cancelUpgrade (db, upgradeID) {
 //   let createTime = new Date()
 //   let mdfTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
@@ -317,44 +318,116 @@ module.exports = {
       next(error);
     }
   },
-  // // Cancel an upgrade with shipment information
-  // // input: shipmentID; UPC; taskID
-  // async cancelUpgradeWithShip(req, res, next) {
-  //   const upgradeCollection = req.db.collection("upgrade");
-  //   const shipmentCollection = req.db.collection("shipment");
-  //   let createTime = new Date()
-  //   let mdfTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
-  //   let mdfStmp = createTime.getTime() // add a create timestamp
-  //   try {
-  //     let upgrade = await upgradeCollection.findOne({taskID: req.body.taskID});
-  //     if ((!upgrade)) {
-  //       const error = new Error('Upgrade: ' + req.body.taskID + ' not found!');
-  //       error.status = 400;
-  //       return next(error)
-  //     }
-  //     await cancelUpgrade(req.db, upgrade._id);
-  //     await shipmentCollection.findOneAndUpdate(
-  //       {
-  //         _id: req.body.shipmentID,
-  //         'rcIts.UPC': req.body.UPC
-  //       },
-  //       {
-  //         $set: {
-  //           'rcIts.$.status': 'ready',
-  //           'rcIts.$.taskID': '',
-  //           'mdfTm': mdfTm, 
-  //           'mdfStmp': mdfStmp
-  //         }
-  //       }
-  //     )
-  //     res.send('Upgrade for shipment has been canceled.');
-  //     res.end()
-  //   } catch (error) {
-  //     console.log("receive error: " + error);
-  //     if (error.message === null) {
-  //       error.message = 'Fail to access database! Try again'
-  //     };
-  //     next(error);
-  //   }
-  // },
+  // Finish Upgrade
+  // 
+  async finishUpgrade(req, res, next) {
+    try {
+      const upgradeCollection = req.db.collection("upgrade");
+      const sellerInvCollection = req.db.collection("sellerInv");
+      const shipmentCollection = req.db.collection("shipment");
+      let createTime = new Date();
+      let mdfTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      let mdfStmp = createTime.getTime(); // add a create timestamp
+      let result = ''
+      // if (req.body._id) {
+        // finish by upgrade _id. 
+      //   let o_id = ObjectId(req.body._id);
+      //   result = await upgradeCollection.findOneAndUpdate(
+      //     {
+      //       _id: o_id,
+      //       status: 'active'
+      //     },
+      //     {
+      //       $set: {
+      //         'status': 'finish',
+      //         'owner': req.decoded.email,
+      //         'mdfTm': mdfTm,
+      //         'mdfStmp': mdfStmp }
+      //     },
+      //     {
+      //       returnOriginal: true
+      //     }
+      //   );
+      // } else if (req.body.taskID) {
+      if (req.body.taskID) {
+        // finish by upgrade taskID
+        result = await upgradeCollection.findOneAndUpdate(
+          {
+            taskID: req.body.taskID,
+            status: 'active'
+          },
+          {
+            $set: {
+              'status': 'finish',
+              'owner': req.decoded.email,
+              'mdfTm': mdfTm,
+              'mdfStmp': mdfStmp }
+          },
+          {
+            returnOriginal: true
+          }
+        );
+      }
+      // result point to document before updating.
+      if (result.value) {
+        // add target UPC
+        let invAdjArray = [];
+        invAdjArray[0] = {};
+        invAdjArray[0].UPC = req.body.targetUPC;
+        invAdjArray[0].qtyDelta = req.body.qty;
+        invAdjArray[0].sellerInventory = [];
+        invAdjArray[0].locationInventory = [];
+        invAdjArray[0].sellerInventory.push({
+          'org': req.body.orgNm,
+          'qtyDelta': req.body.qty
+        });
+        invAdjArray[0].locationInventory.push({
+          'loc': 'WMS',
+          'qtyDelta': req.body.qty
+        })
+        // add base upc. Only reduce qty from inventory and loc Inventory
+        for (let i = 0; i <  result.value.baseUPCList.length; i++) {
+          invAdjArray[i+1] = {}
+          invAdjArray[i+1].UPC = result.value.baseUPCList[i].UPC;
+          invAdjArray[i+1].qtyDelta = -result.value.baseUPCList[i].qty;
+          invAdjArray[i+1].locationInventory = [];
+          invAdjArray[i+1].locationInventory.push({
+            'loc': 'WMS',
+            'qtyDelta': -result.value.baseUPCList[i].qty
+          });
+          invAdjArray[i+1].sellerInventory = []
+        }
+        result.adjustRes = await productInv.adjustInvUpdate(req.db, invAdjArray);
+        
+        if (result.value.taskID) {
+          await shipmentCollection.findOneAndUpdate(
+            {
+              'rcIts.taskID': result.value.taskID
+            },
+            {
+              $set: {
+                'rcIts.$.status': 'ready',
+                'rcIts.$.taskID': '',
+                'mdfTm': mdfTm, 
+                'mdfStmp': mdfStmp
+              }
+            }
+          )
+        }
+        if (result.adjustRes.failure.length > 0) {
+          const error = new Error('Some error found during qty adjust error. Please check.');
+          error.status = 500;
+          return next(error)
+        }
+      }
+      res.send('OK');
+      res.end();
+    } catch (error) {
+      console.log("receive error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
 }

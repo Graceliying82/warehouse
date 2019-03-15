@@ -19,5 +19,8 @@ export default {
   },
   fastUpgrade (data) {
     return Api().post('/upgrades/fastUpgrade', data)
+  },
+  finishUpgrade (data) {
+    return Api().post('/upgrades/finishUpgrade', data)
   }
 }

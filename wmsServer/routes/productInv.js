@@ -338,17 +338,16 @@ note:"this is a inventory change"
 }
 
    */
-  async postInvUpdate(req, res, next) {
-    const invCollection = req.db.collection("inventory");
-    const sellerInvCollection = req.db.collection("sellerInv");
-    const locInvCollection = req.db.collection("locationInv");
+  async adjustInvUpdate (db, inventoryAdjustArray) {
+    const invCollection = db.collection("inventory");
+    const sellerInvCollection = db.collection("sellerInv");
+    const locInvCollection = db.collection("locationInv");
     try {
-      let inventoryAdjustArray = req.body.adjust;
       let succesUPC = [];
       let failUPC = [];
       let createTime = new Date();
-      req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
-      req.body.crtStmp = createTime.getTime();
+      let crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      let crtStmp = createTime.getTime();
       for (var adjust of inventoryAdjustArray) {
         let aUPC = adjust.UPC;
         try {
@@ -358,7 +357,7 @@ note:"this is a inventory change"
                 _id: aUPC
               }, //query
               {
-                $set: { qty: adjust.qty, mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp },
+                $set: { qty: adjust.qty, mdfTm: crtTm, mdfStmp: crtStmp },
               },
               { upsert: true }
             );
@@ -368,7 +367,7 @@ note:"this is a inventory change"
                 _id: aUPC
               }, //query
               {
-                $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp },
+                $set: { mdfTm: crtTm, mdfStmp: crtStmp },
                 $inc: { qty: adjust.qtyDelta }
               },
               { upsert: true }
@@ -382,7 +381,7 @@ note:"this is a inventory change"
                   _id: { UPC: aUPC, org: sellerInv.org }
                 }, //query
                 {
-                  $set: { qty: sellerInv.qty, mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+                  $set: { qty: sellerInv.qty, mdfTm: crtTm, mdfStmp: crtStmp }
                 },
                 { upsert: true }
               );
@@ -393,7 +392,7 @@ note:"this is a inventory change"
                 }, //query
                 {
                   $inc: { qty: sellerInv.qtyDelta },
-                  $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+                  $set: { mdfTm: crtTm, mdfStmp: crtStmp }
                 },
                 { upsert: true }
               );
@@ -407,7 +406,7 @@ note:"this is a inventory change"
                   _id: { UPC: aUPC, loc: locInv.loc }
                 }, //query
                 {
-                  $set: { qty: locInv.qty, mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+                  $set: { qty: locInv.qty, mdfTm: crtTm, mdfStmp: crtStmp }
                 },
                 { upsert: true }
               );
@@ -418,7 +417,7 @@ note:"this is a inventory change"
                 }, //query
                 {
                   $inc: { qty: locInv.qtyDelta },
-                  $set: { mdfTm: req.body.crtTm, mdfStmp: req.body.crtStmp }
+                  $set: { mdfTm: crtTm, mdfStmp: crtStmp }
                 },
                 { upsert: true }
               );
@@ -428,12 +427,21 @@ note:"this is a inventory change"
         } catch (error) {
           failUPC.push(aUPC);
         }
-        result = {};
-        result.success = succesUPC;
-        result.failure = failUPC;
-        res.send(result);
-        res.end();
       }
+      result = {};
+      result.success = succesUPC;
+      result.failure = failUPC;
+      return result
+    } catch (error) {
+      console.log("adjustInvUpdate: " + error);
+      throw error
+    }
+  },
+  async postInvUpdate(req, res, next) {
+    try {
+      await module.exports.adjustInvUpdate(req.db, req.body.adjust)
+      res.send('Done!');
+      res.end();
     } catch (error) {
       console.log("adjust product inventory: " + error);
       if (error.message === null) {

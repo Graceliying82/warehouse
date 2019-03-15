@@ -446,7 +446,7 @@ export default {
       if (orderDetail.status === 'upgrade') {
         this.setAlertDialog('Error: Product ' + orderDetail.UPC + ' is upgrading.')
       }
-      navigateTo({
+      this.navigateTo({
         name: 'upgradeRequest',
         params: {
           targetUPC: orderDetail.UPC,

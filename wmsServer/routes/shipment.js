@@ -130,11 +130,8 @@ module.exports = {
         await shipCollection.replaceOne({ _id: shipment._id }, shipment );
       }
     } catch (error) {
-      console.log("get shipment: " + error);
-      if (error.message === null) {
-        error.message = 'Fail to access database! Try again'
-      };
-      next(error);
+      console.log("calcShipStatus: " + error);
+      throw error;
     }
   },
   async getByShipmentId(req, res, next) {

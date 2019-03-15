@@ -69,6 +69,7 @@ module.exports = (app) => {
   app.post('/upgrades/cancelUpgrade', Upgrade.cancelUpgrade)
   app.get('/upgrades/getUpdPrdNeedInstr', Upgrade.getUpdPrdNeedInstr)
   app.post('/upgrades/fastUpgrade', Upgrade.fastUpgrade)
+  app.post('/upgrades/finishUpgrade', Upgrade.finishUpgrade)
 
   // from instructions
   app.post('/instructions', Instruction.post)
