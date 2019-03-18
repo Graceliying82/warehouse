@@ -7,6 +7,9 @@ export default {
   getByUPC (upcs) {
     return Api().get('/prodInv/' + upcs)
   },
+  getLocInvByUPC (UPC) {
+    return Api().get('/locInv/' + UPC)
+  },
   getAllProductInventory () {
     return Api().get('/prodInvAll')
   },

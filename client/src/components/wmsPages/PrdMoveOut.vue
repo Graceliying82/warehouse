@@ -19,7 +19,7 @@
             <span style="color:red;font-weight:bold">{{currentScan}}</span>
             </v-card-title>
             <v-card-text>
-              <h3 align='left'>Move out location: {{moLoc1}}</h3>
+              <h3 align='left'>Move from location: {{moLoc1}}</h3>
               <br>
               <v-layout>
                 <v-flex>
@@ -59,7 +59,7 @@
             <!-- Manual input area-->
             <v-layout my-2 mx-5>
               <v-text-field
-                label="Move out Location"
+                label="Move from Location"
                 id="moLocMan"
                 clearable
               ></v-text-field>
@@ -100,7 +100,7 @@ export default {
         qnRule1: val => val < 1000000 || 'Not a valid number',
         qnRule2: val => val >= 0 || 'Not a valid number'
       },
-      currentScan: 'Move out Location',
+      currentScan: 'Move from Location',
       // 'Move out Location', 'UPC'
       moLoc1: '',
       UPC1: '',
@@ -149,7 +149,7 @@ export default {
       this.showAlert1 = true
     },
     clearMoveItems () {
-      this.currentScan = 'Move out Location'
+      this.currentScan = 'Move from Location'
       this.moLoc1 = ''
       this.UPC1 = ''
       this.moItems1 = []
@@ -183,7 +183,7 @@ export default {
     },
     onBarcodeScanned (barcode) {
       this.clearAlert()
-      if (this.currentScan === 'Move out Location') {
+      if (this.currentScan === 'Move from Location') {
         this.checkLocationExisted(barcode).then((existed) => {
           if (existed) {
             this.moLoc1 = barcode

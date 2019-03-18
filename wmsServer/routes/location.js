@@ -92,5 +92,5 @@ module.exports = {
       };
       next(error)
     }
-  }
+  },
 }

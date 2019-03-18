@@ -23,6 +23,7 @@ module.exports = (app) => {
   //from production inventory
   app.get('/prodInv/:UPC', ProductInv.getByUPC)
   app.get('/sellerInv/:UPC',ProductInv.getSellerInvByUPC)
+  app.get('/locInv/:UPC', ProductInv.getLocInvByUPC)
   app.get('/prodInvAll', ProductInv.getAllProductInventory) //get all product inventory todo -pagination support
   app.get('/prodInvByLoc/:loc', ProductInv.getProdInvByLoc) //get product by locations, seprated by ,
   app.post('/prodInvAdjustBatch', ProductInv.postInvUpdate)

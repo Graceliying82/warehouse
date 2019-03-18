@@ -303,7 +303,22 @@ module.exports = {
       next(error);
     }
   },
-
+  // Get Location Inventory by UPC
+  async getLocInvByUPC(req, res, next) {
+    // const prodCollection = req.db.collection("product");
+    const locInvCollection = req.db.collection("locationInv");
+    try {
+      let result = await locInvCollection.find({ "_id.UPC":  req.params.UPC }).toArray()
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("query product inventory: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
   /**
    * if qty is passed, qtyDelta will be ignored
 {adjust:[
