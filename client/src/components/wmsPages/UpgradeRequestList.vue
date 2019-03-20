@@ -81,7 +81,7 @@
             class="elevation-1"
           >
             <template slot="items" slot-scope="props">
-              <tr @click.prevent="showReqDetail(props.item)">
+              <tr>
                 <td class="text-xs-left">{{ props.item.pid }}</td>
                 <td class="text-xs-left">{{ props.item.qty }}</td>
                 <td class="text-xs-left">{{ props.item.UPC }}</td>
@@ -95,6 +95,8 @@
           <v-card>
             <v-card-title class="title font-weight-light blue-grey lighten-5">
               <span style='margin-right:1.25em; display:inline-block;'>Choose Tasks (less than 10) to plan a batch pick</span>
+              <v-spacer></v-spacer>
+              <v-btn @click.prevent="clearBatchPick" dark>Clear</v-btn>
             </v-card-title>
             <v-data-table
             :headers="headersBatchPick"
@@ -145,11 +147,62 @@
               </v-card>
             </template>
           </v-data-table>
-            <v-btn dark>Print batch Pick</v-btn>
+            <v-btn dark @click.prevent="printContent">Print batch Pick</v-btn>
           </v-card>
         </v-flex>
       </v-layout>
     </panel>
+    <div id="printable" v-show=false>
+      <div v-for = "(detail, i) in batchPickItems" :key = i>
+        <h1>Order Pickup Details</h1>
+        <p><b>TaskID:&nbsp;</b>&nbsp;{{ detail.taskID }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Urgent:&nbsp;</b>{{ detail.urgent }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Target UPC:&nbsp;</b>&nbsp;{{ detail.targetUPC }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Tracking No:&nbsp;</b>{{ detail._id }}
+        </p>
+        <p><b>Target Product Name:&nbsp;</b>&nbsp;{{ detail.prdNm }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Target PID:&nbsp;</b>{{ detail.pid }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Target total Qty:&nbsp;</b>&nbsp;{{ detail.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+          <b>Organization Name:&nbsp;</b>{{ detail.orgNm }}
+        </p>
+        <v-divider></v-divider>
+        <h2>Base Product information</h2>
+        <div v-for = "(base, j) in detail.baseUPCList" :key = j>
+          <p><b>Base PID:&nbsp;</b>&nbsp;{{ base.pid }}&nbsp;&nbsp;&nbsp;&nbsp;
+            <b>Base UPC:&nbsp;</b>{{ detail.UPC }}&nbsp;&nbsp;&nbsp;&nbsp;
+            <b>Required Qty:&nbsp;</b>&nbsp;{{ detail.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+          </p>
+          <v-divider></v-divider>
+          <h2>Upgrade Instructions</h2>
+          <h3>Required Parts</h3>
+            <p>{{ base.upgInstruction.reqParts }}</p>
+          <v-divider></v-divider>
+          <h3>Took Off Parts</h3>
+           <p>{{ base.upgInstruction.offParts }}</p>
+          <v-divider></v-divider>
+          <h3>Steps</h3>
+            <p>{{ base.upgInstruction.steps }}</p>
+          <v-divider></v-divider>
+          <h3>Note</h3>
+            <p>{{ base.upgInstruction.note }}</p>
+          <v-divider></v-divider>
+          <h2>Base Product Locations</h2>
+          <table  :key ="j+ '-tb'">
+            <tr :key="j+ '-hd'">
+              <th>Location</th>
+              <th>Quantity</th>
+            </tr>
+            <tr v-for="(alocInv,index) in base.locInv" :key="index+ '-ct'">
+              <th>{{ alocInv._id.loc }}</th>
+              <th>{{ alocInv.qty }}</th>
+            </tr>
+          </table>
+          <div class="pagebreak"> </div>
+        </div>
+        <v-divider></v-divider>
+        <div class="page-break"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -294,6 +347,15 @@ export default {
         }
       }
     },
+    clearBatchPick () {
+      if (this.batchPickItems.length > 0) {
+        for (let aItem of this.upgReqList) {
+          aItem.picked = false
+        }
+        this.batchPickItems = []
+      }
+      this.showBatchPick = false
+    },
     async batchPick (item) {
       this.showChoseUPC = false
       console.log(this.showChoseUPC)
@@ -324,6 +386,33 @@ export default {
           console.log(this.batchPickItems)
         }
       }
+    },
+    printContent () {
+      const element = document.getElementById('printable')
+      if (!element) {
+        this.setAlertDialog('Element to print not found!')
+        return
+      }
+      const win = window.open('', '', 'toolbar=yes,scrollbars=yes,resizable=yes,fufullscreen=yes')
+      win.document.write(`
+        <html>
+          <head>
+            <style>
+              body {margin-left:2em;margin-right:2em;}
+              h1 {margin-top:5em;}
+              .page-break {display: block; page-break-before: always;}
+              table, th, td { border: 1px solid black; border-collapse: collapse; white-space: nowrap}
+            </style>
+          </head>
+          <body>
+            ${element.innerHTML}
+          </body>
+        </html>
+      `)
+      win.document.close()
+      win.focus()
+      win.print()
+      win.close()
     }
   },
   async mounted () {
