@@ -169,8 +169,8 @@
         <h2>Base Product information</h2>
         <div v-for = "(base, j) in detail.baseUPCList" :key = j>
           <p><b>Base PID:&nbsp;</b>&nbsp;{{ base.pid }}&nbsp;&nbsp;&nbsp;&nbsp;
-            <b>Base UPC:&nbsp;</b>{{ detail.UPC }}&nbsp;&nbsp;&nbsp;&nbsp;
-            <b>Required Qty:&nbsp;</b>&nbsp;{{ detail.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+            <b>Base UPC:&nbsp;</b>{{ base.UPC }}&nbsp;&nbsp;&nbsp;&nbsp;
+            <b>Required Qty:&nbsp;</b>&nbsp;{{ base.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
           </p>
           <v-divider></v-divider>
           <h2>Upgrade Instructions</h2>
@@ -393,11 +393,12 @@ export default {
         this.setAlertDialog('Element to print not found!')
         return
       }
-      const win = window.open('', '', 'toolbar=yes,scrollbars=yes,resizable=yes,fufullscreen=yes')
+      const win = window.open('', 'PrintWindow', 'scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,fufullscreen=yes,left=100,top=100')
       win.document.write(`
         <html>
           <head>
             <style>
+              page { size: A4; margin: 11mm 17mm 17mm 17mm;}
               body {margin-left:2em;margin-right:2em;}
               h1 {margin-top:5em;}
               .page-break {display: block; page-break-before: always;}
