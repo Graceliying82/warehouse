@@ -200,7 +200,7 @@ export default {
     },
     changeMiLocMan () {
       this.clearAlert()
-      let aLoc = document.getElementById('miLocMan').value
+      let aLoc = document.getElementById('miLocMan').value.trim()
       this.checkLocationExisted(aLoc).then((existed) => {
         if (existed) {
           this.miLoc1 = aLoc
@@ -212,7 +212,7 @@ export default {
     },
     changeUPCMan () {
       this.clearAlert()
-      let aUPC = document.getElementById('UPCMan').value
+      let aUPC = document.getElementById('UPCMan').value.trim()
       this.handleUPCInput(aUPC)
     },
     async checkLocationExisted (locID) {

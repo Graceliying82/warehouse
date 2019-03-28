@@ -24,6 +24,7 @@
               v-model="trackingInput"
               id="trackingNo"
               clearable
+              v-on:keydown.enter="changeTrackingMan"
             ></v-text-field>
             <v-btn @click = "changeTrackingMan">Find</v-btn>
           </v-layout>

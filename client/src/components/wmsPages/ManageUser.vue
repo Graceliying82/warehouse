@@ -242,6 +242,7 @@ export default {
     async createUser () {
       try {
         // this.$refs.form.validate()
+        this.usr.email = this.usr.email.trim()
         await Users.post(this.usr)
         this.setAlert('success', 'A new user ' + this.usr.usrNm + ' is added.')
         this.clearData()
@@ -249,15 +250,17 @@ export default {
       } catch (error) {
         if (!error.response) {
           // network error
-          this.error = 'Network Error: Fail to connet to server'
+          this.message1 = 'Network Error: Fail to connet to server'
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.error = error.response.data.error
+          this.message1 = error.response.data.error
         }
+        this.alertType1 = 'error'
+        this.showAlert1 = true
       }
     },
     async getUserList () {
@@ -266,15 +269,17 @@ export default {
       } catch (error) {
         if (!error.response) {
           // network error
-          this.setAlert('error', 'Network Error: Fail to connet to server')
+          this.message1 = 'Network Error: Fail to connet to server'
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.setAlert('error', error.response.data.error)
+          this.message1 = error.response.data.error
         }
+        this.alertType1 = 'error'
+        this.showAlert1 = true
       }
     },
     changeStatus () {
@@ -290,15 +295,17 @@ export default {
       } catch (error) {
         if (!error.response) {
           // network error
-          this.setAlert('error', 'Network Error: Fail to connet to server')
+          this.message1 = 'Network Error: Fail to connet to server'
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.setAlert('error', error.response.data.error)
+          this.message1 = error.response.data.error
         }
+        this.alertType1 = 'error'
+        this.showAlert1 = true
       }
     }
   },

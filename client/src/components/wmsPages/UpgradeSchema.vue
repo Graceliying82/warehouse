@@ -11,7 +11,7 @@
         </v-flex>
       <!-- Create a New Template -->
       <v-layout>
-        <v-flex my-5>
+        <v-flex my-5 v-show=false>
           <panel  title='Create a New Template'>
             <v-flex xs6>
               <v-layout mx-2>

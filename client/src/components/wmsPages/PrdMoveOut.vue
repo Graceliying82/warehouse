@@ -198,7 +198,7 @@ export default {
     },
     changeMoLocMan () {
       this.clearAlert()
-      let aLoc = document.getElementById('moLocMan').value
+      let aLoc = document.getElementById('moLocMan').value.trim()
       this.checkLocationExisted(aLoc).then((existed) => {
         if (existed) {
           this.moLoc1 = aLoc
@@ -210,7 +210,7 @@ export default {
     },
     changeMoUPCMan () {
       this.clearAlert()
-      let aLoc = document.getElementById('moUPCMan').value
+      let aLoc = document.getElementById('moUPCMan').value.trim()
       if (this.moLoc1 === '') {
         this.setAlert('error', 'Set Location for move out first')
       } else {

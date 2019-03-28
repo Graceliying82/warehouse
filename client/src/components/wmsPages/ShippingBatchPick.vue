@@ -162,7 +162,15 @@ export default {
       upcQtyList: [],
       retUPCQtyList: [],
       pickUPList: [],
-      Colors: ['grey lighten-4', 'red']
+      Colors: ['grey lighten-4', 'red'],
+      // handle barcode scanning
+      attributes: {
+        barcode: '',
+        scannerSensitivity: 100,
+        callback: null,
+        hasListener: false,
+        pressedTime: []
+      }
     }
   },
   methods: {
@@ -192,16 +200,31 @@ export default {
       this.retUPCQtyList = []
       this.pickUPList = []
     },
+    isTrackingScanned (tracking) {
+      let scanned = false
+      for (let shipment of this.shipments) {
+        if (shipment._id === tracking) {
+          scanned = true
+          break
+        }
+      }
+      return scanned
+    },
     async getShipmentByTracking (tracking) {
       try {
         this.clearAlert()
-        let result = (await Shipment.getByShipmentId(tracking)).data
-        if (result.length !== 0) {
-          this.shipments.push(result)
+        if (this.isTrackingScanned(tracking)) {
+          this.setAlert('error', 'Tracking no ' + tracking + ' has been scanned!')
           this.inputTracking = ''
         } else {
-          this.setAlert('error', 'Tracking no ' + tracking + ' not found!')
-          this.inputTracking = ''
+          let result = (await Shipment.getByShipmentId(tracking)).data
+          if (result.length !== 0) {
+            this.shipments.push(result)
+            this.inputTracking = ''
+          } else {
+            this.setAlert('error', 'Tracking no ' + tracking + ' not found!')
+            this.inputTracking = ''
+          }
         }
       } catch (error) {
         if (!error.response) {
@@ -225,8 +248,11 @@ export default {
     },
     addTracking () {
       if (this.inputTracking !== '') {
-        this.getShipmentByTracking(this.inputTracking)
+        this.getShipmentByTracking(this.inputTracking.trim())
       }
+    },
+    async onBarcodeScanned (barcode) {
+      this.getShipmentByTracking(barcode)
     },
     checkBackOrders () {
       for (let aShip of this.shipments) {
@@ -460,7 +486,84 @@ export default {
       frame.contentWindow.focus()
       frame.contentWindow.print()
       document.body.removeChild(frame)
+    },
+    // Handle Barcode Input
+    // check whether the keystrokes are considered as scanner or human
+    checkInputElapsedTime (timestamp) {
+      // push current timestamp to the register
+      this.attributes.pressedTime.push(timestamp)
+      // when register is full (ready to compare)
+      if (this.attributes.pressedTime.length === 2) {
+        // compute elapsed time between 2 keystrokes
+        let timeElapsed = this.attributes.pressedTime[1] - this.attributes.pressedTime[0]
+        // too slow (assume as human)
+        if (timeElapsed >= this.attributes.scannerSensitivity) {
+          // put latest key char into barcode
+          this.attributes.barcode = event.key
+          // remove(shift) first timestamp in register
+          this.attributes.pressedTime.shift()
+          // not fast enough
+          return false
+        } else {
+          // fast enough (assume as scanner)
+          // reset the register
+          this.attributes.pressedTime = []
+        }
+      }
+      // not able to check (register is empty before pushing) or assumed as scanner
+      return true
+    },
+    addListener (type) {
+      if (this.attributes.hasListener) {
+        this.removeListener(type)
+      }
+      window.addEventListener(type, this.onInputScanned)
+      this.attributes.hasListener = true
+    },
+    removeListener (type) {
+      if (this.attributes.hasListener) {
+        window.removeEventListener(type, this.onInputScanned)
+        this.attributes.hasListener = false
+      }
+    },
+    onInputScanned (event) {
+      // ignore other keydown event that is not a TAB, so there are no duplicate keys
+      if (event.type === 'keydown' && event.keyCode !== 9) {
+        return
+      }
+      if (this.checkInputElapsedTime(Date.now())) {
+        if ((event.keyCode === 13 || event.keyCode === 9) && this.attributes.barcode !== '') {
+          // scanner is done and trigger Enter/Tab then clear barcode and play the sound if it's set as true
+          this.attributes.callback(this.attributes.barcode)
+          // clear textbox
+          this.attributes.barcode = ''
+          // clear pressedTime
+          this.attributes.pressedTime = []
+          // prevent TAB navigation for scanner
+          if (event.keyCode === 9) {
+            event.preventDefault()
+          }
+        } else {
+          // scan and validate each charactor
+          this.attributes.barcode += event.key
+        }
+      }
+    },
+    barcodeInit (callback) {
+      this.addListener('keypress')
+      this.addListener('keydown')
+      this.attributes.callback = callback
+    },
+    barcodeDestroy () {
+      this.removeListener('keypress')
+      this.removeListener('keydown')
     }
+  },
+  created () {
+    this.barcodeInit(this.onBarcodeScanned)
+  },
+  destroyed () {
+    this.barcodeDestroy()
   }
 }
 </script>

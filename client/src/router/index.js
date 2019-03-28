@@ -10,7 +10,7 @@ import BatchPick from '@/components/wmsPages/ShippingBatchPick'
 import PrdMoveIn from '@/components/wmsPages/PrdMoveIn'
 import PrdMoveOut from '@/components/wmsPages/PrdMoveOut'
 import InventoryLocations from '@/components/wmsPages/InventoryLocations'
-import UpgradeTemplate from '@/components/wmsPages/UpgradeTemplate'
+import UpgradeSchema from '@/components/wmsPages/UpgradeSchema'
 import UpgradeInstructions from '@/components/wmsPages/UpgradeInstructions'
 import UpgradeRequest from '@/components/wmsPages/UpgradeRequest'
 import UpgradeRequestList from '@/components/wmsPages/UpgradeRequestList'
@@ -81,9 +81,9 @@ export default new Router({
       component: InventoryLocations
     },
     {
-      path: '/upgradeTemplate',
-      name: 'upgradeTemplate',
-      component: UpgradeTemplate
+      path: '/upgradeSchema',
+      name: 'upgradeSchema',
+      component: UpgradeSchema
     },
     {
       path: '/upgradeInstructions',
