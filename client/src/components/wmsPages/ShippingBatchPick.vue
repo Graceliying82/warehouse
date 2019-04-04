@@ -218,7 +218,7 @@ export default {
           this.inputTracking = ''
         } else {
           let result = (await Shipment.getByShipmentId(tracking)).data
-          if (result.length !== 0) {
+          if (result) {
             this.shipments.push(result)
             this.inputTracking = ''
           } else {
@@ -398,6 +398,7 @@ export default {
       if (backOrder) {
         this.setAlert2('error', 'Some Orders have not enough inventory. Please check.')
       } else {
+        this.clearAlert()
         this.pickUPList = []
         this.showPickUp = true
         if (this.includeWMS) {

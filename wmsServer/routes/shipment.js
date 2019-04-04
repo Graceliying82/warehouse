@@ -138,6 +138,7 @@ module.exports = {
     const shipCollection = req.db.collection("shipment");
     const prdCollection = req.db.collection("product");
     const sellerInvCollection = req.db.collection("sellerInv")
+    const locInvCollection = req.db.collection("locationInv")
     try {
       let createTime = new Date()
       req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST'
@@ -148,7 +149,6 @@ module.exports = {
       let shipment = await shipCollection.findOne({ _id: req.params.Id });
       if (shipment === null) {
         console.log('Tracking No ' + req.params.Id + ' is not found');
-        shipment = [];
       } else {
         if (shipment.rcIts) {
           for (i =0; i < shipment.rcIts.length; i++) {
@@ -156,6 +156,8 @@ module.exports = {
             let sellerInv = await sellerInvCollection.findOne({
               _id: { UPC: shipment.rcIts[i].UPC, org: shipment.orgNm }
             })
+            let locInv = await locInvCollection.find({"_id.UPC": shipment.rcIts[i].UPC, qty: {$gt:0}}, {"_id.loc": 1, qty: 1}).toArray();
+            shipment.rcIts[i].locInv = locInv
             // Add availability
             if (sellerInv) {
               shipment.rcIts[i].sellerInv = sellerInv.qty;
@@ -169,6 +171,7 @@ module.exports = {
               shipment.rcIts[i].sellerInv = 0
               shipment.rcIts[i].enough = false;
             };
+            // Add locInv
             // Add PID
             if (prod){
               shipment.rcIts[i].prdNm = prod.prdNm;

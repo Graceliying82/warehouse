@@ -195,8 +195,9 @@ export default {
       // Logic to get order information by tracking No
       try {
         let result = (await Shipment.getByShipmentId(trackingNo)).data
-        if (result.length !== 0) {
+        if (result) {
           // console.log('Tracking found!')
+          console.log(result)
           this.trackingNo = result._id
           this.orderID = result.orderID
           this.orgName = result.orgNm
