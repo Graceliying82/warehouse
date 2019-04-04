@@ -17,6 +17,7 @@
               v-model="UPCInput"
               id="UPC"
               clearable
+              v-on:keydown.enter="find()"
             ></v-text-field>
             <v-btn dark @click="find()">Find</v-btn>
             <v-btn dark @click="reset()">Reset</v-btn>

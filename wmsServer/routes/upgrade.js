@@ -247,7 +247,7 @@ module.exports = {
       let targetPrd = await prodCollection.findOne({ _id: req.body.targetUPC });
       if ((!targetPrd.origUPC) || (targetPrd.origUPC === req.body.targetUPC)) {
         upgradable = false
-        message = 'This product is qualify for One-click Upgrade. Please try regular upgrade.'
+        message = 'This product is not qualify for One-click Upgrade. Please try regular upgrade.'
       } else {
         let sellerInv = await sellerInvCollection.findOne({ _id: {UPC: targetPrd.origUPC, org: req.body.orgNm}});
         if ((!sellerInv) || (sellerInv.qty < req.body.qty)) {

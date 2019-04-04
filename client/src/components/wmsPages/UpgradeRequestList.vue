@@ -153,7 +153,7 @@
       </v-layout>
     </panel>
     <div id="printable" v-show=false>
-      <div v-for = "(detail, i) in batchPickItems" :key = i>
+      <div v-for = "(detail, i) in batchPickItems" :key = i class="page">
         <h1>Order Pickup Details</h1>
         <p><b>TaskID:&nbsp;</b>&nbsp;{{ detail.taskID }}&nbsp;&nbsp;&nbsp;&nbsp;
           <b>Urgent:&nbsp;</b>{{ detail.urgent }}&nbsp;&nbsp;&nbsp;&nbsp;
@@ -398,11 +398,12 @@ export default {
         <html>
           <head>
             <style>
-              page { size: A4; margin: 11mm 17mm 17mm 17mm;}
+              .page { size: A4; margin: 11mm 17mm 17mm 17mm; page-break-after: always;}
               body {margin-left:2em;margin-right:2em;}
               h1 {margin-top:5em;}
-              .page-break {display: block; page-break-before: always;}
-              table, th, td { border: 1px solid black; border-collapse: collapse; white-space: nowrap}
+              p { margin-top:5mm; page-break-inside:avoid; }
+              @page { margin-top: 5cm； margin-bottom: 5cm }
+              table, th, td { border: 1px solid black; border-collapse: collapse; white-space: nowrap; page-break-inside:avoid；page-break-after:auto}
             </style>
           </head>
           <body>
@@ -412,8 +413,10 @@ export default {
       `)
       win.document.close()
       win.focus()
-      win.print()
-      win.close()
+      // win.print()
+      // win.close()
+      setTimeout(function () { win.print(); }, 500);
+      win.onfocus = function () { setTimeout(function () { win.close(); }, 500); }
     }
   },
   async mounted () {

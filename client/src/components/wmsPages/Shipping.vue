@@ -73,6 +73,7 @@
           <v-flex mt-2 mx-2 lg6 wrap>
             <v-list-tile-content>
               <v-list-tile-sub-title :key="'UPC'+ i" >UPC  :  {{ detail.UPC }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title :key="'UPC'+ i" >PID  :  {{ detail.pid }}</v-list-tile-sub-title>
               <v-list-tile-sub-title :key="'PrdName'+ i">Product Name  :  {{ detail.prdNm }}</v-list-tile-sub-title>
               <v-list-tile-sub-title :key="'RQTY'+ i">Required Qty  :  {{ detail.qty }}</v-list-tile-sub-title>
               <v-list-tile-sub-title :key="'SQTY'+ i">Scanned Qty  :  {{ detail.scQty }}</v-list-tile-sub-title>
@@ -114,6 +115,7 @@
         </template>
       </v-data-table>
       <v-btn dark @click.prevent="submit">submit</v-btn>
+      <v-btn dark @click.prevent="clearUp">Clear</v-btn>
     </v-flex>
     </v-layout>
   <!-- End Show Order Detail-->
