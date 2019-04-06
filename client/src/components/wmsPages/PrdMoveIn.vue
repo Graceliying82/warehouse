@@ -33,19 +33,31 @@
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
                         class="text-xs-left">
-                        <v-btn icon class="mx-0" @click="props.item.qty += 1">
-                          <v-icon color="teal">add_circle</v-icon>
-                        </v-btn>
-                        {{ props.item.qty }}
-                        <v-btn icon class="mx-0"
-                          @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
-                          <v-icon color="teal">remove_circle</v-icon>
-                        </v-btn>
+                          <v-edit-dialog
+                            @open="props.item._qty = props.item.qty"
+                            @cancel="props.item.qty = props.item._qty || props.item.qty"
+                          >
+                            {{ props.item.qty }}
+                            <v-text-field
+                              slot="input"
+                              v-model.number= "props.item.qty"
+                              label="Quantity"
+                              single-line
+                              >
+                            </v-text-field>
+                          </v-edit-dialog>
                       </td>
                       <td class="text-xs-left">
                         <!-- Start of Action buttons -->
                         <v-btn icon class="mx-0" @click="deleteItem(props.item)">
                           <v-icon color="teal">delete_forever</v-icon>
+                        </v-btn>
+                        <v-btn icon class="mx-0" @click="props.item.qty += 1">
+                          <v-icon color="teal">add_circle</v-icon>
+                        </v-btn>
+                        <v-btn icon class="mx-0"
+                          @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
+                          <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
                         <!-- End of Action buttons -->
                       </td>
@@ -347,7 +359,12 @@ export default {
   }
 }
 </script>
-
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.theme--dark .v-menu__content {
+  background-color: #424242;
+}
+.v-menu__content {
+  background-color: #ffffff;
+}
 </style>

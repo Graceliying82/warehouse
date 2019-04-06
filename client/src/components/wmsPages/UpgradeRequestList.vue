@@ -415,8 +415,8 @@ export default {
       win.focus()
       // win.print()
       // win.close()
-      setTimeout(function () { win.print(); }, 500);
-      win.onfocus = function () { setTimeout(function () { win.close(); }, 500); }
+      setTimeout(function () { win.print() }, 500)
+      win.onfocus = function () { setTimeout(function () { win.close() }, 500) }
     }
   },
   async mounted () {

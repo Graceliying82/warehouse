@@ -33,19 +33,31 @@
                           class="text-xs-left">{{ props.item.UPC }}</td>
                         <td
                           class="text-xs-left">
-                          <v-btn icon class="mx-0" @click="props.item.qty += 1">
-                            <v-icon color="teal">add_circle</v-icon>
-                          </v-btn>
+                          <v-edit-dialog
+                            @open="props.item._qty = props.item.qty"
+                            @cancel="props.item.qty = props.item._qty || props.item.qty"
+                          >
                           {{ props.item.qty }}
-                          <v-btn icon class="mx-0"
-                            @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
-                            <v-icon color="teal">remove_circle</v-icon>
-                          </v-btn>
+                          <v-text-field
+                              slot="input"
+                              v-model.number= "props.item.qty"
+                              label="Quantity"
+                              single-line
+                              >
+                            </v-text-field>
+                          </v-edit-dialog>
                         </td>
                         <td class="text-xs-left">
                           <!-- Start of Action buttons -->
                           <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
                             <v-icon color="teal">delete_forever</v-icon>
+                          </v-btn>
+                          <v-btn icon class="mx-0" @click="props.item.qty += 1">
+                            <v-icon color="teal">add_circle</v-icon>
+                          </v-btn>
+                          <v-btn icon class="mx-0"
+                            @click="props.item.qty > 1 ? props.item.qty -= 1 : ''">
+                            <v-icon color="teal">remove_circle</v-icon>
                           </v-btn>
                           <!-- End of Action buttons -->
                         </td>

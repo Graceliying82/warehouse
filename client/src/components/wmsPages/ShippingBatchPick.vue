@@ -19,7 +19,6 @@
             <v-text-field
               label="Manually Add Tracking Here"
               v-model="inputTracking"
-              v-on:keydown.enter="addTracking()"
               required
               ></v-text-field>
           </v-flex>
@@ -475,18 +474,35 @@ export default {
       }
     },
     printContent () {
-      // console.log('Here')
-      // let restorepage = document.body.innerHTML
-      let printcontent = document.getElementById('printable').innerHTML
-      let frame = document.createElement('IFRAME')
-      frame.width = 0
-      frame.height = 0
-      document.body.appendChild(frame)
-      frame.contentWindow.document.write(printcontent)
-      frame.contentWindow.document.close()
-      frame.contentWindow.focus()
-      frame.contentWindow.print()
-      document.body.removeChild(frame)
+      const element = document.getElementById('printable')
+      if (!element) {
+        this.setAlertDialog('Element to print not found!')
+        return
+      }
+      const win = window.open('', 'PrintWindow', 'scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,fufullscreen=yes,left=100,top=100')
+      win.document.write(`
+        <html>
+          <head>
+            <style>
+              .page { size: A4; margin: 11mm 17mm 17mm 17mm; page-break-after: always;}
+              body {margin-left:2em;margin-right:2em;}
+              h1 {margin-top:5em;}
+              p { margin-top:5mm; page-break-inside:avoid; }
+              @page { margin-top: 5cm； margin-bottom: 5cm }
+              table, th, td { border: 1px solid black; border-collapse: collapse; white-space: nowrap; page-break-inside:avoid；page-break-after:auto}
+            </style>
+          </head>
+          <body>
+            ${element.innerHTML}
+          </body>
+        </html>
+      `)
+      win.document.close()
+      win.focus()
+      // win.print()
+      // win.close()
+      setTimeout(function () { win.print() }, 500)
+      win.onfocus = function () { setTimeout(function () { win.close() }, 500) }
     },
     // Handle Barcode Input
     // check whether the keystrokes are considered as scanner or human
