@@ -1,15 +1,26 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
+    <v-layout>
+      <v-flex>
+          <v-alert
+            v-show = showAlert
+            :type = alertType
+            outline>
+              {{message}}
+            </v-alert>
+        </v-flex>
+    </v-layout>
+    <v-dialog v-model="showAlertDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message}}</h2>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <v-layout row>
       <v-layout column>
         <v-layout>
           <v-flex lg8>
-            <v-alert
-              v-show = showAlert1
-              :type = alertType1
-              outline>
-              {{message1}}
-            </v-alert>
             <v-tabs
               color = "cyan"
               dark
@@ -121,12 +132,6 @@
             </v-tabs>
             <br>
             <br>
-            <v-alert
-              v-show = showAlert2
-              :type = alertType2
-              outline>
-              {{message2}}
-            </v-alert>
             <v-card >
               <v-card-title primary-title >
                 <div>
@@ -343,12 +348,10 @@ export default {
       trackingExisted: false,
       existedOrgNm: '',
       currentTab: 0,
-      alertType1: 'success',
-      showAlert1: false,
-      alertType2: 'success',
-      showAlert2: false,
-      message1: '',
-      message2: '',
+      alertType: 'success',
+      showAlert: false,
+      message: '',
+      showAlertDialog: false,
       // camera related codes
       source1: null,
       source2: null,
@@ -379,20 +382,17 @@ export default {
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.showAlert2 = false
-      this.message1 = ''
-      this.message2 = ''
+      this.showAlert = false
+      this.message = ''
     },
-    setAlert1 (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+    setAlert (type, message) {
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
     },
-    setAlert2 (type, message) {
-      this.message2 = message
-      this.alertType2 = type
-      this.showAlert2 = true
+    setAlertDialog (message) {
+      this.message = message
+      this.showAlertDialog = true
     },
     clearLazy () {
       this.orgNameLazy = ''
@@ -442,17 +442,15 @@ export default {
       } catch (error) {
         if (!error.response) {
           // network error
-          this.message1 = 'Network Error: Fail to connet to server'
+          this.setAlert('error', 'Network Error: Fail to connet to server')
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message1 = error.response.data.error
+          this.setAlert('error', error.response.data.error)
         }
-        this.alertType1 = 'error'
-        this.showAlert1 = true
       }
     },
     updateReceiveItemsBatch () {
@@ -513,7 +511,7 @@ export default {
             this.currentScanNumber = 'Quantity'
           } else if (this.currentScanNumber === 'Quantity') {
             if (isNaN(parseInt(barcode)) || (parseInt(barcode) > 9999)) {
-              this.setAlert1('error', 'Not a valid quantity!')
+              this.setAlert('error', 'Not a valid quantity!')
             } else {
               this.handleUPC(this.receiveItemsNumber, this.UPCNumber, parseInt(barcode))
               this.currentScanNumber = 'UPC'
@@ -528,7 +526,7 @@ export default {
             this.currentScanBatch = 'Quantity'
           } else if (this.currentScanBatch === 'Quantity') {
             if (isNaN(parseInt(barcode)) || (parseInt(barcode) > 9999)) {
-              this.setAlert1('error', 'Not a valid quantity!')
+              this.setAlert('error', 'Not a valid quantity!')
             } else {
               this.qtyBatch = barcode
               // Handle input Error
@@ -543,55 +541,53 @@ export default {
     },
     setValueOrgMan () {
       let orgValue = ''
-      if (this.currentTab === 0) {
-        // Lazy Mode
-        orgValue = document.getElementById('orgNameMan').value
-        this.orgNameLazy = orgValue.trim()
-        this.currentScanLazy = 'Tracking No'
-      } else if (this.currentTab === 1) {
-        // Number Mode
-        orgValue = document.getElementById('orgNameMan').value
-        this.orgNameNumber = orgValue.trim()
-        this.currentScanNumber = 'Tracking No'
-      } else if (this.currentTab === 2) {
-        this.message2 = 'Manual Input not supported in Batch Mode'
-        this.alertType2 = 'error'
-        this.showAlert2 = true
+      orgValue = document.getElementById('orgNameMan').value
+      if (orgValue !== '') {
+        if (this.currentTab === 0) {
+          // Lazy Mode
+          this.orgNameLazy = orgValue.trim()
+          this.currentScanLazy = 'Tracking No'
+        } else if (this.currentTab === 1) {
+          // Number Mode
+          this.orgNameNumber = orgValue.trim()
+          this.currentScanNumber = 'Tracking No'
+        } else if (this.currentTab === 2) {
+          this.setAlertDialog('Manual Input not supported in Batch Mode')
+        }
       }
     },
     async setValueTrMan () {
       let trackingValue = ''
-      if (this.currentTab === 0) {
-        // Lazy Mode
-        trackingValue = document.getElementById('trackingMan').value
-        await this.checkTrackingExisted(trackingValue.trim())
-        this.trackingLazy = trackingValue.trim()
-        this.currentScanLazy = 'UPC'
-      } else if (this.currentTab === 1) {
-        // Number Mode
-        trackingValue = document.getElementById('trackingMan').value
-        await this.checkTrackingExisted(trackingValue.trim())
-        this.trackingNumber = trackingValue.trim()
-        this.currentScanNumber = 'UPC'
-      } else if (this.currentTab === 2) {
-        this.message2 = 'Manual Input not supported in Batch Mode'
-        this.alertType2 = 'error'
-        this.showAlert2 = true
+      trackingValue = document.getElementById('trackingMan').value
+      if (trackingValue !== '') {
+        if (this.currentTab === 0) {
+          // Lazy Mode
+          await this.checkTrackingExisted(trackingValue.trim())
+          this.trackingLazy = trackingValue.trim()
+          this.currentScanLazy = 'UPC'
+        } else if (this.currentTab === 1) {
+          // Number Mode
+          await this.checkTrackingExisted(trackingValue.trim())
+          this.trackingNumber = trackingValue.trim()
+          this.currentScanNumber = 'UPC'
+        } else if (this.currentTab === 2) {
+          this.setAlertDialog('Manual Input not supported in Batch Mode')
+        }
       }
     },
     addUPCMan () {
       let UPCValue = ''
-      if (this.currentTab === 0) {
-        // Lazy Mode
-        UPCValue = document.getElementById('UPCMan').value
-        this.handleUPC(this.receiveItemsLazy, UPCValue.trim(), 1)
-      } else if (this.currentTab === 1) {
-        // Number Mode
-        this.handleUPC(this.receiveItemsNumber, UPCValue.trim(), 1)
-      } else if (this.currentTab === 2) {
-        this.message2 = 'Manual Input not supported in Batch Mode'
-        this.alertType2 = 'error'
-        this.showAlert2 = true
+      UPCValue = document.getElementById('UPCMan').value
+      if (UPCValue !== '') {
+        if (this.currentTab === 0) {
+          // Lazy Mode
+          this.handleUPC(this.receiveItemsLazy, UPCValue.trim(), 1)
+        } else if (this.currentTab === 1) {
+          // Number Mode
+          this.handleUPC(this.receiveItemsNumber, UPCValue.trim(), 1)
+        } else if (this.currentTab === 2) {
+          this.setAlertDialog('Manual Input not supported in Batch Mode')
+        }
       }
     },
     async submit () {
@@ -615,15 +611,11 @@ export default {
         }
         // UPC is required!
         if (receiveItems.length === 0) {
-          this.message1 = 'UPC is needed! Not a valid receive.'
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+          this.setAlertDialog('UPC is needed! Not a valid receive.')
           return
         }
         if (trNo === '') {
-          this.message1 = 'Tracking No is needed! Not a valid receive.'
-          this.alertType1 = 'error'
-          this.showAlert1 = true
+          this.setAlertDialog('Tracking No is needed! Not a valid receive.')
           return
         }
         if (orgNm === '') {
