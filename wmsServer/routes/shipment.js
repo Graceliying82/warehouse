@@ -60,7 +60,7 @@ module.exports = {
         startDate = new Date(req.query.startDate).getTime();
         endDate = new Date(req.query.endDate).getTime();
         shipmentResult = await shipmentCollection.find({
-          crtStmp: {
+          mdfStmp: {
             $lte: endDate,
             $gte: startDate,
           }
@@ -145,8 +145,17 @@ module.exports = {
       req.body.crtStmp = createTime.getTime() // add a create timestamp
       req.body.mdfTm = req.body.crtTm; //add data modify Time
       req.body.mdfStmp = req.body.crtStmp; // add a modify timestamp
-      await module.exports.calcShipStatus(req.db, req.params.Id);
-      let shipment = await shipCollection.findOne({ _id: req.params.Id });
+      let shipment = null;
+      if (req.body.trackingNo !== '') {
+        shipment = await shipCollection.findOne({ _id: req.body.trackingNo });
+      } else if (req.body.orderID !== '') {
+        shipment = await shipCollection.findOne({ orderID: req.body.orderID });
+      } else {
+        const error = new Error('Invalid input.');
+        error.status = 400;
+        return next(error)
+      }
+      await module.exports.calcShipStatus(req.db, shipment._id);
       if (shipment === null) {
         console.log('Tracking No ' + req.params.Id + ' is not found');
       } else {
@@ -271,7 +280,7 @@ module.exports = {
       //update inventory records
       for (let anItem of shipment.rcIts){
         let aUPC = anItem.UPC;
-        let aloc = anItem.loc;
+        let aloc = 'WMS';
         let aQty = anItem.qty;
         await invCollection.findOneAndUpdate(
           {
@@ -309,6 +318,7 @@ module.exports = {
         shipFromDB.shipBy = userID;
         shipFromDB.mdfTm = shipTm;
         shipFromDB.mdfStmp = shipStmp;
+        shipFromDB.UPCandSN = shipment.UPCandSN;
         result = await shipCollection.replaceOne({_id:shipmentID}, shipFromDB);
       } else {
         const error = new Error('shipment not found, this should never happen');

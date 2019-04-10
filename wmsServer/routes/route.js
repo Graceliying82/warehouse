@@ -60,7 +60,7 @@ module.exports = (app) => {
   // from shipment
   app.post('/shipments', Shipment.post)
   app.get('/shipments', Shipment.get)  //startdate, enddate, status - query parameter like inventory get
-  app.get('/shipments/:Id', Shipment.getByShipmentId)
+  app.post('/shipments/getByShipmentId', Shipment.getByShipmentId)
   app.post('/shipments/ship', Shipment.ship) //ship a shipment
   app.post('/shipments/deleteByTracking', Shipment.deleteByTracking)
 

@@ -1,17 +1,28 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
-        <v-layout justify-center>
+    <v-layout>
+      <v-flex>
+          <v-alert
+            v-show = showAlert
+            :type = alertType
+            outline>
+              {{message}}
+            </v-alert>
+        </v-flex>
+    </v-layout>
+    <v-dialog v-model="showAlertDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message}}</h2>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <v-layout justify-center>
       <h1>Move out Products</h1>
     </v-layout>
     <!-- Move Out items list -->
     <v-layout justify-center>
       <v-flex ma-5 xs8>
-        <v-alert
-          v-show = showAlert1
-          :type = alertType1
-          outline>
-            {{message1}}
-          </v-alert>
         <v-flex>
           <v-card>
             <v-card-title class="title font-weight-light cyan lighten-1">
@@ -116,9 +127,10 @@ export default {
       // 'Move out Location', 'UPC'
       moLoc1: '',
       UPC1: '',
-      alertType1: 'success',
-      showAlert1: false,
-      message1: '',
+      alertType: 'success',
+      showAlert: false,
+      message: '',
+      showAlertDialog: false,
       moItems1Headers: [
         {
           text: 'UPC',
@@ -152,13 +164,17 @@ export default {
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.message1 = ''
+      this.showAlert = false
+      this.message = ''
     },
     setAlert (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
+    },
+    setAlertDialog (message) {
+      this.message = message
+      this.showAlertDialog = true
     },
     clearMoveItems () {
       this.currentScan = 'Move from Location'
@@ -201,7 +217,7 @@ export default {
             this.moLoc1 = barcode
             this.currentScan = 'UPC'
           } else {
-            this.setAlert('error', 'Location: ' + barcode + ' Not Existed! Create one before using!')
+            this.setAlertDialog('Location: ' + barcode + ' Not Existed! Create one before using!')
           }
         })
       } else if (this.currentScan === 'UPC') {
@@ -216,7 +232,7 @@ export default {
           this.moLoc1 = aLoc
           this.currentScan = 'UPC'
         } else {
-          this.setAlert('error', 'Location: ' + aLoc + ' Not Existed! Create one before using!')
+          this.setAlertDialog('Location: ' + aLoc + ' Not Existed! Create one before using!')
         }
       })
     },
@@ -224,7 +240,7 @@ export default {
       this.clearAlert()
       let aLoc = document.getElementById('moUPCMan').value.trim()
       if (this.moLoc1 === '') {
-        this.setAlert('error', 'Set Location for move out first')
+        this.setAlertDialog('Set Location for move out first')
       } else {
         this.handleUPCInput(aLoc)
       }
@@ -262,7 +278,7 @@ export default {
             'locTo': 'WMS',
             'note': ''
           })
-          this.setAlert('success', 'Move out successfully!')
+          this.setAlertDialog('Move out successfully!')
           this.clearMoveItems()
         }
       } catch (error) {
@@ -275,7 +291,7 @@ export default {
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.data.error)
-          this.setAlert('error', error.response.data.error)
+          this.setAlertDialog(error.response.data.error)
         }
       }
     },
@@ -349,36 +365,6 @@ export default {
     barcodeDestroy () {
       this.removeListener('keypress')
       this.removeListener('keydown')
-    },
-    async batchPick () {
-      try {
-        if (this.moItems1.length === 0) {
-          this.setAlert('error', 'UPC is required!')
-        } else {
-          // await ProductInv.moveInBatch({
-          //   'move': this.moItems1,
-          //   'locFrom': this.moLoc1,
-          //   'locTo': 'WMS',
-          //   'note': ''
-          // })
-          console.log(this.moItems1)
-          console.log(this.moLoc1)
-          this.setAlert('success', 'Reserved for packaging successfully!')
-          this.clearMoveItems()
-        }
-      } catch (error) {
-        if (!error.response) {
-          // network error
-          this.setAlert('error', 'Network Error: Fail to connet to server')
-        } else if (error.response.data.error.includes('jwt')) {
-          console.log('jwt error')
-          this.$store.dispatch('resetUserInfo', true)
-          this.$router.push('/login')
-        } else {
-          console.log('error ' + error.response.status + ' : ' + error.response.data.error)
-          this.setAlert('error', error.response.data.error)
-        }
-      }
     }
   },
   created () {

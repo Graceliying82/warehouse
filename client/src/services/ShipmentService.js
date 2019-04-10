@@ -8,8 +8,8 @@ export default {
     return Api().get('/shipments' + '?startDate=' +
        startDate + ' 00:00:00' + '&endDate=' + endDate + ' 23:59:59' + '&status=' + status)
   },
-  getByShipmentId (id) {
-    return Api().get('/shipments/' + id)
+  getByShipmentId (data) {
+    return Api().post('/shipments/getByShipmentId', data)
   },
   ship (data) {
     return Api().post('/shipments/ship', data)

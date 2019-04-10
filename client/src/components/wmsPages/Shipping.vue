@@ -3,15 +3,24 @@
     <v-layout justify-center>
       <h1>Package your order</h1>
     </v-layout>
-    <v-layout justify-center column>
-        <v-flex xs8>
+    <v-layout>
+      <v-flex>
           <v-alert
-            v-show = showAlert1
-            :type = alertType1
+            v-show = showAlert
+            :type = alertType
             outline>
-              {{message1}}
+              {{message}}
             </v-alert>
         </v-flex>
+    </v-layout>
+    <v-dialog v-model="showAlertDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message}}</h2>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <v-layout justify-center column>
         <!-- Scan area -->
           <v-layout justify-center>
             <v-toolbar-title>Please scan or input : </v-toolbar-title>
@@ -66,14 +75,14 @@
     </v-layout>
     <v-layout row v-if="showResult" justify-center mx-5>
     <!-- Show Order Detail-->
-    <v-flex lg6 mr-5>
+    <v-flex lg4 mr-5>
       <v-flex v-for = "(detail, i) in orderItems" :key = i my-2 >
         <v-card v-bind:class = detail.style :key="'card'+ i" >
           <v-layout row align-start>
-          <v-flex mt-2 mx-2 lg6 wrap>
+          <v-flex mt-2 mx-2 wrap>
             <v-list-tile-content>
               <v-list-tile-sub-title :key="'UPC'+ i" >UPC  :  {{ detail.UPC }}</v-list-tile-sub-title>
-              <v-list-tile-sub-title :key="'UPC'+ i" >PID  :  {{ detail.pid }}</v-list-tile-sub-title>
+              <v-list-tile-sub-title :key="'PID'+ i" >PID  :  {{ detail.pid }}</v-list-tile-sub-title>
               <v-list-tile-sub-title :key="'PrdName'+ i">Product Name  :  {{ detail.prdNm }}</v-list-tile-sub-title>
               <v-list-tile-sub-title :key="'RQTY'+ i">Required Qty  :  {{ detail.qty }}</v-list-tile-sub-title>
               <v-list-tile-sub-title :key="'SQTY'+ i">Scanned Qty  :  {{ detail.scQty }}</v-list-tile-sub-title>
@@ -81,41 +90,27 @@
               <v-list-tile-sub-title style="color:red;" v-if=detail.warning>Not Enough Inventory for this Seller</v-list-tile-sub-title>
             </v-list-tile-content>
           </v-flex>
-          <v-flex lg6>
-          <v-data-table
-            :headers="locInvHeader"
-            :items="detail.locInv"
-            :rows-per-page-items="rowsPerPageItems"
-            class="elevation-1"
-            >
-            <template slot="items" slot-scope="props">
-              <td class="text-xs-left">{{ props.item._id.loc }}</td>
-              <td class="text-xs-left">{{ props.item.qty }}</td>
-            </template>
-          </v-data-table>
-          </v-flex>
           </v-layout>
         </v-card>
       </v-flex>
     </v-flex>
-    <v-flex lg6>
+    <v-flex lg4>
       <h1>Scan Items</h1>
-      <h1 v-if='scannedLoc' style="color:red;">From {{scannedLoc}}</h1>
       <v-data-table
         :headers="scanItemsHeader"
-        :items="scannedItems"
+        :items="UPCandSN"
         :rows-per-page-items="rowsPerPageItems"
         class="elevation-1"
         >
         <template slot="items" slot-scope="props">
-          <td class="text-xs-left">{{ props.item.loc }}</td>
-          <td class="text-xs-left">{{ props.item.prdNm }}</td>
           <td class="text-xs-left">{{ props.item.UPC }}</td>
-          <td class="text-xs-left">{{ props.item.qty }}</td>
+          <td class="text-xs-left">{{ props.item.SN }}</td>
         </template>
       </v-data-table>
       <v-btn dark @click.prevent="submit">submit</v-btn>
       <v-btn dark @click.prevent="clearUp">Clear</v-btn>
+    </v-flex>
+    <v-flex lg4>
     </v-flex>
     </v-layout>
   <!-- End Show Order Detail-->
@@ -129,9 +124,10 @@ import Shipment from '@/services/ShipmentService'
 export default {
   data () {
     return {
-      alertType1: 'success',
-      showAlert1: false,
-      message1: '',
+      alertType: 'success',
+      showAlert: false,
+      message: '',
+      showAlertDialog: false,
       attributes: {
         barcode: '',
         scannerSensitivity: 100,
@@ -148,34 +144,32 @@ export default {
       status: '',
       showResult: false,
       scannedItems: [],
+      UPCandSN: [],
       orderItems: [],
       scanItemsHeader: [
-        { text: 'Location ID', align: 'left', value: 'loc' },
         { text: 'UPC', align: 'left', value: 'UPC' },
-        { text: 'Product Name', align: 'left', value: 'prdNm' },
-        { text: 'Quantity', align: 'left', value: 'qty' }
+        { text: 'SN', align: 'left', value: 'SN' }
       ],
-      scannedLoc: '',
       scannedUPC: '',
-      scannedPrdNm: '',
+      scannedSN: '',
       HighLightIdx: -1,
       styles: ['grey lighten-4', 'deep-orange lighten-1', 'green darken-3'],
-      locInvHeader: [
-        { text: 'Location', align: 'left', value: 'loc' },
-        { text: 'Quantity', align: 'left', value: 'qty' }
-      ],
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
     }
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.message1 = ''
+      this.showAlert = false
+      this.message = ''
     },
     setAlert (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
+    },
+    setAlertDialog (message) {
+      this.message = message
+      this.showAlertDialog = true
     },
     clearUp () {
       this.currentScan = 'Tracking No'
@@ -186,9 +180,9 @@ export default {
       this.showResult = false
       this.scannedItems = []
       this.orderItems = []
-      this.scannedLoc = ''
+      this.UPCandSN = []
       this.scannedUPC = ''
-      this.scannedPrdNm = ''
+      this.scannedSN = ''
       this.HighLightIdx = -1
       this.trackingInput = ''
     },
@@ -212,7 +206,7 @@ export default {
           this.showResult = true
           // console.log(this.orderItems)
           if ((this.status === 'ready')) {
-            this.currentScan = 'Location ID'
+            this.currentScan = 'UPC'
           } else if ((this.status === 'upgrade')) {
             this.setAlert('error', 'Package has item upgrading!')
           } else if ((this.status === 'shipped')) {
@@ -241,20 +235,6 @@ export default {
       let aTracking = document.getElementById('trackingNo').value.trim()
       this.handleTrackingNo(aTracking)
     },
-    checkLocation (loc) {
-      // This functin is for checking the scanned location is good for this order or not
-      let locationFound = false
-      for (let item of this.orderItems) {
-        for (let i = 0; i < item.locInv.length; i++) {
-          if (item.locInv[i]._id.loc === loc) {
-            locationFound = true
-            break
-          }
-          if (locationFound === true) break
-        }
-      }
-      return locationFound
-    },
     getIndexUPC (UPC, items) {
       let index = -1
       for (let i = 0; i < items.length; i++) {
@@ -267,8 +247,12 @@ export default {
     },
     updateScannedItems () {
       let idxScannedItems = -1
+      this.UPCandSN.push({
+        UPC: this.scannedUPC,
+        SN: this.scannedSN
+      })
       for (let i = 0; i < this.scannedItems.length; i++) {
-        if ((this.scannedItems[i].UPC === this.scannedUPC) && (this.scannedItems[i].loc === this.scannedLoc)) {
+        if ((this.scannedItems[i].UPC === this.scannedUPC)) {
           idxScannedItems = i
           break
         }
@@ -278,69 +262,67 @@ export default {
         // console.log(this.scannedItems)
       } else {
         this.scannedItems.push({
-          loc: this.scannedLoc,
           UPC: this.scannedUPC,
-          prdNm: this.scannedPrdNm,
           qty: 1
         })
-        console.log(this.scannedItems)
-      }
-    },
-    // Logic to handle barcode scan
-    setLocation (barcode) {
-      if (this.checkLocation(barcode)) {
-        this.scannedLoc = barcode
-        this.currentScan = 'UPC'
-      } else {
-        this.setAlert('error', 'Location not for this Order. Please check!')
       }
     },
     onBarcodeScanned (barcode) {
       this.clearAlert()
       if (this.currentScan === 'Tracking No') {
         this.handleTrackingNo(barcode)
-      } else if (this.currentScan === 'Location ID') {
-        if (isNaN(parseInt(barcode[0]))) {
-          this.setLocation(barcode)
-        } else {
-          this.setAlert('error', 'Not a valid Location. Please check.')
-        }
       } else if (this.currentScan === 'UPC') {
-        if (isNaN(parseInt(barcode[0]))) {
-          this.setLocation(barcode)
+        // this is a UPC
+        let idx = this.getIndexUPC(barcode, this.orderItems)
+        if (idx === -1) {
+          this.setAlertDialog('UPC not for this Order. Please check!')
         } else {
-          // this is a UPC
-          let idx = this.getIndexUPC(barcode, this.orderItems)
-          if (idx === -1) {
-            this.setAlert('error', 'UPC not for this Order. Please check!')
-          } else {
-            // Hight Light UPC chosen
-            if (this.HighLightIdx !== idx) {
-              if ((this.HighLightIdx !== -1) && (this.orderItems[this.HighLightIdx].style !== this.styles[2])) {
-                // If Style already changed to green. Don't change color any more
+          // Hight Light UPC chosen
+          // if (this.HighLightIdx !== idx) {
+          //   if ((this.HighLightIdx !== -1) && (this.orderItems[idx].style !== this.styles[2])) {
+          //     // If Style already changed to green. Don't change color any more
+          //     console.log(this.HighLightIdx)
+          //     console.log(this.orderItems[this.HighLightIdx].style)
+          //     console.log(this.styles[2])
+          //     this.orderItems[this.HighLightIdx].style = this.styles[0]
+          //   }
+          //   this.orderItems[idx].style = this.styles[1]
+          //   this.HighLightIdx = idx
+          //   this.$forceUpdate()
+          // }
+          if (this.HighLightIdx !== idx) {
+            // current : this.orderItems[idx].style
+            // previous: this.orderItems[this.HighLightIdx].style
+            if (this.HighLightIdx !== -1) {
+              if (this.orderItems[this.HighLightIdx].style !== this.styles[2]) {
                 this.orderItems[this.HighLightIdx].style = this.styles[0]
               }
+            }
+            if (this.orderItems[idx].style !== this.styles[2]) {
               this.orderItems[idx].style = this.styles[1]
-              this.HighLightIdx = idx
-              this.$forceUpdate()
             }
-            // Handle logic to decrease UPC from current available inventory
-            if (this.orderItems[idx].scQty < this.orderItems[idx].qty) {
-              // this.orderItems[idx].scQty++
-              this.$set(this.orderItems[idx], 'scQty', (this.orderItems[idx].scQty + 1))
-              if (this.orderItems[idx].qty === this.orderItems[idx].scQty) {
-                this.orderItems[idx].style = this.styles[2]
-              }
-              this.scannedUPC = barcode
-              this.scannedPrdNm = this.orderItems[idx].prdNm
-              this.updateScannedItems()
-              // console.log(this.orderItems)
-              this.$forceUpdate()
-            } else {
-              this.setAlert('error', 'Scanned more than required. Please check!')
+            this.HighLightIdx = idx
+            this.$forceUpdate()
+          }
+          // Handle logic to decrease UPC from current available inventory
+          if (this.orderItems[idx].scQty < this.orderItems[idx].qty) {
+            // this.orderItems[idx].scQty++
+            this.$set(this.orderItems[idx], 'scQty', (this.orderItems[idx].scQty + 1))
+            if (this.orderItems[idx].qty === this.orderItems[idx].scQty) {
+              this.orderItems[idx].style = this.styles[2]
             }
+            this.scannedUPC = barcode
+            // console.log(this.orderItems)
+            this.currentScan = 'SN'
+            this.$forceUpdate()
+          } else {
+            this.setAlertDialog('Scanned more than required. Please check!')
           }
         }
+      } else if (this.currentScan === 'SN') {
+        this.scannedSN = barcode
+        this.updateScannedItems()
+        this.currentScan = 'UPC'
       }
     },
     checkData () {
@@ -361,9 +343,10 @@ export default {
           await Shipment.ship({
             '_id': this.trackingNo,
             'orgNm': this.orgName,
-            'rcIts': this.scannedItems
+            'rcIts': this.scannedItems,
+            'UPCandSN': this.UPCandSN
           })
-          this.setAlert('success', 'Shipment submit successfully.')
+          this.setAlertDialog('Shipment submit successfully.')
           this.clearUp()
         } catch (error) {
           if (!error.response) {
@@ -379,7 +362,7 @@ export default {
           }
         }
       } else {
-        this.setAlert('error', 'Not all items been scanned. Please check!')
+        this.setAlertDialog('Not all items been scanned. Please check!')
       }
     },
     addListener (type) {

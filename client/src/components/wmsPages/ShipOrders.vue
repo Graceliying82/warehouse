@@ -121,17 +121,27 @@
           </v-flex>
           <!-- End Show OrderIDs-->
           <v-flex mt-5>
+            <!--
             <v-btn dark
               v-if = showOrderInv
               @click.prevent="printContent()">Print Detail</v-btn>
-            <v-flex >
-              <v-text-field
-                label="Tracking No"
-                required
-                v-model="trackingMan"
-                v-on:keydown.enter="showDetailMan"
-                ></v-text-field>
-            </v-flex>
+            -->
+            <v-layout>
+              <v-flex mx-5>
+                <v-text-field
+                  label="Search By Tracking No"
+                  v-model="trackingMan"
+                  v-on:keydown.enter="showDetailManByTracking"
+                  ></v-text-field>
+              </v-flex>
+              <v-flex mx-5>
+                <v-text-field
+                  label="Search By Order ID"
+                  v-model="orderID"
+                  v-on:keydown.enter="showDetailManByOID"
+                  ></v-text-field>
+              </v-flex>
+            </v-layout>
             <v-flex mx-5>
               <v-alert
                 v-show = showAlert
@@ -148,7 +158,40 @@
               <div class="font-weight-bold text-xs-left">Org Name : {{orderBasic.orgNm}}</div>
               <div class="font-weight-bold text-xs-left">Status : {{orderBasic.status}}</div>
               <br>
-              <v-card color = 'grey lighten-4'>
+              <v-card color = 'grey lighten-4' v-if="orderBasic.status==='shipped'">
+                <v-layout column>
+                  <v-flex>
+                    <h2>UPC and Quantity</h2>
+                    <v-data-table
+                      :headers="shippedHeader1"
+                      :items="orderBasic.orderDetail"
+                      :rows-per-page-items="rowsPerPageItems"
+                      class="elevation-1"
+                      >
+                        <template  slot="items" slot-scope="props">
+                            <td class="text-xs-left">{{ props.item.UPC }}</td>
+                            <td class="text-xs-left">{{ props.item.pid }}</td>
+                            <td class="text-xs-left">{{ props.item.qty }}</td>
+                        </template>
+                    </v-data-table>
+                  </v-flex>
+                  <v-flex>
+                    <h2>UPC and SN</h2>
+                    <v-data-table
+                      :headers="shippedHeader2"
+                      :items="orderBasic.UPCandSN"
+                      :rows-per-page-items="rowsPerPageItems"
+                      class="elevation-1"
+                      >
+                        <template  slot="items" slot-scope="props">
+                            <td class="text-xs-left">{{ props.item.UPC }}</td>
+                            <td class="text-xs-left">{{ props.item.SN }}</td>
+                        </template>
+                    </v-data-table>
+                  </v-flex>
+                </v-layout>
+              </v-card>
+              <v-card color = 'grey lighten-4' v-if="orderBasic.status!=='shipped'">
                 <v-data-table
                   :headers="detailHeader"
                   :items="orderBasic.orderDetail"
@@ -364,6 +407,15 @@ export default {
         { text: 'Config Upgrade', align: 'left', value: 'TrackingNo' },
         { text: 'Cancel Upgrade', align: 'left', value: 'TrackingNo' }
       ],
+      shippedHeader1: [
+        { text: 'UPC', align: 'left', value: 'UPC' },
+        { text: 'PID', align: 'left', value: 'pid' },
+        { text: 'Required Qty', align: 'left', value: 'qty' }
+      ],
+      shippedHeader2: [
+        { text: 'UPC', align: 'left', value: 'UPC' },
+        { text: 'SN', align: 'left', value: 'SN' }
+      ],
       locInvs: [],
       showOrderInv: false,
       orderBasic: {
@@ -374,6 +426,7 @@ export default {
         orderDetail: []
       },
       trackingMan: '',
+      orderID: '',
       orderForShip: [],
       menu: false,
       slider: 1,
@@ -481,7 +534,7 @@ export default {
         } else {
           // Cancel upgrade Task. input: shipmentID; UPC; taskID
           await Upgrade.cancelUpgrade({'taskID': orderDetail.taskID})
-          await this.showDetail(orderBasic._id)
+          await this.showDetail(orderBasic._id, '')
         }
       } catch (error) {
         if (!error.response) {
@@ -694,22 +747,33 @@ export default {
         }
       }
     },
-    async showDetail (trackingNo) {
+    async showDetail (trackingNo, orderID) {
       this.showOrderInv = true
-      let result = (await Shipment.getByShipmentId(trackingNo)).data
+      let result = (await Shipment.getByShipmentId({
+        'trackingNo': trackingNo,
+        'orderID': orderID
+      })).data
       this.orderBasic._id = result._id
       this.orderBasic.orderID = result.orderID
       this.orderBasic.orgNm = result.orgNm
       this.orderBasic.status = result.status
       this.orderBasic.orderDetail = result.rcIts
-      // console.log(this.orderBasic)
+      if (this.orderBasic.status === 'shipped') {
+        this.orderBasic.UPCandSN = result.UPCandSN
+      } else {
+        this.orderBasic.UPCandSN = ''
+      }
+      console.log(this.orderBasic)
     },
     async showDetail4Item (item) {
-      await this.showDetail(item._id)
+      await this.showDetail(item._id, '')
       item.status = this.orderBasic.status
     },
-    showDetailMan () {
-      this.showDetail(this.trackingMan.trim())
+    showDetailManByTracking () {
+      this.showDetail(this.trackingMan.trim(), '')
+    },
+    showDetailManByOID () {
+      this.showDetail('', this.orderID)
     },
     printContent () {
       // console.log('Here')
