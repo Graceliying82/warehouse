@@ -60,6 +60,22 @@ module.exports = {
       next(error);
     }
   },
+  //Input a pid, return a UPC
+  async getUPCByPid(req, res, next) {
+    const prdCollection = req.db.collection("product");
+    try {
+      let PID = parseInt(req.params.PID)
+      let result = await prdCollection.findOne({'pid': PID})
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("getUPCByPid error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
   //create product
   // Note: put UPC as _id at client side. this rest api will not handle duplicate situation.
   async post(req, res, next) {

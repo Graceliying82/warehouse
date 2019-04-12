@@ -216,7 +216,10 @@ export default {
           this.setAlert('error', 'Tracking no ' + tracking + ' has been scanned!')
           this.inputTracking = ''
         } else {
-          let result = (await Shipment.getByShipmentId(tracking)).data
+          let result = (await Shipment.getByShipmentId({
+            'trackingNo': tracking,
+            'orderID': ''
+          })).data
           if (result) {
             this.shipments.push(result)
             this.inputTracking = ''

@@ -152,7 +152,7 @@
             </v-flex>
             <!-- Show Order Detail-->
             <div>
-            <v-flex v-if = showOrderInv>
+            <v-flex v-if = showOrderInv mx-5>
               <div class="font-weight-bold text-xs-left">Order ID: {{orderBasic.orderID}} </div>
               <div class="font-weight-bold text-xs-left">Tracking NO: {{orderBasic._id}}</div>
               <div class="font-weight-bold text-xs-left">Org Name : {{orderBasic.orgNm}}</div>

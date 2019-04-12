@@ -73,9 +73,9 @@
         ></v-text-field>
       </v-flex>
     </v-layout>
-    <v-layout row v-if="showResult" justify-center mx-5>
+    <v-layout row v-if="showResult" justify-center>
     <!-- Show Order Detail-->
-    <v-flex lg4 mr-5>
+    <v-flex lg4 ml-5 mr-2>
       <v-flex v-for = "(detail, i) in orderItems" :key = i my-2 >
         <v-card v-bind:class = detail.style :key="'card'+ i" >
           <v-layout row align-start>
@@ -94,7 +94,7 @@
         </v-card>
       </v-flex>
     </v-flex>
-    <v-flex lg4>
+    <v-flex lg4 mx-2>
       <h1>Scan Items</h1>
       <v-data-table
         :headers="scanItemsHeader"
@@ -109,18 +109,57 @@
       </v-data-table>
       <v-btn dark @click.prevent="submit">submit</v-btn>
       <v-btn dark @click.prevent="clearUp">Clear</v-btn>
+      <v-layout>
+        <v-text-field
+            label="Manually input PID Here. Don't use Scanner"
+            v-model="PID"
+            id="PID"
+            clearable
+            v-on:keydown.enter="changePidMan"
+          ></v-text-field>
+          <v-btn @click = "changePidMan">Add</v-btn>
+      </v-layout>
     </v-flex>
-    <v-flex lg4>
+    <v-flex lg4 ml-2>
+      <v-layout align-start row>
+          <v-flex>
+            <div>
+              <video ref="video1" id="video" width="100%" height="400"
+                :src="source1" autoplay>
+                Video stream not available.</video>
+              <canvas ref="canvas1" id="canvas" width="100%" height="400"></canvas>
+            </div>
+          </v-flex>
+          <v-flex  lg3>
+            <v-btn fab small
+              v-on:click= "startCamera1"
+              :disabled=cam1NotFound
+              color="cyan darken-2">
+              <v-icon>videocam</v-icon>
+            </v-btn>
+            <v-btn fab small
+              v-on:click= "stopCamera1"
+              :disabled=cam1NotFound
+              color="cyan darken-2">
+              <v-icon>videocam_off</v-icon>
+            </v-btn>
+            <v-flex ml-2>
+            <v-select
+              :items="cameraLabels"
+              v-model="selectCamera1"
+              label="Select Camera1"
+              @change="changeCamera1(selectCamera1)"></v-select>
+            </v-flex>
+          </v-flex>
+        </v-layout>
     </v-flex>
     </v-layout>
-  <!-- End Show Order Detail-->
-  <!-- Scaned Items -->
-  <!-- End Scaned Items -->
   </div>
 </template>
 
 <script>
 import Shipment from '@/services/ShipmentService'
+import Product from '@/services/ProductService'
 export default {
   data () {
     return {
@@ -139,6 +178,7 @@ export default {
       trackingInput: '',
       // items to be showed on pages
       trackingNo: '',
+      PID: '',
       orderID: '',
       orgName: '',
       status: '',
@@ -154,7 +194,17 @@ export default {
       scannedSN: '',
       HighLightIdx: -1,
       styles: ['grey lighten-4', 'deep-orange lighten-1', 'green darken-3'],
-      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }]
+      rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
+      source1: null,
+      canvas1: null,
+      cameras: [],
+      cameraLabels: [],
+      selectCamera1: null,
+      // index of camera selected for video1
+      camera1Selected: 0,
+      camerasListEmitted: false,
+      deviceId1: null,
+      cam1NotFound: true
     }
   },
   methods: {
@@ -190,7 +240,10 @@ export default {
       // console.log(trackingNo)
       // Logic to get order information by tracking No
       try {
-        let result = (await Shipment.getByShipmentId(trackingNo)).data
+        let result = (await Shipment.getByShipmentId({
+          'trackingNo': trackingNo,
+          'orderID': ''
+        })).data
         if (result) {
           // console.log('Tracking found!')
           console.log(result)
@@ -235,6 +288,20 @@ export default {
       let aTracking = document.getElementById('trackingNo').value.trim()
       this.handleTrackingNo(aTracking)
     },
+    async changePidMan () {
+      if (this.PID !== '') {
+        if (this.currentScan === 'UPC') {
+          let findUPC = (await Product.getUPCByPid(this.PID.trim())).data._id
+          if (findUPC) {
+            this.handleUPCInput(findUPC)
+          } else {
+            this.setAlertDialog('PID not found')
+          }
+        } else {
+          this.setAlertDialog('You can use this function only if current scan item is "UPC"!')
+        }
+      }
+    },
     getIndexUPC (UPC, items) {
       let index = -1
       for (let i = 0; i < items.length; i++) {
@@ -267,58 +334,48 @@ export default {
         })
       }
     },
+    handleUPCInput (UPC) {
+      // this is a UPC
+      let idx = this.getIndexUPC(UPC, this.orderItems)
+      if (idx === -1) {
+        this.setAlertDialog('UPC not for this Order. Please check!')
+      } else {
+        if (this.HighLightIdx !== idx) {
+          // current : this.orderItems[idx].style
+          // previous: this.orderItems[this.HighLightIdx].style
+          if (this.HighLightIdx !== -1) {
+            if (this.orderItems[this.HighLightIdx].style !== this.styles[2]) {
+              this.orderItems[this.HighLightIdx].style = this.styles[0]
+            }
+          }
+          if (this.orderItems[idx].style !== this.styles[2]) {
+            this.orderItems[idx].style = this.styles[1]
+          }
+          this.HighLightIdx = idx
+          this.$forceUpdate()
+        }
+        // Handle logic to decrease UPC from current available inventory
+        if (this.orderItems[idx].scQty < this.orderItems[idx].qty) {
+          // this.orderItems[idx].scQty++
+          this.$set(this.orderItems[idx], 'scQty', (this.orderItems[idx].scQty + 1))
+          if (this.orderItems[idx].qty === this.orderItems[idx].scQty) {
+            this.orderItems[idx].style = this.styles[2]
+          }
+          this.scannedUPC = UPC
+          // console.log(this.orderItems)
+          this.currentScan = 'SN'
+          this.$forceUpdate()
+        } else {
+          this.setAlertDialog('Scanned more than required. Please check!')
+        }
+      }
+    },
     onBarcodeScanned (barcode) {
       this.clearAlert()
       if (this.currentScan === 'Tracking No') {
         this.handleTrackingNo(barcode)
       } else if (this.currentScan === 'UPC') {
-        // this is a UPC
-        let idx = this.getIndexUPC(barcode, this.orderItems)
-        if (idx === -1) {
-          this.setAlertDialog('UPC not for this Order. Please check!')
-        } else {
-          // Hight Light UPC chosen
-          // if (this.HighLightIdx !== idx) {
-          //   if ((this.HighLightIdx !== -1) && (this.orderItems[idx].style !== this.styles[2])) {
-          //     // If Style already changed to green. Don't change color any more
-          //     console.log(this.HighLightIdx)
-          //     console.log(this.orderItems[this.HighLightIdx].style)
-          //     console.log(this.styles[2])
-          //     this.orderItems[this.HighLightIdx].style = this.styles[0]
-          //   }
-          //   this.orderItems[idx].style = this.styles[1]
-          //   this.HighLightIdx = idx
-          //   this.$forceUpdate()
-          // }
-          if (this.HighLightIdx !== idx) {
-            // current : this.orderItems[idx].style
-            // previous: this.orderItems[this.HighLightIdx].style
-            if (this.HighLightIdx !== -1) {
-              if (this.orderItems[this.HighLightIdx].style !== this.styles[2]) {
-                this.orderItems[this.HighLightIdx].style = this.styles[0]
-              }
-            }
-            if (this.orderItems[idx].style !== this.styles[2]) {
-              this.orderItems[idx].style = this.styles[1]
-            }
-            this.HighLightIdx = idx
-            this.$forceUpdate()
-          }
-          // Handle logic to decrease UPC from current available inventory
-          if (this.orderItems[idx].scQty < this.orderItems[idx].qty) {
-            // this.orderItems[idx].scQty++
-            this.$set(this.orderItems[idx], 'scQty', (this.orderItems[idx].scQty + 1))
-            if (this.orderItems[idx].qty === this.orderItems[idx].scQty) {
-              this.orderItems[idx].style = this.styles[2]
-            }
-            this.scannedUPC = barcode
-            // console.log(this.orderItems)
-            this.currentScan = 'SN'
-            this.$forceUpdate()
-          } else {
-            this.setAlertDialog('Scanned more than required. Please check!')
-          }
-        }
+        this.handleUPCInput(barcode)
       } else if (this.currentScan === 'SN') {
         this.scannedSN = barcode
         this.updateScannedItems()
@@ -363,6 +420,100 @@ export default {
         }
       } else {
         this.setAlertDialog('Not all items been scanned. Please check!')
+      }
+    },
+    setupMedia () {
+      let constraints = { audio: false, video: true }
+      if (navigator.mediaDevices === undefined) {
+        console.log('navigator.mediaDevices undefined')
+        navigator.mediaDevices = {}
+      }
+      if (navigator.mediaDevices.getUserMedia === undefined) {
+        navigator.mediaDevices.getUserMedia = function (constraints) {
+          let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+          if (!getUserMedia) {
+            return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
+          }
+          return new Promise(function (resolve, reject) {
+            getUserMedia.call(navigator, constraints, resolve, reject)
+          })
+        }
+      }
+      this.testMediaAccess(constraints)
+    },
+    loadCameras () {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then(
+          deviceInfos => {
+            for (var i = 0; i !== deviceInfos.length; ++i) {
+              var deviceInfo = deviceInfos[i]
+              if (deviceInfo.kind === 'videoinput') {
+                this.cameras.push(deviceInfo)
+                this.cameraLabels.push(deviceInfo.label.slice(0, 10))
+              }
+            }
+          }
+        )
+        .then(
+          () => {
+            if (this.cameras.length > 0) {
+              if (this.cameras.length === 1) {
+                this.cam1NotFound = false
+              } else {
+                this.cam1NotFound = false
+                this.cam2NotFound = false
+              }
+            }
+          }
+        )
+        .catch(error => this.$emit('notsupported', error))
+    },
+    // Stop the video
+    stop () {
+      if (this.$refs.video !== null && this.$refs.video.srcObject) {
+        this.stopStreamedVideo(this.$refs.video)
+      }
+    },
+    testMediaAccess (constraints) {
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(stream => {
+          this.loadCameras()
+        })
+        .catch(function (err) { console.log(err.name + ': ' + err.message) })
+    },
+    startCamera1 () {
+      this.deviceId1 = this.cameras[this.camera1Selected].deviceId
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { deviceId: { exact: this.deviceId1 } }
+        })
+        .then(stream => {
+          this.$refs.video1.srcObject = stream
+          this.$refs.video1.play()
+        })
+        .catch(error => console.log(error))
+    },
+    stopCamera1 () {
+      if (this.$refs.video1 !== null && this.$refs.video1.srcObject) {
+        let tracks = this.$refs.video1.srcObject.getVideoTracks()
+        tracks.forEach(track => {
+          // stops the video track
+          track.stop()
+          this.$refs.video1.srcObject = null
+          this.source1 = null
+        })
+      }
+    },
+    changeCamera1 (cameraSelected) {
+      if (!this.cam1NotFound) {
+        // stop first
+        this.stopCamera1()
+        // get the index of selected camera
+        this.camera1Selected = this.cameraLabels.indexOf(cameraSelected)
+        // start it on Camera1
+        this.startCamera1()
       }
     },
     addListener (type) {
@@ -440,6 +591,9 @@ export default {
   },
   destroyed () {
     this.barcodeDestroy()
+  },
+  mounted () {
+    this.setupMedia()
   }
 }
 </script>
@@ -449,4 +603,10 @@ export default {
 .HLclass {
   color: red;
 }
+#video {
+    background-color: #000000;
+  }
+  #canvas {
+    display: none;
+  }
 </style>
