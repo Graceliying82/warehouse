@@ -165,6 +165,16 @@
                   ></v-text-field>
                 <v-btn @click.prevent = 'addUPCMan'>Add</v-btn>
               </v-layout>
+              <v-layout mx-3>
+                <v-text-field
+                    label="PID(Manual Input Only)"
+                    ref='PID'
+                    id="PID"
+                    clearable
+                    v-on:keydown.enter="changePidMan"
+                  ></v-text-field>
+                  <v-btn @click = "changePidMan">Add</v-btn>
+              </v-layout>
             </v-card>
           </v-flex>
         </v-layout>
@@ -264,6 +274,7 @@
 
 <script>
 import Inventory from '@/services/InventoryService'
+import Product from '@/services/ProductService'
 export default {
   data () {
     return {
@@ -575,18 +586,32 @@ export default {
         }
       }
     },
+    handleUPCMan (UPC) {
+      if (UPC !== '') {
+        if (this.currentTab === 0) {
+          // Lazy Mode
+          this.handleUPC(this.receiveItemsLazy, UPC.trim(), 1)
+        } else if (this.currentTab === 1) {
+          // Number Mode
+          this.handleUPC(this.receiveItemsNumber, UPC.trim(), 1)
+        } else if (this.currentTab === 2) {
+          this.setAlertDialog('Manual Input not supported in Batch Mode')
+        }
+      }
+    },
     addUPCMan () {
       let UPCValue = ''
       UPCValue = document.getElementById('UPCMan').value
-      if (UPCValue !== '') {
-        if (this.currentTab === 0) {
-          // Lazy Mode
-          this.handleUPC(this.receiveItemsLazy, UPCValue.trim(), 1)
-        } else if (this.currentTab === 1) {
-          // Number Mode
-          this.handleUPC(this.receiveItemsNumber, UPCValue.trim(), 1)
-        } else if (this.currentTab === 2) {
-          this.setAlertDialog('Manual Input not supported in Batch Mode')
+      this.handleUPCMan(UPCValue)
+    },
+    async changePidMan () {
+      let PIDValue = document.getElementById('PID').value
+      if (PIDValue) {
+        let findUPC = (await Product.getUPCByPid(PIDValue.trim())).data._id
+        if (findUPC) {
+          this.handleUPCMan(findUPC)
+        } else {
+          this.setAlertDialog('PID not found')
         }
       }
     },
