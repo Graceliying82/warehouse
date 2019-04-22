@@ -55,7 +55,7 @@
               </template>
             </v-data-table>
           </panel>
-          <v-card v-if="$store.state.isSupervisor" ma-2>
+          <v-card ma-2>
             <v-card-title class="title font-weight-light blue-grey lighten-5">
               <span style='margin-right:1.25em; display:inline-block;'>Products with No Inventory</span>
             </v-card-title>
@@ -71,7 +71,11 @@
                   <td class="text-xs-left">{{ props.item.pid }}</td>
                   <td class="text-xs-left">{{ props.item.qty }}</td>
                   <td class="text-xs-left">
-                    <v-btn icon class="mx-0" @click.prevent="deleteItem(props.item)">
+                    <v-btn
+                      v-if="$store.state.isSupervisor"
+                      icon
+                      class="mx-0"
+                      @click.prevent="deleteItem(props.item)">
                       <v-icon color="teal">delete_forever</v-icon>
                     </v-btn>
                   </td>
@@ -105,7 +109,7 @@
           </v-dialog>
         </v-layout>
       </v-flex>
-      <v-flex ml-5 v-if="$store.state.isSupervisor">
+      <v-flex ml-5>
         <v-layout justify-center column>
           <!-- Show Detail -->
           <v-flex>
@@ -132,13 +136,13 @@
                 <div class="font-weight-light text-xs-left">Name: {{UPCInvList.prdNm}}</div>
                 <v-layout>
                 <div class="font-weight-bold text-center">Total : </div>
-                <v-btn icon big class="mx-0" @click.prevent= addInvQty()>
+                <v-btn v-if="$store.state.isSupervisor" icon big class="mx-0" @click.prevent= addInvQty()>
                   <v-icon color="teal">add_circle</v-icon>
                 </v-btn>
                 <v-btn>
                   {{UPCInvList.qty}}
                 </v-btn>
-                <v-btn icon class="mx-0" @click.prevent= subInvQty()>
+                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= subInvQty()>
                   <v-icon color="teal">remove_circle</v-icon>
                 </v-btn>
                 </v-layout>
@@ -156,11 +160,11 @@
                     <template slot="items" slot-scope="props">
                       <td class="text-xs-left">{{ props.item.loc }}</td>
                       <td class="text-xs-left">
-                      <v-btn icon class="mx-0" @click.prevent= add(props.item)>
+                      <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
                         <v-icon color="teal">add_circle</v-icon>
                       </v-btn>
                         {{ props.item.qty }}
-                      <v-btn icon class="mx-0" @click.prevent= sub(props.item)>
+                      <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
                         <v-icon color="teal">remove_circle</v-icon>
                       </v-btn>
                       </td>
@@ -176,11 +180,11 @@
                     <template slot="items" slot-scope="props">
                       <td class="text-xs-left">{{ props.item.org }}</td>
                       <td class="text-xs-left">
-                        <v-btn icon class="mx-0" @click.prevent= add(props.item)>
+                        <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
                           <v-icon color="teal">add_circle</v-icon>
                         </v-btn>
                         {{ props.item.qty }}
-                        <v-btn icon class="mx-0" @click.prevent= sub(props.item)>
+                        <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
                       </td>
