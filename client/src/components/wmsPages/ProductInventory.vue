@@ -1,5 +1,12 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
+    <v-dialog v-model="showAlertDialog" max-width="1000px">
+      <v-card>
+        <v-card-text>
+            <h2 pt-8>{{message}}</h2>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <!-- Dialog -->
     <v-dialog
       v-model="dialog"
@@ -87,7 +94,7 @@
           <v-dialog v-model="showAlertDialog" max-width="1000px">
             <v-card>
               <v-card-text>
-                  <h2 pt-8>{{message1}}</h2>
+                  <h2 pt-8>{{message}}</h2>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -115,10 +122,10 @@
           <v-flex>
             <v-flex xs8>
               <v-alert
-                v-show = showAlert1
-                :type = alertType1
+                v-show = showAlert
+                :type = alertType
                 outline>
-                  {{message1}}
+                  {{message}}
                 </v-alert>
             </v-flex>
               <v-flex >
@@ -132,73 +139,136 @@
                   ></v-text-field>
               </v-flex>
              <v-flex v-if= showDetailPanel mt-2>
-                <div class="font-weight-bold text-xs-left">UPC: {{UPCInvList.UPC}} </div>
-                <div class="font-weight-light text-xs-left">Name: {{UPCInvList.prdNm}}</div>
-                <v-layout>
-                <div class="font-weight-bold text-center">Total : </div>
-                <v-btn v-if="$store.state.isSupervisor" icon big class="mx-0" @click.prevent= addInvQty()>
-                  <v-icon color="teal">add_circle</v-icon>
-                </v-btn>
-                <v-btn>
-                  {{UPCInvList.qty}}
-                </v-btn>
-                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= subInvQty()>
-                  <v-icon color="teal">remove_circle</v-icon>
-                </v-btn>
-                </v-layout>
-                <v-layout>
-                <div class="font-weight-light text-xs-left">Balance: {{UPCInvList.balance}} </div>
-                <v-spacer></v-spacer>
-                <div class="font-weight-light text-xs-left">Delta: {{UPCInvList.qtyDelta}} </div>
-                </v-layout>
-                  <br>
-                  <v-data-table
-                    :headers="locInvHead"
-                    :items="locInv"
-                    class="elevation-1"
-                  >
-                    <template slot="items" slot-scope="props">
-                      <td class="text-xs-left">{{ props.item.loc }}</td>
-                      <td class="text-xs-left">
-                      <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
-                        <v-icon color="teal">add_circle</v-icon>
-                      </v-btn>
-                        {{ props.item.qty }}
-                      <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
-                        <v-icon color="teal">remove_circle</v-icon>
-                      </v-btn>
-                      </td>
-                      <td class="text-xs-left">{{ props.item.qtyDelta }}</td>
-                    </template>
-                  </v-data-table>
-                  <br>
-                  <v-data-table
-                    :headers="sellerInvHead"
-                    :items="sellerInv"
-                    class="elevation-1"
-                  >
-                    <template slot="items" slot-scope="props">
-                      <td class="text-xs-left">{{ props.item.org }}</td>
-                      <td class="text-xs-left">
+                <v-flex mx-2 my-5>
+                  <v-flex mb-3>
+                    <h2 v-if="$store.state.isSupervisor">Mannual Inventory Count</h2>
+                  </v-flex>
+                  <div class="font-weight-bold text-xs-left">UPC: {{UPCInvList.UPC}} </div>
+                  <div class="font-weight-light text-xs-left">Name: {{UPCInvList.prdNm}}</div>
+                  <v-layout>
+                  <div class="font-weight-bold text-center">Total : </div>
+                  <v-btn v-if="$store.state.isSupervisor" icon big class="mx-0" @click.prevent= addInvQty()>
+                    <v-icon color="teal">add_circle</v-icon>
+                  </v-btn>
+                  <v-btn>
+                    {{UPCInvList.qty}}
+                  </v-btn>
+                  <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= subInvQty()>
+                    <v-icon color="teal">remove_circle</v-icon>
+                  </v-btn>
+                  </v-layout>
+                  <v-layout>
+                  <div class="font-weight-light text-xs-left">Balance: {{UPCInvList.balance}} </div>
+                  <v-spacer></v-spacer>
+                  <div class="font-weight-light text-xs-left">Delta: {{UPCInvList.qtyDelta}} </div>
+                  </v-layout>
+                    <br>
+                    <v-data-table
+                      :headers="locInvHead"
+                      :items="locInv"
+                      class="elevation-1"
+                    >
+                      <template slot="items" slot-scope="props">
+                        <td class="text-xs-left">{{ props.item.loc }}</td>
+                        <td class="text-xs-left">
                         <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
                           <v-icon color="teal">add_circle</v-icon>
                         </v-btn>
-                        {{ props.item.qty }}
+                          {{ props.item.qty }}
                         <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
-                      </td>
-                      <td class="text-xs-left">{{ props.item.qtyDelta }}</td>
-                    </template>
-                  </v-data-table>
+                        </td>
+                        <td class="text-xs-left">{{ props.item.qtyDelta }}</td>
+                      </template>
+                    </v-data-table>
+                    <br>
+                    <v-data-table
+                      :headers="sellerInvHead"
+                      :items="sellerInv"
+                      class="elevation-1"
+                    >
+                      <template slot="items" slot-scope="props">
+                        <td class="text-xs-left">{{ props.item.org }}</td>
+                        <td class="text-xs-left">
+                          <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
+                            <v-icon color="teal">add_circle</v-icon>
+                          </v-btn>
+                          {{ props.item.qty }}
+                          <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
+                            <v-icon color="teal">remove_circle</v-icon>
+                          </v-btn>
+                        </td>
+                        <td class="text-xs-left">{{ props.item.qtyDelta }}</td>
+                      </template>
+                    </v-data-table>
+                    <v-flex v-if='changed' mt-2>
+                      <v-btn dark @click.prevent="submitMIC()">Submit</v-btn>
+                      <v-btn dark @click.prevent="reset()">Reset</v-btn>
+                      <v-btn dark @click.prevent="clear()">Clear</v-btn>
+                    </v-flex>
+                  </v-flex>
+                  <v-divider></v-divider>
+                  <v-flex v-if="$store.state.isSupervisor" my-5>
+                    <v-flex mb-3>
+                      <h2>Inventory change between Organizations</h2>
+                    </v-flex>
+                    <v-layout row>
+                      <v-flex mr-1 mt-1>
+                        <h3>From Organization</h3>
+                          <v-data-table
+                            :headers="sellerInvHead"
+                            :items="fromInv"
+                            class="elevation-1"
+                          >
+                            <template slot="items" slot-scope="props">
+                              <td class="text-xs-left">{{ props.item.org }}</td>
+                              <td class="text-xs-left">
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
+                                  <v-icon color="teal">add_circle</v-icon>
+                                </v-btn>
+                                {{ props.item.qty }}
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
+                                  <v-icon color="teal">remove_circle</v-icon>
+                                </v-btn>
+                              </td>
+                              <td class="text-xs-left">{{ props.item.qtyDelta }}</td>
+                            </template>
+                          </v-data-table>
+                      </v-flex>
+                      <v-flex ml-1 mt-1>
+                        <h3>To Organization</h3>
+                        <v-data-table
+                            :headers="sellerInvHead"
+                            :items="toInv"
+                            class="elevation-1"
+                          >
+                            <template slot="items" slot-scope="props">
+                              <td class="text-xs-left">{{ props.item.org }}</td>
+                              <td class="text-xs-left">
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
+                                  <v-icon color="teal">add_circle</v-icon>
+                                </v-btn>
+                                {{ props.item.qty }}
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
+                                  <v-icon color="teal">remove_circle</v-icon>
+                                </v-btn>
+                              </td>
+                              <td class="text-xs-left">{{ props.item.qtyDelta }}</td>
+                            </template>
+                          </v-data-table>
+                          <subtitle>Only show Organizations created in Manage Organization</subtitle>
+                      </v-flex>
+                    </v-layout>
+                    <v-flex v-if='changed' mt-2>
+                        <v-btn dark @click.prevent="submitICBO()">Submit</v-btn>
+                        <v-btn dark @click.prevent="reset()">Reset</v-btn>
+                        <v-btn dark @click.prevent="clear()">Clear</v-btn>
+                      </v-flex>
+                  </v-flex>
               </v-flex>
           </v-flex>
           <!-- End Show Detail -->
-          <v-flex v-if='changed'>
-            <v-btn dark @click.prevent="submit()">Submit</v-btn>
-            <v-btn dark @click.prevent="reset()">Reset</v-btn>
-            <v-btn dark @click.prevent="clear()">Clear</v-btn>
-          </v-flex>
         </v-layout>
       </v-flex>
     </v-layout>
@@ -234,13 +304,13 @@ export default {
       ],
       noInvPrd: [],
       showDetailPanel: false,
-      alertType1: 'success',
-      showAlert1: false,
+      alertType: 'success',
+      showAlert: false,
       showAlertDialog: false,
       dialogDelete: false,
       deletePrdNm: '',
       deleteUPC: '',
-      message1: '',
+      message: '',
       UPC1: '',
       savedUPC: '',
       UPCInvList: [],
@@ -264,6 +334,8 @@ export default {
         { text: 'Delta', value: 'qtyDelta' }
       ],
       sellerInv: [],
+      fromInv: [],
+      toInv: [],
       styles: [
         '',
         'deep-orange lighten-1'
@@ -273,16 +345,16 @@ export default {
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.message1 = ''
+      this.showAlert = false
+      this.message = ''
     },
     setAlert (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
     },
     setAlertDialog (message) {
-      this.message1 = message
+      this.message = message
       this.showAlertDialog = true
     },
     clearData () {
@@ -293,6 +365,8 @@ export default {
       this.UPCInvList = []
       this.locInv = []
       this.sellerInv = []
+      this.fromInv = []
+      this.toInv = []
       this.changed = false
     },
     clear () {
@@ -331,6 +405,7 @@ export default {
     async getAllProductInventory () {
       try {
         let result = (await ProductInv.getAllProductInventory()).data
+        this.dialog = false
         this.products = result.prdWithInv
         this.noInvPrd = result.prdWOInv
         // console.log(this.products)
@@ -377,6 +452,15 @@ export default {
         this.setDelta(this.sellerInv)
         this.UPCInvList.qtyDelta = 0
         this.UPC1 = ''
+        let result = (await ProductInv.getSellerInvAndOrgList(UPC)).data
+        this.fromInv = result.sellerInv
+        for (let aFrom of this.fromInv) {
+          aFrom.qtyDelta = 0
+        }
+        this.toInv = result.orgList
+        for (let aTo of this.toInv) {
+          aTo.qtyDelta = 0
+        }
         this.showDetailPanel = true
       } catch (error) {
         if (!error.response) {
@@ -467,12 +551,50 @@ export default {
         }
       }
     },
-    async submit () {
+    async submitMIC () {
       try {
         this.clearAlert()
         await ProductInv.prodInvAdjustBatch({'adjust': [this.UPCInvList]})
-        this.setAlert('success', 'Update Successfully')
-        this.clearData()
+        this.setAlertDialog('Update Successfully')
+        this.getDetailByUPC(this.UPCInvList.UPC)
+        await this.checkBalance()
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    async submitICBO () {
+      try {
+        this.clearAlert()
+        let adjustData = {
+          'UPC': this.UPCInvList.UPC,
+          'sellerInventory': []
+        }
+        for (let aFrom of this.fromInv) {
+          adjustData.sellerInventory.push({
+            'org': aFrom.org,
+            'qtyDelta': aFrom.qtyDelta
+          })
+        }
+        for (let aTo of this.toInv) {
+          adjustData.sellerInventory.push({
+            'org': aTo.org,
+            'qtyDelta': aTo.qtyDelta
+          })
+        }
+        console.log(adjustData)
+        await ProductInv.prodInvAdjustBatch({'adjust': [adjustData]})
+        this.setAlertDialog('Update Successfully')
+        this.getDetailByUPC(this.UPCInvList.UPC)
         await this.checkBalance()
       } catch (error) {
         if (!error.response) {

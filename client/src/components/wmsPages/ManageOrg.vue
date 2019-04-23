@@ -57,7 +57,6 @@
               </template>
             </v-data-table>
           </panel>
-          <v-btn dark @click.prevent="showOrgs">Show Orgs</v-btn>
         </v-flex>
         <v-flex md6 sm12 ml-2>
           <v-dialog v-model="dialogEdit" max-width="500px">
@@ -142,6 +141,7 @@ export default {
         this.org.orgNm = this.org.orgNm.trim()
         this.org.dspt = this.org.dspt.trim()
         await Org.post(this.org)
+        this.showOrgs()
         this.clear()
         this.setAlert('success', 'Add a new organization')
       } catch (error) {
@@ -242,6 +242,9 @@ export default {
     clearDel () {
       this.dialogDel = false
     }
+  },
+  mounted () {
+    this.showOrgs()
   }
 }
 </script>

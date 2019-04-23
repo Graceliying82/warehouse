@@ -166,7 +166,7 @@ module.exports = {
         }
         aProInv.sellerInventory = [];
         for (var aSellInv of sellerInvList) {
-          if ((aSellInv._id.UPC === aUPC) && (aSellInv.qty !== 0)) {
+          if (aSellInv._id.UPC === aUPC) {
             aProInv.sellerInventory.push({ org: aSellInv._id.org, qty: aSellInv.qty });
           }
         }
@@ -247,6 +247,41 @@ module.exports = {
       res.end();
     } catch (error) {
       console.log("query product inventory: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
+  async getSellerInvAndOrgList(req, res, next) {
+    // This function is used for get current seller Inventory List and Organization List
+    // Data can be used for inventory adjust
+    let UPC = req.params.UPC;
+    const sellerInvCollection = req.db.collection("sellerInv");
+    const orgCollection = req.db.collection("org")
+    try {
+      let sellerInvList = await sellerInvCollection.find({
+        "_id.UPC": UPC,
+        "qty": { $ne: 0}}).toArray();
+      let orgList = await orgCollection.distinct("orgNm");
+      let result = {};
+      result.sellerInv = [];
+      result.orgList = [];
+      for (let aItem of sellerInvList) {
+        result.sellerInv.push({
+          'org': aItem._id.org,
+          'qty': aItem.qty})
+      };
+      for (let aOrg of orgList) {
+        result.orgList.push({
+          'org': aOrg,
+          'qty': 0
+        })
+      }
+      res.send(result);
+      res.end();
+    } catch (error) {
+      console.log("getSellerInvAndOrgList: " + error);
       if (error.message === null) {
         error.message = 'Fail to access database! Try again'
       };
