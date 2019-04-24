@@ -146,31 +146,23 @@
                   <div class="font-weight-bold text-xs-left">UPC: {{UPCInvList.UPC}} </div>
                   <div class="font-weight-light text-xs-left">Name: {{UPCInvList.prdNm}}</div>
                   <v-layout>
-                  <div class="font-weight-bold text-center">Total : </div>
-                  <v-btn v-if="$store.state.isSupervisor" icon big class="mx-0" @click.prevent= addInvQty()>
+                  <div class="font-weight-bold text-center">Total : {{UPCInvList.qty}}</div>
+                  <v-btn v-if="$store.state.isSupervisor" icon big class="mx-0" @click.prevent= add(UPCInvList)>
                     <v-icon color="teal">add_circle</v-icon>
                   </v-btn>
-                  <v-btn>
-                    {{UPCInvList.qty}}
-                  </v-btn>
-                  <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= subInvQty()>
-                    <v-icon color="teal">remove_circle</v-icon>
-                  </v-btn>
-                  <v-flex ml-2 md1 sm3 xs3 v-if="$store.state.isSupervisor">
+                  <v-flex md1 sm3 xs3>
                     <v-text-field
-                      label="Add"
-                      v-model = "totalDelta"
-                      v-on:keydown.enter="addDelta(UPCInvList, totalDelta)"
-                    ></v-text-field>
-                  </v-flex>
-                  <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "addDelta(UPCInvList, totalDelta)">
-                    <v-icon color="teal">check_circle</v-icon>
+                      label="Delta"
+                      v-model.number="UPCInvList.qtyDelta"
+                      v-on:click = "error = null"
+                      box></v-text-field>
+                    </v-flex>
+                  <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(UPCInvList)>
+                    <v-icon color="teal">remove_circle</v-icon>
                   </v-btn>
                   </v-layout>
                   <v-layout>
                   <div class="font-weight-light text-xs-left">Balance: {{UPCInvList.balance}} </div>
-                  <v-spacer></v-spacer>
-                  <div class="font-weight-light text-xs-left">Delta: {{UPCInvList.qtyDelta}} </div>
                   </v-layout>
                     <br>
                     <v-data-table
@@ -180,6 +172,43 @@
                     >
                       <template slot="items" slot-scope="props">
                         <td class="text-xs-left">{{ props.item.loc }}</td>
+                        <td class="text-xs-left">
+                          {{ props.item.qty }}
+                        </td>
+                        <td class="text-xs-left">
+                          <v-edit-dialog
+                            @open="props.item._qtyDelta = props.item.qtyDelta"
+                            @cancel="props.item.qtyDelta = props.item._qtyDelta || props.item.qtyDelta"
+                          >
+                            {{ props.item.qtyDelta }}
+                            <v-text-field
+                              slot="input"
+                              v-model.number= "props.item.qtyDelta"
+                              @change="addDelta(props.item)"
+                              label="Quantity"
+                              single-line
+                              >
+                            </v-text-field>
+                          </v-edit-dialog>
+                        </td>
+                        <td class="text-xs-left">
+                          <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "add(props.item)">
+                            <v-icon color="teal">add_circle</v-icon>
+                          </v-btn>
+                          <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "sub(props.item)">
+                            <v-icon color="teal">remove_circle</v-icon>
+                          </v-btn>
+                        </td>
+                      </template>
+                    </v-data-table>
+                    <br>
+                    <v-data-table
+                      :headers="sellerInvHead"
+                      :items="sellerInv"
+                      class="elevation-1"
+                    >
+                      <template slot="items" slot-scope="props">
+                        <td class="text-xs-left">{{ props.item.org }}</td>
                         <td class="text-xs-left">
                           {{ props.item.qty }}
                         </td>
@@ -209,41 +238,6 @@
                         </td>
                       </template>
                     </v-data-table>
-                    <br>
-                    <v-data-table
-                      :headers="sellerInvHead"
-                      :items="sellerInv"
-                      class="elevation-1"
-                    >
-                      <template slot="items" slot-scope="props">
-                        <td class="text-xs-left">{{ props.item.org }}</td>
-                        <td class="text-xs-left">
-                          <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
-                            <v-icon color="teal">add_circle</v-icon>
-                          </v-btn>
-                          {{ props.item.qty }}
-                          <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
-                            <v-icon color="teal">remove_circle</v-icon>
-                          </v-btn>
-                        </td>
-                        <td class="text-xs-left">
-                          <v-edit-dialog
-                            @open="props.item._qtyDelta = props.item.qtyDelta"
-                            @cancel="props.item.qtyDelta = props.item._qtyDelta || props.item.qtyDelta"
-                          >
-                            {{ props.item.qtyDelta }}
-                            <v-text-field
-                              slot="input"
-                              v-model.number= "props.item.qtyDelta"
-                              label="Quantity"
-                              single-line
-                              v-on:keydown.enter="addDelta(props.item)"
-                              >
-                            </v-text-field>
-                          </v-edit-dialog>
-                        </td>
-                      </template>
-                    </v-data-table>
                     <v-flex v-if='changed' mt-2>
                       <v-btn dark @click.prevent="submitMIC()">Submit</v-btn>
                       <v-btn dark @click.prevent="reset()">Reset</v-btn>
@@ -266,13 +260,7 @@
                             <template slot="items" slot-scope="props">
                               <td class="text-xs-left">{{ props.item.org }}</td>
                               <td class="text-xs-left">
-                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
-                                  <v-icon color="teal">add_circle</v-icon>
-                                </v-btn>
                                 {{ props.item.qty }}
-                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
-                                  <v-icon color="teal">remove_circle</v-icon>
-                                </v-btn>
                               </td>
                               <td class="text-xs-left">
                                 <v-edit-dialog
@@ -289,6 +277,14 @@
                                     >
                                   </v-text-field>
                                 </v-edit-dialog>
+                              </td>
+                              <td class="text-xs-left">
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "add(props.item)">
+                                  <v-icon color="teal">add_circle</v-icon>
+                                </v-btn>
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "sub(props.item)">
+                                  <v-icon color="teal">remove_circle</v-icon>
+                                </v-btn>
                               </td>
                             </template>
                           </v-data-table>
@@ -303,13 +299,7 @@
                             <template slot="items" slot-scope="props">
                               <td class="text-xs-left">{{ props.item.org }}</td>
                               <td class="text-xs-left">
-                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= add(props.item)>
-                                  <v-icon color="teal">add_circle</v-icon>
-                                </v-btn>
                                 {{ props.item.qty }}
-                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= sub(props.item)>
-                                  <v-icon color="teal">remove_circle</v-icon>
-                                </v-btn>
                               </td>
                               <td class="text-xs-left">
                                 <v-edit-dialog
@@ -326,6 +316,14 @@
                                     >
                                   </v-text-field>
                                 </v-edit-dialog>
+                              </td>
+                              <td class="text-xs-left">
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "add(props.item)">
+                                  <v-icon color="teal">add_circle</v-icon>
+                                </v-btn>
+                                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click.prevent= "sub(props.item)">
+                                  <v-icon color="teal">remove_circle</v-icon>
+                                </v-btn>
                               </td>
                             </template>
                           </v-data-table>
@@ -399,12 +397,13 @@ export default {
       locInv: [],
       sellerInvHead: [
         {
-          text: 'Organization Name',
+          text: 'Organization',
           align: 'left',
           value: 'org'
         },
         { text: 'Quantity', value: 'qty' },
-        { text: 'Delta', value: 'qtyDelta' }
+        { text: 'Delta', value: 'qtyDelta' },
+        { text: 'Actions', value: 'qtyDelta' }
       ],
       sellerInv: [],
       fromInv: [],
@@ -519,7 +518,7 @@ export default {
       }
     },
     addDelta (item) {
-      item.qty = item.qty + parseInt(item.qtyDelta)
+      this.$forceUpdate()
       this.changed = true
     },
     async getDetailByUPC (UPC) {
@@ -630,7 +629,25 @@ export default {
     async submitMIC () {
       try {
         this.clearAlert()
-        await ProductInv.prodInvAdjustBatch({'adjust': [this.UPCInvList]})
+        let adjustData = {
+          'UPC': this.UPCInvList.UPC,
+          'qtyDelta': this.UPCInvList.qtyDelta,
+          'locationInventory': [],
+          'sellerInventory': []
+        }
+        for (let aloc of this.locInv) {
+          adjustData.locationInventory.push({
+            'loc': aloc.loc,
+            'qtyDelta': aloc.qtyDelta
+          })
+        }
+        for (let aSeller of this.sellerInv) {
+          adjustData.sellerInventory.push({
+            'org': aSeller.org,
+            'qtyDelta': aSeller.qtyDelta
+          })
+        }
+        await ProductInv.prodInvAdjustBatch({'adjust': [adjustData]})
         this.setAlertDialog('Update Successfully')
         this.getDetailByUPC(this.UPCInvList.UPC)
         await this.checkBalance()
