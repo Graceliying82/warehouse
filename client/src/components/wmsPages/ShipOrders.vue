@@ -354,6 +354,7 @@
 import * as csv from 'csvtojson'
 import Shipment from '@/services/ShipmentService'
 import Upgrade from '@/services/UpgradeService'
+import Product from '@/services/ProductService'
 export default {
   data () {
     return {
@@ -596,9 +597,34 @@ export default {
         this.setAlert('error', error)
       }
     },
+    async transPIDToUPC (orders) {
+      for (let aOrder of orders) {
+        if ((aOrder.UPC1 === '') && (aOrder.PID1 !== '')) {
+          // Only go through PID when UPC is empty
+          aOrder.UPC1 = (await Product.getUPCByPid(aOrder.PID1.trim())).data._id
+        }
+        if ((aOrder.UPC2 === '') && (aOrder.PID2 !== '')) {
+          // Only go through PID when UPC is empty
+          aOrder.UPC2 = (await Product.getUPCByPid(aOrder.PID2.trim())).data._id
+        }
+        if ((aOrder.UPC3 === '') && (aOrder.PID3 !== '')) {
+          // Only go through PID when UPC is empty
+          aOrder.UPC3 = (await Product.getUPCByPid(aOrder.PID3.trim())).data._id
+        }
+        if ((aOrder.UPC4 === '') && (aOrder.PID4 !== '')) {
+          // Only go through PID when UPC is empty
+          aOrder.UPC4 = (await Product.getUPCByPid(aOrder.PID4.trim())).data._id
+        }
+        if ((aOrder.UPC5 === '') && (aOrder.PID5 !== '')) {
+          // Only go through PID when UPC is empty
+          aOrder.UPC5 = (await Product.getUPCByPid(aOrder.PID5.trim())).data._id
+        }
+      }
+    },
     // Check upload CSV file. If fields not pass check, user can not update it to server.
-    parseOrder (orders) {
+    async parseOrder (orders) {
       this.uploadButton = true
+      await this.transPIDToUPC(orders)
       for (let aOrder of orders) {
         // aOrder[status] = 'Success'
         aOrder.status = 'Pass Check'
