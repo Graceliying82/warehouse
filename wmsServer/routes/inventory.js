@@ -41,7 +41,12 @@ module.exports = {
       for (var i = 0; i < req.body.rcIts.length; i++) {
         let proQ = req.body.rcIts[i];
         let aUPC = proQ.UPC;
-        let aQty = Number(proQ.qn);
+        let aQty = parseInt(proQ.qn);
+        if (isNaN(aQty)) {
+          const error = new Error('Not a valid Quantity. Please check');
+          error.status = 400;
+          return next(error)
+        }
         //find product, if not find create product
         prod = await prodCollection.findOne(
           {

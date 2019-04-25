@@ -52,13 +52,30 @@
                         class="text-xs-left">{{ props.item.UPC }}</td>
                       <td
                         class="text-xs-left">
+                          <v-edit-dialog
+                            @open="props.item._qn = props.item.qn"
+                            @cancel="props.item.qn = props.item._qn || props.item.qn"
+                          >
+                            {{ props.item.qn }}
+                            <v-text-field
+                              slot="input"
+                              v-model.number= "props.item.qn"
+                              label="Quantity"
+                              single-line
+                              >
+                            </v-text-field>
+                          </v-edit-dialog>
+                      </td>
+                      <td class="text-xs-left">
+                        <!-- Start of Action buttons -->
                         <v-btn icon class="mx-0" @click="props.item.qn += 1">
                           <v-icon color="teal">add_circle</v-icon>
                         </v-btn>
-                        {{ props.item.qn }}
-                        <v-btn icon class="mx-0" @click="props.item.qn > 1 ? props.item.qn -= 1 : ''">
+                        <v-btn icon class="mx-0"
+                          @click="props.item.qn > 1 ? props.item.qn -= 1 : ''">
                           <v-icon color="teal">remove_circle</v-icon>
                         </v-btn>
+                        <!-- End of Action buttons -->
                       </td>
                     </template>
                   </v-data-table>
@@ -291,6 +308,10 @@ export default {
           sortable: false
         },
         { text: 'Quantity',
+          align: 'left',
+          sortable: false,
+          value: 'qn' },
+        { text: 'Actions',
           align: 'left',
           sortable: false,
           value: 'qn' }
@@ -657,9 +678,9 @@ export default {
           'rcIts': receiveItems,
           'usrID': this.$store.state.email
         })
-        this.message1 = 'Successfully Added a new Package'
-        this.alertType1 = 'success'
-        this.showAlert1 = true
+        this.message = 'Successfully Added a new Package'
+        this.alertType = 'success'
+        this.showAlert = true
         if (this.currentTab === 0) {
           this.clearLazy()
         } else if (this.currentTab === 1) {
@@ -671,17 +692,17 @@ export default {
       } catch (error) {
         if (!error.response) {
           // network error
-          this.message1 = 'Network Error: Fail to connet to server'
+          this.message = 'Network Error: Fail to connet to server'
         } else if (error.response.data.error.includes('jwt')) {
           console.log('jwt error')
           this.$store.dispatch('resetUserInfo', true)
           this.$router.push('/login')
         } else {
           console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.message1 = error.response.data.error
+          this.message = error.response.data.error
         }
-        this.alertType1 = 'error'
-        this.showAlert1 = true
+        this.alertType = 'error'
+        this.showAlert = true
       }
     },
     confirmDialog () {

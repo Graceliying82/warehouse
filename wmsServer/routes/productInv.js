@@ -523,6 +523,10 @@ note:"this is a inventory change"
 
       for (let aMove of req.body.move) {
         let fromInventoryLocation = await locInvCollection.findOne({ _id: { UPC: aMove.UPC, loc: req.body.locFrom } }, { qty: 1 });
+        aMove.qty = parseInt(aMove.qty)
+        if (isNaN(aMove.qty)) {
+          aMove.qty = 0
+        }
         if (fromInventoryLocation === null) {
           const error = new Error('Not enough items  in ' + req.body.locFrom + '! Please check your inventory!');
           error.status = 400;
