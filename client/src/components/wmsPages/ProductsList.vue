@@ -3,21 +3,32 @@
     <v-layout column ma-5>
       <v-flex xs8>
         <v-alert
-          v-show = showAlert1
-          :type = alertType1
+          v-show = "showAlert1"
+          :type = "alertType1"
           outline>
             {{message1}}
           </v-alert>
       </v-flex>
       <!-- Filters -->
       <v-layout>
-        <v-flex mx-5 sm2>
+        <v-flex sm2>
           <v-select
             :items ="CategoryChoice"
             v-model="filter.cat"
             label="Select product category"
             v-on:change="chooseCategory()"
             required></v-select>
+        </v-flex>
+        <v-spacer></v-spacer>
+        <v-flex>
+          <download-excel
+              class   = "v-btn"
+              type    = "csv"
+              :name    = "downloadName"
+              :data   = "computersForDownload"
+              >
+              Download
+          </download-excel>
         </v-flex>
       </v-layout>
       <!-- Data Table for basic infomation -->
@@ -110,6 +121,7 @@ export default {
       alertType1: 'success',
       showAlert1: false,
       message1: '',
+      downloadName: 'computerProductInfo.xls',
       rowsPerPageItems: [5, 10, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       CategoryChoice: [],
       filter: {
@@ -161,7 +173,8 @@ export default {
         { text: 'HD2 Type', align: 'left', value: 'hd2Type' },
         { text: 'Note', align: 'left', value: 'note' }
       ],
-      computers: []
+      computers: [],
+      computersForDownload: []
     }
   },
   methods: {
@@ -191,7 +204,13 @@ export default {
         let result = (await Product.getProductsByFilter(this.filter.cat)).data
         if (this.filter.cat === 'Computer') {
           this.computers = result
-          console.log(this.computers)
+          for (let aCom of this.computers) {
+            aCom.compSpec.UPC = aCom._id
+            aCom.compSpec.pid = aCom.pid
+            aCom.compSpec.origUPC = aCom.origUPC
+            this.computersForDownload.push(aCom.compSpec)
+          }
+          console.log(this.computersForDownload)
         } else {
           this.basics = result
         }
