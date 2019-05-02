@@ -78,7 +78,7 @@ module.exports = {
   },
   //create product
   // Note: put UPC as _id at client side. this rest api will not handle duplicate situation.
-  async post(req, res, next) {
+  async post (req, res, next) {
     const dbcollection = req.db.collection("product");
     try {
       let UPC = req.body.UPC;
@@ -609,5 +609,24 @@ module.exports = {
       };
       next(error);
     }
-  }
+  },
+  // Parts are handled under product. It has its own collection called part
+  async createPart (req, res, next) {
+    const dbcollection = req.db.collection("part");
+    try {
+      req.body.partID = await nextKey.key("part",req.db);
+      let createTime = new Date();
+      req.body.crtTm = new Date(createTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
+      req.body.crtStmp = createTime.getTime();
+      await dbcollection.insertOne(req.body);
+      res.send('success');
+      res.end();
+    } catch (error) {
+      console.log("Create Product error: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
 };

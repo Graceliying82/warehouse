@@ -33,5 +33,8 @@ export default {
   },
   deleteProduct (data) {
     return Api().post('/products/deleteProduct', data)
+  },
+  createPart (data) {
+    return Api().post('/products/parts', data)
   }
 }

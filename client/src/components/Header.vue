@@ -110,7 +110,7 @@ export default {
         { icon: 'receipt', text: 'Upgrade Request List', name: 'upgradeRequestList' },
         { icon: 'gavel', text: 'Upgrade Instructions', name: 'upgradeInstructions' },
         { icon: 'extension', text: 'Update Products Generator', name: 'upgradePrdGen' },
-        { icon: 'settings_input_component', text: 'Config Schemas', name: 'upgradeSchema' },
+        { icon: 'settings_input_component', text: 'Schemas and Templates', name: 'upgradeSchema' },
         { divider: true },
         { heading: 'User and Organization' },
         { icon: 'person_add', text: 'Manage Users', name: 'manageUser' },
@@ -142,7 +142,7 @@ export default {
         { icon: 'receipt', text: 'Upgrade Request List', name: 'upgradeRequestList' },
         { icon: 'gavel', text: 'Upgrade Instructions', name: 'upgradeInstructions' },
         { icon: 'extension', text: 'Update Products Generator', name: 'upgradePrdGen' },
-        { icon: 'settings_input_component', text: 'Config Schemas', name: 'upgradeSchema' }
+        { icon: 'settings_input_component', text: 'Schemas and Templates', name: 'upgradeSchema' }
       ]
     }
   },

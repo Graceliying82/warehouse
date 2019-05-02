@@ -3,8 +3,8 @@
     <v-layout>
       <v-flex>
           <v-alert
-            v-show = showAlert
-            :type = alertType
+            v-show = "showAlert"
+            :type = "alertType"
             outline>
               {{message}}
             </v-alert>

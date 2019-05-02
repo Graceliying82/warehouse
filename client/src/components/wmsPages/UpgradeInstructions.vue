@@ -4,8 +4,8 @@
     <v-layout>
         <v-flex>
             <v-alert
-              v-show = showAlert
-              :type = alertType
+              v-show = "showAlert"
+              :type = "alertType"
               outline>
                 {{message}}
               </v-alert>
@@ -84,12 +84,12 @@
       <v-flex v-if=showInstruction mt-3>
         <v-card>
           <v-card-title class="title font-weight-light blue-grey lighten-5">
-            <span style='margin-right:1.25em; display:inline-block;'>Add Instructions</span>
+            <span style='margin-right:1.25em; display:inline-block;'>Information about Base and Target computer</span>
           </v-card-title>
           <v-layout row>
             <v-flex xs6 ma-2>
               <v-text-field
-                  label="From UPC"
+                  label="Base UPC"
                   v-model='upIns.fromUPC'
                   outline
                   readonly
@@ -97,45 +97,229 @@
             </v-flex>
             <v-flex xs6 ma-2>
               <v-text-field
-                  label="To UPC"
+                  label="Target UPC"
                   v-model='upIns.toUPC'
+                  readonly
+                  box
+                ></v-text-field>
+            </v-flex>
+          </v-layout>
+          <v-layout row>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base HD1 Size Info"
+                  v-model='fromCompSpec.hd1Size'
                   outline
                   readonly
                 ></v-text-field>
             </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Target HD1 Size Info"
+                  v-model='toCompSpec.hd1Size'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base HD1 Type Info"
+                  v-model='fromCompSpec.hd1Type'
+                  outline
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Target HD1 Type Info"
+                  v-model='toCompSpec.hd1Type'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+                        <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base HD2 Size Info"
+                  v-model='fromCompSpec.hd2Size'
+                  outline
+                  readonly
+                ></v-text-field>
+              </v-flex>
+              <v-flex xs6 mx-2>
+                <v-text-field
+                    label="Target HD2 Size Info"
+                    v-model='toCompSpec.hd2Size'
+                    box
+                    readonly
+                  ></v-text-field>
+              </v-flex>
+              <v-flex xs6 mx-2>
+                <v-text-field
+                    label="Base HD2 Type Info"
+                    v-model='fromCompSpec.hd2Type'
+                    outline
+                    readonly
+                  ></v-text-field>
+              </v-flex>
+              <v-flex xs6 mx-2>
+                <v-text-field
+                    label="Target HD2 Type Info"
+                    v-model='toCompSpec.hd2Type'
+                    box
+                    readonly
+                  ></v-text-field>
+              </v-flex>
           </v-layout>
-          <v-flex mx-2>
-            <v-textarea
-              label="Required Parts"
-              v-model='upIns.reqParts'
+          <v-layout row>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base Ram Size Info"
+                  v-model='fromCompSpec.ramSz'
+                  outline
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Target Ram Size Info"
+                  v-model='toCompSpec.ramSz'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base Ram Type Info"
+                  v-model='fromCompSpec.ramType'
+                  outline
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Target Ram Type Info"
+                  v-model='toCompSpec.ramType'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base Caddy Info"
+                  v-model='fromCompSpec.caddy'
+                  outline
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Target Caddy Info"
+                  v-model='toCompSpec.caddy'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+             <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Base DVD Info"
+                  v-model='fromCompSpec.dvd'
+                  outline
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs6 mx-2>
+              <v-text-field
+                  label="Target DVD Info"
+                  v-model='toCompSpec.dvd'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+          </v-layout>
+          <v-layout row>
+            <v-flex xs2 mx-2>
+              <v-text-field
+                  label="Base OS Info"
+                  v-model='fromCompSpec.optSys'
+                  outline
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs2 mx-2>
+              <v-text-field
+                  label="Target OS Info"
+                  v-model='toCompSpec.optSys'
+                  box
+                  readonly
+                ></v-text-field>
+            </v-flex>
+            <v-flex xs4 mx-2>
+              <v-textarea
+                  label="Base note info"
+                  v-model='fromPrd.note'
+                  outline
+                  readonly
+                ></v-textarea>
+            </v-flex>
+            <v-flex xs4 mx-2>
+              <v-textarea
+                  label="Target note Info"
+                  v-model='toPrd.note'
+                  box
+                  readonly
+                ></v-textarea>
+            </v-flex>
+          </v-layout>
+        </v-card>
+      </v-flex>
+      <v-flex v-if=showInstruction mt-3>
+        <v-card>
+          <v-card-title class="title font-weight-light blue-grey lighten-5">
+            <span style='margin-right:1.25em; display:inline-block;'>Add Instructions</span>
+          </v-card-title>
+          <v-layout row mt-5>
+            <v-flex mx-2 xs5>
+              <v-select
+                :items="actionSelection"
+                v-model="selectAction"
+                label="Action"
+                outline
+                ></v-select>
+            </v-flex>
+            <v-flex mx-2 xs5>
+              <v-select
+                :items="partsSelection"
+                v-model="selectPart"
+                label="Part"
+                outline
+                ></v-select>
+            </v-flex>
+            <v-flex mx-2 xs2>
+              <v-layout row>
+                <v-btn icon big class="mx-0">
+                  <v-icon color="teal">add_circle</v-icon>
+                </v-btn>
+                  <v-flex>
+                    <v-text-field
+                      label="Qty"
+                      v-model.number="selectQty"
+                      box></v-text-field>
+                  </v-flex>
+                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0">
+                  <v-icon color="teal">remove_circle</v-icon>
+                </v-btn>
+              </v-layout>
+            </v-flex>
+          </v-layout>
+          <v-layout row mx-2>
+            <v-select
+              :items="stepsSelection"
+              v-model="selectStep"
               outline
-              counter =  500
-            ></v-textarea>
-          </v-flex>
-          <v-flex mx-2>
-            <v-textarea
-              label="Took off Parts"
-              v-model='upIns.offParts'
-              outline
-              counter =  500
-            ></v-textarea>
-          </v-flex>
-          <v-flex mx-2>
-            <v-textarea
-              label="Steps"
-              v-model='upIns.steps'
-              outline
-              counter =  1000
-            ></v-textarea>
-          </v-flex>
-          <v-flex mx-2>
-            <v-textarea
-              label="Note"
-              v-model='upIns.note'
-              outline
-              counter =  1000
-            ></v-textarea>
-          </v-flex>
+              label="Step">
+            </v-select>
+            <v-btn dark>Add</v-btn>
+          </v-layout>
           <v-btn dark @click.prevent="submit()">Submit</v-btn>
           <v-btn dark @click.prevent='clearInstruction()'>Clear</v-btn>
         </v-card>
@@ -188,7 +372,19 @@ export default {
         offParts: '',
         steps: '',
         note: ''
-      }
+      },
+      fromPrd: '',
+      toPrd: '',
+      fromCompSpec: '',
+      toCompSpec: '',
+      // items for add instructions
+      actionSelection: [],
+      selectAction: '',
+      partsSelection: [],
+      selectPart: '',
+      selectQty: 0,
+      stepsSelection: [],
+      selectStep: ''
     }
   },
   methods: {
@@ -304,11 +500,30 @@ export default {
         }
       }
     },
-    addInstruction (item) {
+    async addInstruction (item) {
       this.showInstruction = true
       this.upIns.fromUPC = item.fromUPC
       this.upIns.toUPC = item.toUPC
       this.clearInstruction()
+      try {
+        this.fromPrd = (await Product.getProductByUPC(this.upIns.fromUPC)).data
+        this.toPrd = (await Product.getProductByUPC(this.upIns.toUPC)).data
+        this.fromCompSpec = this.fromPrd.compSpec
+        this.toCompSpec = this.toPrd.compSpec
+        console.log(this.fromPrd)
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
     },
     getInstruction (item) {
       this.showInstruction = true

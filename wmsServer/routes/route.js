@@ -48,6 +48,8 @@ module.exports = (app) => {
   app.post('/products/getUPCsByOrig', Product.getUPCsByOrig)
   app.post('/products/deleteProduct', Product.deleteProduct)
   app.post('/products/giveOldPrdPid', Product.giveOldPrdPid)
+  //add parts handle logic to product
+  app.post('/products/parts', Product.createPart)
 
   // from inventory
   app.post('/inventory', Inventory.post)

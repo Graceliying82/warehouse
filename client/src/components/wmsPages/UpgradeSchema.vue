@@ -1,12 +1,19 @@
 <template>
   <div v-if="$store.state.isUserLoggedIn">
     <v-layout column mx-2>
+      <v-dialog v-model="showAlertDialog" max-width="1000px">
+        <v-card>
+          <v-card-text>
+              <h2 pt-8>{{message}}</h2>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
       <v-flex xs8>
           <v-alert
-            v-show = showAlert1
-            :type = alertType1
+            v-show = "showAlert"
+            :type = "alertType"
             outline>
-              {{message1}}
+              {{message}}
             </v-alert>
         </v-flex>
       <!-- Create a New Template -->
@@ -245,7 +252,7 @@
       <!-- Modify Template Parameter -->
       <v-layout>
         <v-flex>
-          <panel  title='Modify Template Schema'>
+          <panel  title='Schemas'>
             <v-layout row>
               <v-flex mx-2 sm4>
                 <v-select
@@ -281,6 +288,28 @@
           </panel>
         </v-flex>
       </v-layout>
+      <v-layout>
+        <v-flex mt-5>
+          <panel  title='Upgrade Parts and Steps'>
+            <h1>Create a part</h1>
+              <v-flex>
+                <v-text-field
+                  label="Part Name"
+                  v-model="partWSteps.partNm"
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-textarea
+                  label="Steps"
+                  v-model="partWSteps.steps"
+                  outline
+                  counter =  5000>
+                </v-textarea>
+              </v-flex>
+              <v-btn dark @click.prevent="createPart()">Submit</v-btn>
+          </panel>
+        </v-flex>
+      </v-layout>
     </v-layout>
   </div>
 </template>
@@ -291,9 +320,9 @@ import Tempschema from '@/services/TempschemaService'
 export default {
   data () {
     return {
-      alertType1: 'success',
-      showAlert1: false,
-      message1: '',
+      alertType: 'success',
+      showAlert: false,
+      message: '',
       UPCInput: '',
       showDetail: false,
       newPrdBasic: {
@@ -307,8 +336,8 @@ export default {
       schemaSelect: '',
       paraChoice: '',
       schemaValues: [],
-      SchemaHeader: ['Ram Type', 'Ram Size', 'OS', 'SD Card Size', 'HD Type', 'HD Size', 'Category', 'Color'],
-      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'sdSize', 'hdType', 'hdSize', 'cat', 'color'],
+      SchemaHeader: ['Ram Type', 'Ram Size', 'OS', 'SD Card Size', 'HD Type', 'HD Size', 'Category', 'Color', 'Actions'],
+      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'sdSize', 'hdType', 'hdSize', 'cat', 'color', 'action'],
       SchemaDBValues: {
         'ramType': [],
         'ramSz': [],
@@ -336,18 +365,26 @@ export default {
         'reqParts': '', // required parts
         'disbParts': '', // Disassembled parts
         'instuct': '' // instructions and steps
+      },
+      partWSteps: {
+        partNm: '',
+        steps: ''
       }
     }
   },
   methods: {
     clearAlert () {
-      this.showAlert1 = false
-      this.message1 = ''
+      this.showAlert = false
+      this.message = ''
     },
     setAlert (type, message) {
-      this.message1 = message
-      this.alertType1 = type
-      this.showAlert1 = true
+      this.message = message
+      this.alertType = type
+      this.showAlert = true
+    },
+    setAlertDialog (message) {
+      this.message = message
+      this.showAlertDialog = true
     },
     async find () {
       this.clearAlert()
@@ -553,6 +590,25 @@ export default {
       this.prepareNewPrd()
       try {
         // await Product.post(this.prdBasic)
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    async createPart () {
+      try {
+        // await Product.post(this.prdBasic)
+        await Product.createPart(this.partWSteps)
+        this.setAlertDialog('Successfully add a new Part!')
       } catch (error) {
         if (!error.response) {
           // network error
