@@ -325,6 +325,7 @@ export default {
       message: '',
       UPCInput: '',
       showDetail: false,
+      showAlertDialog: false,
       newPrdBasic: {
         UPC: '',
         prdNm: '',
@@ -336,8 +337,8 @@ export default {
       schemaSelect: '',
       paraChoice: '',
       schemaValues: [],
-      SchemaHeader: ['Ram Type', 'Ram Size', 'OS', 'SD Card Size', 'HD Type', 'HD Size', 'Category', 'Color', 'Actions'],
-      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'sdSize', 'hdType', 'hdSize', 'cat', 'color', 'action'],
+      SchemaHeader: ['Ram Type', 'Ram Size', 'OS', 'SD Card Size', 'HD Type', 'HD Size', 'Category', 'Color', 'Steps', 'Parts'],
+      SchemaDBName: ['ramType', 'ramSz', 'optSys', 'sdSize', 'hdType', 'hdSize', 'cat', 'color', 'step', 'part'],
       SchemaDBValues: {
         'ramType': [],
         'ramSz': [],

@@ -72,10 +72,6 @@
               <tr @click.prevent="getInstruction(props.item)">
                 <td class="text-xs-left">{{ props.item._id.fromUPC }}</td>
                 <td class="text-xs-left">{{ props.item._id.toUPC }}</td>
-                <td class="text-xs-left">{{ props.item.reqParts }}</td>
-                <td class="text-xs-left">{{ props.item.offParts }}</td>
-                <td class="text-xs-left">{{ props.item.steps }}</td>
-                <td class="text-xs-left">{{ props.item.note }}</td>
               </tr>
             </template>
           </v-data-table>
@@ -275,18 +271,10 @@
       <v-flex v-if=showInstruction mt-3>
         <v-card>
           <v-card-title class="title font-weight-light blue-grey lighten-5">
-            <span style='margin-right:1.25em; display:inline-block;'>Add Instructions</span>
+            <span style='margin-right:1.25em; display:inline-block;'>Create Instructions</span>
           </v-card-title>
           <v-layout row mt-5>
-            <v-flex mx-2 xs5>
-              <v-select
-                :items="actionSelection"
-                v-model="selectAction"
-                label="Action"
-                outline
-                ></v-select>
-            </v-flex>
-            <v-flex mx-2 xs5>
+            <v-flex mx-2>
               <v-select
                 :items="partsSelection"
                 v-model="selectPart"
@@ -296,7 +284,7 @@
             </v-flex>
             <v-flex mx-2 xs2>
               <v-layout row>
-                <v-btn icon big class="mx-0">
+                <v-btn icon big class="mx-0" @click="selectQty += 1">
                   <v-icon color="teal">add_circle</v-icon>
                 </v-btn>
                   <v-flex>
@@ -305,9 +293,10 @@
                       v-model.number="selectQty"
                       box></v-text-field>
                   </v-flex>
-                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0">
+                <v-btn v-if="$store.state.isSupervisor" icon class="mx-0" @click="selectQty -= 1">
                   <v-icon color="teal">remove_circle</v-icon>
                 </v-btn>
+                <v-btn dark @click="addParts()">Add</v-btn>
               </v-layout>
             </v-flex>
           </v-layout>
@@ -318,8 +307,58 @@
               outline
               label="Step">
             </v-select>
-            <v-btn dark>Add</v-btn>
+            <v-btn dark @click="addSteps()">Add</v-btn>
           </v-layout>
+          <v-layout row mx-2>
+            <v-flex mr-2>
+              <v-toolbar flat color="white">
+                <v-toolbar-title>Add Parts</v-toolbar-title>
+              </v-toolbar>
+              <v-data-table
+                :items="upIns.reqParts"
+                class="elevation-1"
+                :headers = "headersPart"
+                :rows-per-page-items="rowsPerPageItems"
+              >
+                <template slot="items" slot-scope="props">
+                  <td class="text-xs-left">{{ props.item.name }}</td>
+                  <td class="text-xs-left">{{ props.item.qty }}</td>
+                </template>
+              </v-data-table>
+            </v-flex>
+            <v-flex ml-2>
+              <v-toolbar flat color="white">
+                <v-toolbar-title>Remove Parts</v-toolbar-title>
+              </v-toolbar>
+              <v-data-table
+                :items="upIns.offParts"
+                class="elevation-1"
+                :headers = "headersPart"
+                :rows-per-page-items="rowsPerPageItems"
+              >
+                <template slot="items" slot-scope="props">
+                  <td class="text-xs-left">{{ props.item.name }}</td>
+                  <td class="text-xs-left">{{ props.item.qty }}</td>
+                </template>
+              </v-data-table>
+            </v-flex>
+          </v-layout>
+          <v-flex mt-2>
+            <v-textarea
+              label="Steps"
+              v-model="upIns.steps"
+              outline
+              counter =  5000>
+            </v-textarea>
+          </v-flex>
+          <v-flex>
+            <v-textarea
+              label="Note"
+              v-model="upIns.note"
+              outline
+              counter =  5000>
+            </v-textarea>
+          </v-flex>
           <v-btn dark @click.prevent="submit()">Submit</v-btn>
           <v-btn dark @click.prevent='clearInstruction()'>Clear</v-btn>
         </v-card>
@@ -332,6 +371,7 @@
 import Upgrade from '@/services/UpgradeService'
 import Product from '@/services/ProductService'
 import Instruction from '@/services/InstructionService'
+import Tempschema from '@/services/TempschemaService'
 export default {
   data () {
     return {
@@ -349,13 +389,13 @@ export default {
         { text: 'From UPC', align: 'left', value: 'fromUPC' },
         { text: 'To UPC', align: 'left', value: 'toUPC' }
       ],
+      headersPart: [
+        { text: 'Name', align: 'left', value: 'name' },
+        { text: 'Qty', align: 'left', value: 'qty' }
+      ],
       headersInstr: [
         { text: 'From UPC', align: 'left', value: '_id.fromUPC' },
-        { text: 'To UPC', align: 'left', value: '_id.toUPC' },
-        { text: 'Require Parts', align: 'left', value: 'reqParts' },
-        { text: 'Took Off Parts', align: 'left', value: 'offParts' },
-        { text: 'Steps', align: 'left', value: 'steps' },
-        { text: 'Note', align: 'left', value: 'note' }
+        { text: 'To UPC', align: 'left', value: '_id.toUPC' }
       ],
       needInstrList: [],
       instrList: [],
@@ -368,8 +408,8 @@ export default {
       upIns: {
         toUPC: '',
         fromUPC: '',
-        reqParts: '',
-        offParts: '',
+        reqParts: [],
+        offParts: [],
         steps: '',
         note: ''
       },
@@ -378,8 +418,6 @@ export default {
       fromCompSpec: '',
       toCompSpec: '',
       // items for add instructions
-      actionSelection: [],
-      selectAction: '',
       partsSelection: [],
       selectPart: '',
       selectQty: 0,
@@ -403,15 +441,41 @@ export default {
     },
     clearInstruction () {
       this.clearAlert()
-      this.upIns.reqParts = ''
-      this.upIns.offParts = ''
+      this.upIns.reqParts = []
+      this.upIns.offParts = []
       this.upIns.steps = ''
       this.upIns.note = ''
+    },
+    clearSelectUPC () {
+      this.upIns.fromUPC = ''
+      this.upIns.toUPC = ''
+      this.fromPrd = ''
+      this.toPrd = ''
+      this.fromCompSpec = ''
+      this.toCompSpec = ''
     },
     clearShows () {
       this.showAction0 = false
       this.showAction1 = false
       this.showAction2 = false
+    },
+    async getSchemaData () {
+      try {
+        this.partsSelection = (await Tempschema.getByID('part')).data.value
+        this.stepsSelection = (await Tempschema.getByID('step')).data.value
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
     },
     async getInstructionList () {
       try {
@@ -433,15 +497,39 @@ export default {
     },
     changeAction () {
       this.clearShows()
+      this.clearInstruction()
+      this.clearSelectUPC()
       this.clearAlert()
       if (this.action === this.actionChoice[0]) {
         this.showAction0 = true
+        this.showAction1 = false
+        this.showAction2 = false
       } else if (this.action === this.actionChoice[1]) {
         this.showAction1 = true
+        this.showAction0 = false
+        this.showAction2 = false
       } else if (this.action === this.actionChoice[2]) {
         this.showAction2 = true
+        this.showAction0 = false
+        this.showAction1 = false
         this.getInstructionList()
       }
+    },
+    addParts () {
+      if (this.selectQty > 0) {
+        this.upIns.reqParts.push({
+          'name': this.selectPart,
+          'qty': this.selectQty
+        })
+      } else if (this.selectQty < 0) {
+        this.upIns.offParts.push({
+          'name': this.selectPart,
+          'qty': this.selectQty
+        })
+      }
+    },
+    addSteps () {
+      this.upIns.steps += this.selectStep + '\n'
     },
     async getUpdPrdNeedInstr () {
       // call the server to get products which needs update instructions
@@ -485,7 +573,34 @@ export default {
         } else {
           this.setAlertDialog('Instruction Not Existed.')
         }
+        this.getCompSpec()
         this.showInstruction = true
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
+    },
+    async getCompSpec () {
+      try {
+        let fromData = (await Product.getProductByUPC(this.upIns.fromUPC)).data
+        let toData = (await Product.getProductByUPC(this.upIns.toUPC)).data
+        if ((fromData.cat !== 'Computer') || (toData.cat !== 'Computer')) {
+          this.setAlertDialog('Input wrong products. Please check!')
+        } else {
+          this.fromPrd = fromData
+          this.toPrd = toData
+          this.fromCompSpec = this.fromPrd.compSpec
+          this.toCompSpec = this.toPrd.compSpec
+        }
       } catch (error) {
         if (!error.response) {
           // network error
@@ -505,25 +620,7 @@ export default {
       this.upIns.fromUPC = item.fromUPC
       this.upIns.toUPC = item.toUPC
       this.clearInstruction()
-      try {
-        this.fromPrd = (await Product.getProductByUPC(this.upIns.fromUPC)).data
-        this.toPrd = (await Product.getProductByUPC(this.upIns.toUPC)).data
-        this.fromCompSpec = this.fromPrd.compSpec
-        this.toCompSpec = this.toPrd.compSpec
-        console.log(this.fromPrd)
-      } catch (error) {
-        if (!error.response) {
-          // network error
-          this.setAlert('error', 'Network Error: Fail to connet to server')
-        } else if (error.response.data.error.includes('jwt')) {
-          console.log('jwt error')
-          this.$store.dispatch('resetUserInfo', true)
-          this.$router.push('/login')
-        } else {
-          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
-          this.setAlert('error', error.response.data.error)
-        }
-      }
+      this.getCompSpec()
     },
     getInstruction (item) {
       this.showInstruction = true
@@ -565,6 +662,7 @@ export default {
   },
   async mounted () {
     this.getUpdPrdNeedInstr()
+    this.getSchemaData()
     this.action = this.actionChoice[0]
   }
 }
