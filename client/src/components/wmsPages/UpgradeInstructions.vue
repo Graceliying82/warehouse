@@ -34,7 +34,7 @@
             class="elevation-1"
           >
             <template slot="items" slot-scope="props">
-              <tr @click.prevent="addInstruction(props.item)">
+              <tr @click="addInstruction(props.item)">
                 <td class="text-xs-left">{{ props.item.fromUPC }}</td>
                 <td class="text-xs-left">{{ props.item.toUPC }}</td>
               </tr>
@@ -56,7 +56,7 @@
                   v-model='toUPCInput'
                 ></v-text-field>
             </v-flex>
-            <v-btn dark @click.prevent="findInstructionByFromTo">find</v-btn>
+            <v-btn dark @click="findInstructionByFromTo">find</v-btn>
           </v-layout>
         </panel>
       </v-flex>
@@ -69,7 +69,7 @@
             class="elevation-1"
           >
             <template slot="items" slot-scope="props">
-              <tr @click.prevent="getInstruction(props.item)">
+              <tr @click="getInstruction(props.item)">
                 <td class="text-xs-left">{{ props.item._id.fromUPC }}</td>
                 <td class="text-xs-left">{{ props.item._id.toUPC }}</td>
               </tr>
@@ -323,6 +323,11 @@
                 <template slot="items" slot-scope="props">
                   <td class="text-xs-left">{{ props.item.name }}</td>
                   <td class="text-xs-left">{{ props.item.qty }}</td>
+                  <td class="text-xs-left">
+                    <v-btn icon class="mx-0" @click="deletePart(upIns.reqParts, props.item)">
+                      <v-icon color="teal">delete_forever</v-icon>
+                    </v-btn>
+                  </td>
                 </template>
               </v-data-table>
             </v-flex>
@@ -339,6 +344,11 @@
                 <template slot="items" slot-scope="props">
                   <td class="text-xs-left">{{ props.item.name }}</td>
                   <td class="text-xs-left">{{ props.item.qty }}</td>
+                  <td class="text-xs-left">
+                    <v-btn icon class="mx-0" @click="deletePart(upIns.offParts, props.item)">
+                      <v-icon color="teal">delete_forever</v-icon>
+                    </v-btn>
+                  </td>
                 </template>
               </v-data-table>
             </v-flex>
@@ -359,8 +369,8 @@
               counter =  5000>
             </v-textarea>
           </v-flex>
-          <v-btn dark @click.prevent="submit()">Submit</v-btn>
-          <v-btn dark @click.prevent='clearInstruction()'>Clear</v-btn>
+          <v-btn dark @click="submit()">Submit</v-btn>
+          <v-btn dark @click='clearInstruction()'>Clear</v-btn>
         </v-card>
       </v-flex>
     </v-layout>
@@ -391,7 +401,8 @@ export default {
       ],
       headersPart: [
         { text: 'Name', align: 'left', value: 'name' },
-        { text: 'Qty', align: 'left', value: 'qty' }
+        { text: 'Qty', align: 'left', value: 'qty' },
+        { text: 'Action', align: 'left', value: 'name' }
       ],
       headersInstr: [
         { text: 'From UPC', align: 'left', value: '_id.fromUPC' },
@@ -458,6 +469,12 @@ export default {
       this.showAction0 = false
       this.showAction1 = false
       this.showAction2 = false
+    },
+    deletePart (list, item) {
+      const index = list.indexOf(item)
+      confirm('Are you sure you want to delete this item?') && list.splice(index, 1)
+      console.log(list)
+      // this.$forceUpdate()
     },
     async getSchemaData () {
       try {
