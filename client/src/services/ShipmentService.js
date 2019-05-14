@@ -17,5 +17,8 @@ export default {
   // app.post('/shipment/deleteByTracking', Shipment.deleteByTracking)
   deleteByTracking (data) {
     return Api().post('/shipments/deleteByTracking', data)
+  },
+  refreshShipStatus () {
+    return Api().post('/shipments/refreshShipStatus')
   }
 }

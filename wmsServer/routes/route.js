@@ -67,6 +67,7 @@ module.exports = (app) => {
   app.post('/shipments/getByShipmentId', Shipment.getByShipmentId)
   app.post('/shipments/ship', Shipment.ship) //ship a shipment
   app.post('/shipments/deleteByTracking', Shipment.deleteByTracking)
+  app.post('/shipments/refreshShipStatus', Shipment.refreshShipStatus)
 
   // from upgrade
   app.post('/upgrades', Upgrade.post)

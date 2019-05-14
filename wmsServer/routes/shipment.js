@@ -134,6 +134,23 @@ module.exports = {
       throw error;
     }
   },
+  async refreshShipStatus (req, res, next) {
+    const shipCollection = req.db.collection("shipment");
+    try {
+      let shipments = await shipCollection.find().toArray();
+      for (let shipment of shipments) {
+        await module.exports.calcShipStatus(req.db, shipment._id);
+      }
+      res.send("Done");
+      res.end();
+    } catch (error) {
+      console.log("refreshShipStatus: " + error);
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error);
+    }
+  },
   async getByShipmentId(req, res, next) {
     const shipCollection = req.db.collection("shipment");
     const prdCollection = req.db.collection("product");
@@ -208,7 +225,7 @@ module.exports = {
       res.send(shipment);
       res.end();
     } catch (error) {
-      console.log("get shipment: " + error);
+      console.log("calcShipStatus: " + error);
       if (error.message === null) {
         error.message = 'Fail to access database! Try again'
       };

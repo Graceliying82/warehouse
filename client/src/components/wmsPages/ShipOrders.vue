@@ -84,6 +84,7 @@
                   @change = "changeFilter()"
                 ></v-slider>
               </v-flex>
+              <v-btn dark @click="refresh">Refresh</v-btn>
             </v-layout>
           <!-- End Filter Set-->
               <v-data-table
@@ -509,6 +510,29 @@ export default {
           orderQty: orderDetail.qty
         }
       })
+    },
+    async refresh () {
+      try {
+        // this.setAlertDialog('Done')
+        // Shipment.refreshShipStatus().then(() => {
+        //   this.changeFilter()
+        // })
+        await Shipment.refreshShipStatus()
+        await this.changeFilter()
+        this.setAlertDialog('Done')
+      } catch (error) {
+        if (!error.response) {
+          // network error
+          this.setAlert('error', 'Network Error: Fail to connet to server')
+        } else if (error.response.data.error.includes('jwt')) {
+          console.log('jwt error')
+          this.$store.dispatch('resetUserInfo', true)
+          this.$router.push('/login')
+        } else {
+          console.log('error ' + error.response.status + ' : ' + error.response.statusText)
+          this.setAlert('error', error.response.data.error)
+        }
+      }
     },
     async fastUpgrade (orderBasic, orderDetail, urgent) {
       if (orderDetail.status === 'upgrade') {
