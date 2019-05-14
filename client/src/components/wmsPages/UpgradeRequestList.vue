@@ -147,14 +147,24 @@
               </v-card>
             </template>
           </v-data-table>
-            <v-btn dark @click.prevent="printContent">Print batch Pick</v-btn>
           </v-card>
         </v-flex>
       </v-layout>
     </panel>
-    <div id="printable" v-show=false>
+    <v-flex my-3>
+      <v-btn dark @click.prevent="printContent">Print Instructions And Parts List</v-btn>
+    </v-flex>
+    <div id="printable" v-show=ShowPrintable>
+      <h1>Parts List</h1>
+      <div v-for = "(aPart, indexPart) in partsList" :key = "indexPart + '-pl'">
+        <p><b>Name:&nbsp;</b>&nbsp;{{ aPart.name }}&nbsp;&nbsp;&nbsp;&nbsp;
+            <b>Qty:&nbsp;</b>&nbsp;{{ aPart.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+        </p>
+      </div>
+      <v-divider></v-divider>
+      <div style="page-break-after: always;"></div>
       <div v-for = "(detail, i) in batchPickItems" :key = i class="page">
-        <h1>Order Pickup Details</h1>
+        <h1>Upgrade Detail information</h1>
         <p><b>TaskID:&nbsp;</b>&nbsp;{{ detail.taskID }}&nbsp;&nbsp;&nbsp;&nbsp;
           <b>Urgent:&nbsp;</b>{{ detail.urgent }}&nbsp;&nbsp;&nbsp;&nbsp;
           <b>Target UPC:&nbsp;</b>&nbsp;{{ detail.targetUPC }}&nbsp;&nbsp;&nbsp;&nbsp;
@@ -175,10 +185,18 @@
           <v-divider></v-divider>
           <h2>Upgrade Instructions</h2>
           <h3>Required Parts</h3>
-            <p>{{ base.upgInstruction.reqParts }}</p>
+            <div v-for = "(reqPart, indexReq) in base.upgInstruction.reqParts" :key = "indexReq + '-req'">
+              <p><b>Name:&nbsp;</b>&nbsp;{{ reqPart.name }}&nbsp;&nbsp;&nbsp;&nbsp;
+                 <b>Qty:&nbsp;</b>&nbsp;{{ reqPart.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+              </p>
+            </div>
           <v-divider></v-divider>
-          <h3>Took Off Parts</h3>
-           <p>{{ base.upgInstruction.offParts }}</p>
+          <h3>Remove Parts</h3>
+            <div v-for = "(offPart, indexOff) in base.upgInstruction.offParts" :key = "indexOff + '-off'">
+              <p><b>Name:&nbsp;</b>&nbsp;{{ offPart.name }}&nbsp;&nbsp;&nbsp;&nbsp;
+                 <b>Qty:&nbsp;</b>&nbsp;{{ offPart.qty }}&nbsp;&nbsp;&nbsp;&nbsp;
+              </p>
+            </div>
           <v-divider></v-divider>
           <h3>Steps</h3>
             <p>{{ base.upgInstruction.steps }}</p>
@@ -186,21 +204,8 @@
           <h3>Note</h3>
             <p>{{ base.upgInstruction.note }}</p>
           <v-divider></v-divider>
-          <h2>Base Product Locations</h2>
-          <table  :key ="j+ '-tb'">
-            <tr :key="j+ '-hd'">
-              <th>Location</th>
-              <th>Quantity</th>
-            </tr>
-            <tr v-for="(alocInv,index) in base.locInv" :key="index+ '-ct'">
-              <th>{{ alocInv._id.loc }}</th>
-              <th>{{ alocInv.qty }}</th>
-            </tr>
-          </table>
           <div class="pagebreak"> </div>
         </div>
-        <v-divider></v-divider>
-        <div class="page-break"></div>
       </div>
     </div>
   </div>
@@ -220,11 +225,13 @@ export default {
       showAlertDialog: false,
       showChoseUPC: false,
       showBatchPick: false,
+      ShowPrintable: false,
       upgReqList: [],
       chosedItem: [],
       ReqStatusChoice: ['active', 'finish', 'cancel', 'all'],
       statusFilter: 'active',
       batchPickItems: [],
+      partsList: [],
       headersUpgrade: [
         { text: 'Task ID', align: 'left', value: 'taskID' },
         { text: 'Urgent', align: 'left', value: 'urgent' },
@@ -354,11 +361,33 @@ export default {
         }
         this.batchPickItems = []
       }
+      this.partsList = []
       this.showBatchPick = false
+      this.ShowPrintable = false
+    },
+    addToPartsList (reqParts) {
+      if (reqParts.length > 0) {
+        let existed = false
+        for (let aPart of reqParts) {
+          for (let i = 0; i < this.partsList.length; i++) {
+            if (this.partsList[i].name === aPart.name) {
+              this.partsList[i].qty += aPart.qty
+              existed = true
+            }
+          }
+          if (!existed) {
+            this.partsList.push({
+              'name': aPart.name,
+              'qty': aPart.qty
+            })
+          }
+          existed = false
+        }
+      }
     },
     async batchPick (item) {
       this.showChoseUPC = false
-      console.log(this.showChoseUPC)
+      this.ShowPrintable = true
       this.showBatchPick = true
       if (item.status !== 'active') {
         this.setAlertDialog('Please pick active task only.')
@@ -376,6 +405,7 @@ export default {
             })).data
             if (result) {
               item.baseUPCList[i].upgInstruction = result
+              this.addToPartsList(result.reqParts)
             }
             result = (await ProductInv.getLocInvByUPC(item.baseUPCList[i].UPC)).data
             if (result) {
@@ -383,7 +413,6 @@ export default {
             }
           }
           this.batchPickItems.push(item)
-          console.log(this.batchPickItems)
         }
       }
     },
