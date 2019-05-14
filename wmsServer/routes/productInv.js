@@ -155,6 +155,7 @@ module.exports = {
         for (var aProd of productList) {
           if (aProd._id === aUPC) {
             aProInv.prdNm = aProd.prdNm;
+            aProInv.pid = aProd.pid;
             break;
           }
         }

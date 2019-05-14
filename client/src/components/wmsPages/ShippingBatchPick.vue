@@ -90,6 +90,7 @@
                   <div v-for="(item,index) in pick.items" :key=index>
                     <v-layout row>
                       <v-flex class="font-weight-regular text-xs-left">UPC: {{item.UPC}}</v-flex>
+                      <v-flex class="font-weight-regular text-xs-left">PID: {{item.pid}}</v-flex>
                       <v-flex class="font-weight-regular text-xs-left">Product Name: {{item.prdNm}}</v-flex>
                       <v-flex class="font-weight-regular text-xs-left">Qty: {{item.qty}}</v-flex>
                     </v-layout>
@@ -105,6 +106,7 @@
                 <v-card-title>
                   <v-list-tile-content>
                     <v-list-tile-sub-title >UPC  :  {{ item.UPC }}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title >PID  :  {{ item.pid }}</v-list-tile-sub-title>
                     <v-list-tile-sub-title >Product Name  :  {{ item.prdNm }}</v-list-tile-sub-title>
                     <v-list-tile-sub-title>Total available  :  {{ item.qty }}</v-list-tile-sub-title>
                     <v-list-tile-sub-title>Total required by orders  :  {{ item.reqQty }}</v-list-tile-sub-title>
@@ -310,7 +312,6 @@ export default {
       try {
         this.retUPCQtyList = (await ProductInv.getByUPC(upcList)).data
         this.mergeRetAndReq()
-        console.log(this.retUPCQtyList)
       } catch (error) {
         if (!error.response) {
           // network error
@@ -412,7 +413,7 @@ export default {
                 if (alocIn.loc === this.pickUPList[i].loc) {
                   // Add one more pick up to this loc
                   let minQty = this.min(leftQty, alocIn.qty)
-                  this.pickUPList[i].items.push({UPC: aUPC.UPC, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                  this.pickUPList[i].items.push({UPC: aUPC.UPC, pid: aUPC.pid, prdNm: aUPC.prdNm, qty: alocIn.qty})
                   leftQty = leftQty - minQty
                   idx = i
                   break
@@ -425,6 +426,7 @@ export default {
                   loc: alocIn.loc,
                   items: [{
                     UPC: aUPC.UPC,
+                    pid: aUPC.pid,
                     prdNm: aUPC.prdNm,
                     qty: minQty
                   }]
@@ -438,6 +440,7 @@ export default {
           }
         } else {
           for (let aUPC of this.retUPCQtyList) {
+            console.log(aUPC)
             let leftQty = aUPC.reqQty
             for (let alocIn of aUPC.locationInventory) {
               let idx = -1
@@ -448,7 +451,7 @@ export default {
                   if (alocIn.loc === this.pickUPList[i].loc) {
                     // Add one more pick up to this loc
                     let minQty = this.min(leftQty, alocIn.qty)
-                    this.pickUPList[i].items.push({UPC: aUPC.UPC, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                    this.pickUPList[i].items.push({UPC: aUPC.UPC, pid: aUPC.pid, prdNm: aUPC.prdNm, qty: alocIn.qty})
                     leftQty = leftQty - minQty
                     idx = i
                     break
@@ -461,6 +464,7 @@ export default {
                     loc: alocIn.loc,
                     items: [{
                       UPC: aUPC.UPC,
+                      pid: aUPC.pid,
                       prdNm: aUPC.prdNm,
                       qty: minQty
                     }]
@@ -474,6 +478,7 @@ export default {
             }
           }
         }
+        console.log(this.pickUPList)
       }
     },
     printContent () {
