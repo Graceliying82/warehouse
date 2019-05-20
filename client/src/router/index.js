@@ -25,6 +25,7 @@ import ManageOrg from '@/components/wmsPages/ManageOrg'
 import ReceiveRecords from '@/components/wmsPages/ReceiveRecords'
 import InvtLocMg from '@/components/wmsPages/InvtLocMg'
 import InvtLocEidt from '@/components/wmsPages/InvtLocEdit'
+import BatchPickPlan from '@/components/wmsPages/BatchPickPlan'
 
 Vue.use(Router)
 
@@ -159,6 +160,11 @@ export default new Router({
       path: '/manageOrg',
       name: 'manageOrg',
       component: ManageOrg
+    },
+    {
+      path: '/batchPickPlan',
+      name: 'batchPickPlan',
+      component: BatchPickPlan
     }
   ]
 })
