@@ -151,8 +151,9 @@
         </v-flex>
       </v-layout>
     </panel>
-    <v-flex my-3>
-      <v-btn dark @click.prevent="printContent">Print Instructions And Parts List</v-btn>
+    <v-flex my-3 v-show=ShowPrintable>
+      <v-btn dark @click="printContent">Print Instructions And Parts List</v-btn>
+      <v-btn dark @click="PlanBatchPick">Plan Batch Pick</v-btn>
     </v-flex>
     <div id="printable" v-show=ShowPrintable>
       <h1>Parts List</h1>
@@ -415,6 +416,24 @@ export default {
           this.batchPickItems.push(item)
         }
       }
+    },
+    PlanBatchPick () {
+      console.log('this.batchPickItems')
+      console.log(this.batchPickItems)
+      let pickUPList = []
+      for (let item of this.batchPickItems) {
+        for (let base of item.baseUPCList) {
+          pickUPList.push({
+            'UPC': base.UPC,
+            'qty': base.qty
+          })
+        }
+      }
+      console.log(pickUPList)
+      this.$router.push({
+        name: 'batchPickPlan',
+        params: { upcQtyList: pickUPList }
+      })
     },
     printContent () {
       const element = document.getElementById('printable')

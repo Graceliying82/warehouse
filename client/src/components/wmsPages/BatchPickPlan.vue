@@ -240,7 +240,6 @@ export default {
           }
         } else {
           for (let aUPC of this.retUPCQtyList) {
-            console.log(aUPC)
             let leftQty = aUPC.reqQty
             for (let alocIn of aUPC.locationInventory) {
               let idx = -1

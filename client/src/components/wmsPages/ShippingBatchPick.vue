@@ -200,6 +200,7 @@ export default {
           }
         }
       }
+      console.log(this.upcQtyList)
       this.$router.push({
         name: 'batchPickPlan',
         params: { upcQtyList: this.upcQtyList }
