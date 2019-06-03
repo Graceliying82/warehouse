@@ -137,12 +137,12 @@ module.exports = {
 
   async get(req, res, next) {
     let invCollection = req.db.collection("inventoryReceive");
-    if ((req.query.startDate !== undefined) && (req.query.endDate !== undefined)) {
-      // Handle logic of get data by startDate and endDate
-      var startDate = new Date(req.query.startDate).getTime() 
-      var endDate = new Date(req.query.endDate).getTime()
-      if (req.query.orgNm == undefined) {
-        try {
+    try {
+      if ((req.query.startDate !== undefined) && (req.query.endDate !== undefined)) {
+        // Handle logic of get data by startDate and endDate
+        var startDate = new Date(req.query.startDate).getTime() 
+        var endDate = new Date(req.query.endDate).getTime()
+        if (req.query.orgNm == undefined) {
           let invResult = await invCollection.find({
             crtStmp: {
               $lte: endDate,
@@ -151,15 +151,7 @@ module.exports = {
           }).toArray();
           res.send(makeFlat(invResult))
           res.end()
-        } catch (error) {
-          console.log("Get Org by dates error: " + error)
-          if (error.message === null) {
-            error.message = 'Fail to access database! Try again'
-          };
-          next(error)
-        }
-      } else {
-        try {
+        } else {
           let invResult = await invCollection.find({
             crtStmp: {
               $lte: endDate,
@@ -169,33 +161,25 @@ module.exports = {
           }).toArray();
           res.send(makeFlat(invResult));
           res.end()
-        } catch (error) {
-          console.log("Get Org by dates error: " + error)
-          if (error.message === null) {
-            error.message = 'Fail to access database! Try again'
-          };
-          next(error)
         }
-      }
-    } else if ((req.query.trackingNo !== undefined)) {
-      // Handle logic of checking tracking number existed or not
-      let invResult = await invCollection.find({
-        trNo: req.query.trackingNo
-      }).toArray()
-      res.send(invResult)
-      res.end()
-    } else {
-      try {
+      } else if ((req.query.trackingNo !== undefined)) {
+        // Handle logic of checking tracking number existed or not
+        let invResult = await invCollection.find({
+          trNo: req.query.trackingNo
+        }).toArray()
+        res.send(invResult)
+        res.end()
+      } else {
         let invResult = await invCollection.find().toArray()
         res.send(makeFlat(invResult))
         res.end()
-      } catch (error) {
-        console.log("Get Org error: " + error)
-        if (error.message === null) {
-          error.message = 'Fail to access database! Try again'
-        };
-        next(error)
       }
-   }
+    } catch (error) {
+      console.log("Get Org by dates error: " + error)
+      if (error.message === null) {
+        error.message = 'Fail to access database! Try again'
+      };
+      next(error)
+    }
   }
-};
+}

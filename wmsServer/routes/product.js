@@ -134,6 +134,7 @@ module.exports = {
   // },
   async put(req, res, next) {
     const prdCollection = req.db.collection("product");
+    const invRecCollection = req.db.collection("inventoryReceive")
     try {
       let modifyTime = new Date();
       req.body.crtTm = new Date(modifyTime.toLocaleString() + ' UTC').toISOString().split('.')[0] + ' EST';
@@ -173,6 +174,18 @@ module.exports = {
             }
           },
         );
+        await invRecCollection.updateMany(
+          { // query
+            "rcIts.UPC": req.body._id
+          }, 
+          { // update
+            $set: {
+              mdfTm: req.body.mdfTm, 
+              mdfStmp: req.body.mdfStmp,
+              "rcIts.$.prdNm": req.body.prdNm
+            }
+          },
+        )
       } else {
         // Product doesn't existed. Create a New one.
         req.body.pid = await nextKey.key("product",req.db);

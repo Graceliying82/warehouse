@@ -238,7 +238,7 @@
                         </td>
                       </template>
                     </v-data-table>
-                    <v-flex v-if='changed' mt-2>
+                    <v-flex mt-2 v-if="$store.state.isSupervisor">
                       <v-btn dark @click.prevent="submitMIC()">Submit</v-btn>
                       <v-btn dark @click.prevent="reset()">Reset</v-btn>
                       <v-btn dark @click.prevent="clear()">Clear</v-btn>
@@ -330,7 +330,7 @@
                           <p>Only show Organizations created in Manage Organization</p>
                       </v-flex>
                     </v-layout>
-                    <v-flex v-if='changed' mt-2>
+                    <v-flex mt-2>
                         <v-btn dark @click.prevent="submitICBO()">Submit</v-btn>
                         <v-btn dark @click.prevent="reset()">Reset</v-btn>
                         <v-btn dark @click.prevent="clear()">Clear</v-btn>
@@ -412,7 +412,6 @@ export default {
         '',
         'deep-orange lighten-1'
       ],
-      changed: false,
       totalDelta: 0
     }
   },
@@ -440,7 +439,6 @@ export default {
       this.sellerInv = []
       this.fromInv = []
       this.toInv = []
-      this.changed = false
       this.totalDelta = 0
     },
     clear () {
@@ -519,7 +517,6 @@ export default {
     },
     addDelta (item) {
       this.$forceUpdate()
-      this.changed = true
     },
     async getDetailByUPC (UPC) {
       try {
@@ -584,7 +581,6 @@ export default {
     },
     add (item) {
       this.clearAlert()
-      this.changed = true
       item.qtyDelta += 1
       this.$forceUpdate()
     },
@@ -595,7 +591,6 @@ export default {
     },
     addInvQty () {
       this.clearAlert()
-      this.changed = true
       this.UPCInvList.qty += 1
       this.UPCInvList.qtyDelta += 1
     },
@@ -610,7 +605,6 @@ export default {
     async reset () {
       try {
         this.clearAlert()
-        this.changed = false
         await this.getDetailByUPC(this.savedUPC)
       } catch (error) {
         if (!error.response) {
