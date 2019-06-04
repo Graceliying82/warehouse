@@ -418,13 +418,11 @@ export default {
       }
     },
     PlanBatchPick () {
-      console.log('this.batchPickItems')
-      console.log(this.batchPickItems)
       let pickUPList = []
       for (let item of this.batchPickItems) {
         for (let base of item.baseUPCList) {
           let found = false
-          for (let i = 0; i < pickUPList.length -1; i++) {
+          for (let i = 0; i < pickUPList.length; i++) {
             if (pickUPList[i].UPC === base.UPC) {
               pickUPList[i].qty += base.qty
               found = true
