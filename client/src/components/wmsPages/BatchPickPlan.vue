@@ -213,7 +213,7 @@ export default {
                 if (alocIn.loc === this.pickUPList[i].loc) {
                   // Add one more pick up to this loc
                   let minQty = this.min(leftQty, alocIn.qty)
-                  this.pickUPList[i].items.push({UPC: aUPC.UPC, pid: aUPC.pid, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                  this.pickUPList[i].items.push({UPC: aUPC.UPC, pid: aUPC.pid, prdNm: aUPC.prdNm, qty: minQty})
                   leftQty = leftQty - minQty
                   idx = i
                   break
@@ -250,7 +250,7 @@ export default {
                   if (alocIn.loc === this.pickUPList[i].loc) {
                     // Add one more pick up to this loc
                     let minQty = this.min(leftQty, alocIn.qty)
-                    this.pickUPList[i].items.push({UPC: aUPC.UPC, pid: aUPC.pid, prdNm: aUPC.prdNm, qty: alocIn.qty})
+                    this.pickUPList[i].items.push({UPC: aUPC.UPC, pid: aUPC.pid, prdNm: aUPC.prdNm, qty: minQty})
                     leftQty = leftQty - minQty
                     idx = i
                     break

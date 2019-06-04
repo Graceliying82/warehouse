@@ -423,13 +423,23 @@ export default {
       let pickUPList = []
       for (let item of this.batchPickItems) {
         for (let base of item.baseUPCList) {
-          pickUPList.push({
-            'UPC': base.UPC,
-            'qty': base.qty
-          })
+          let found = false
+          for (let i = 0; i < pickUPList.length -1; i++) {
+            if (pickUPList[i].UPC === base.UPC) {
+              pickUPList[i].qty += base.qty
+              found = true
+              break
+            }
+          }
+          if (!found) {
+            pickUPList.push({
+              'UPC': base.UPC,
+              'qty': base.qty
+            })
+          }
         }
       }
-      console.log(pickUPList)
+      // console.log(pickUPList)
       this.$router.push({
         name: 'batchPickPlan',
         params: { upcQtyList: pickUPList }
