@@ -12,6 +12,27 @@
                 {{ error }}
               </v-alert>
           </v-flex>
+          <v-layout justify-center column>
+            <!-- Scan area -->
+              <v-layout justify-center>
+                <v-toolbar-title>You can Scan or Input a Location</v-toolbar-title>
+              </v-layout>
+              <v-layout justify-center>
+                <v-toolbar-title>Current Showing Location:</v-toolbar-title>
+                <v-toolbar-title style="color:blue;font-weight:bold">{{inputLoc}}</v-toolbar-title>
+              </v-layout>
+              <!-- Manual input area-->
+              <v-layout mx-5 >
+                <v-text-field
+                  label="Location Name"
+                  id="locNo"
+                  clearable
+                  v-on:keydown.enter="changeLocMan"
+                ></v-text-field>
+                <v-btn @click = "changeLocMan">Find</v-btn>
+                <v-btn @click = "resetLocation">Reset</v-btn>
+              </v-layout>
+        </v-layout>
           <v-flex v-for = "(location, i) in locInv" :key = i>
             <panel :title = location.loc>
               <v-layout>
@@ -104,6 +125,8 @@ export default {
       locs: [],
       // location and inventory information
       locInv: [],
+      // User specified Location
+      inputLoc: 'all',
       error: '',
       headers: [
         {
@@ -117,8 +140,14 @@ export default {
       rowsPerPageItems: [30, 60, { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }],
       error1: '',
       UPC1: '',
-      UPCInvList: []
-
+      UPCInvList: [],
+      attributes: {
+        barcode: '',
+        scannerSensitivity: 100,
+        callback: null,
+        hasListener: false,
+        pressedTime: []
+      }
     }
   },
   methods: {
@@ -170,10 +199,100 @@ export default {
           this.error1 = error.response.data.error
         }
       }
+    },
+    async changeLocMan () {
+      this.inputLoc = document.getElementById('locNo').value.trim().toUpperCase()
+      console.log(this.inputLoc)
+      this.getProdInvByLoc(this.inputLoc)
+    },
+    async resetLocation () {
+      this.inputLoc = 'all'
+      this.getProdInvByLoc(this.inputLoc)
+    },
+    onBarcodeScanned (barcode) {
+      barcode = barcode.toUpperCase()
+      this.inputLoc = barcode
+      console.log(this.inputLoc)
+      this.getProdInvByLoc(this.inputLoc)
+    },
+    // Handle Barcode Input
+    // check whether the keystrokes are considered as scanner or human
+    checkInputElapsedTime (timestamp) {
+      // push current timestamp to the register
+      this.attributes.pressedTime.push(timestamp)
+      // when register is full (ready to compare)
+      if (this.attributes.pressedTime.length === 2) {
+        // compute elapsed time between 2 keystrokes
+        let timeElapsed = this.attributes.pressedTime[1] - this.attributes.pressedTime[0]
+        // too slow (assume as human)
+        if (timeElapsed >= this.attributes.scannerSensitivity) {
+          // put latest key char into barcode
+          this.attributes.barcode = event.key
+          // remove(shift) first timestamp in register
+          this.attributes.pressedTime.shift()
+          // not fast enough
+          return false
+        } else {
+          // fast enough (assume as scanner)
+          // reset the register
+          this.attributes.pressedTime = []
+        }
+      }
+      // not able to check (register is empty before pushing) or assumed as scanner
+      return true
+    },
+    addListener (type) {
+      if (this.attributes.hasListener) {
+        this.removeListener(type)
+      }
+      window.addEventListener(type, this.onInputScanned)
+      this.attributes.hasListener = true
+    },
+    removeListener (type) {
+      if (this.attributes.hasListener) {
+        window.removeEventListener(type, this.onInputScanned)
+        this.attributes.hasListener = false
+      }
+    },
+    onInputScanned (event) {
+      // ignore other keydown event that is not a TAB, so there are no duplicate keys
+      if (event.type === 'keydown' && event.keyCode !== 9) {
+        return
+      }
+      if (this.checkInputElapsedTime(Date.now())) {
+        if ((event.keyCode === 13 || event.keyCode === 9) && this.attributes.barcode !== '') {
+          // scanner is done and trigger Enter/Tab then clear barcode and play the sound if it's set as true
+          this.attributes.callback(this.attributes.barcode)
+          // clear textbox
+          this.attributes.barcode = ''
+          // clear pressedTime
+          this.attributes.pressedTime = []
+          // prevent TAB navigation for scanner
+          if (event.keyCode === 9) {
+            event.preventDefault()
+          }
+        } else {
+          // scan and validate each charactor
+          this.attributes.barcode += event.key
+        }
+      }
+    },
+    barcodeInit (callback) {
+      this.addListener('keypress')
+      this.addListener('keydown')
+      this.attributes.callback = callback
+    },
+    barcodeDestroy () {
+      this.removeListener('keypress')
+      this.removeListener('keydown')
     }
   },
   created () {
-    this.getProdInvByLoc('all')
+    this.barcodeInit(this.onBarcodeScanned)
+    this.getProdInvByLoc(this.inputLoc)
+  },
+  destroyed () {
+    this.barcodeDestroy()
   }
 }
 </script>
