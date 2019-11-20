@@ -726,7 +726,7 @@ export default {
           if (!mergeOrder) {
             readyUploadOrders.push({
               'orderID': aOrder.OrderID.trim(),
-              'trNo': aOrder.TrackingNo.trim(),
+              'trNo': aOrder.TrackingNo.trim().toUpperCase(),
               'orgNm': aOrder.OrgName.trim(),
               'rcIts': orderItems,
               'status': 'ready'

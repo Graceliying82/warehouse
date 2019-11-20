@@ -670,7 +670,7 @@ export default {
         // Send data to server
         await Inventory.post({
           // tracking No
-          'trNo': trNo,
+          'trNo': trNo.toUpperCase(),
           // OrgName
           'orgNm': orgNm,
           'note': '',

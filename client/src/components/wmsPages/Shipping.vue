@@ -241,7 +241,7 @@ export default {
       // Logic to get order information by tracking No
       try {
         let result = (await Shipment.getByShipmentId({
-          'trackingNo': trackingNo,
+          'trackingNo': trackingNo.toUpperCase(),
           'orderID': ''
         })).data
         if (result) {
@@ -285,7 +285,7 @@ export default {
     changeTrackingMan () {
       this.clearAlert()
       this.clearUp()
-      let aTracking = document.getElementById('trackingNo').value.trim()
+      let aTracking = document.getElementById('trackingNo').value.trim().toUpperCase()
       this.handleTrackingNo(aTracking)
     },
     async changePidMan () {
