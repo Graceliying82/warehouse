@@ -198,6 +198,7 @@ export default {
     onBarcodeScanned (barcode) {
       this.clearAlert()
       if (this.currentScan === 'Move in Location') {
+        barcode = barcode.toUpperCase()
         this.checkLocationExisted(barcode).then((existed) => {
           if (existed) {
             this.miLoc1 = barcode
@@ -212,7 +213,7 @@ export default {
     },
     changeMiLocMan () {
       this.clearAlert()
-      let aLoc = document.getElementById('miLocMan').value.trim()
+      let aLoc = document.getElementById('miLocMan').value.trim().toUpperCase()
       this.checkLocationExisted(aLoc).then((existed) => {
         if (existed) {
           this.miLoc1 = aLoc

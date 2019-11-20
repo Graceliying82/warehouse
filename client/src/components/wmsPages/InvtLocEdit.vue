@@ -157,7 +157,7 @@ export default {
       try {
         // Send data to server
         await Location.post({
-          'locID': this.locationID.trim(),
+          'locID': this.locationID.trim().toUpperCase(),
           'dspt': this.locationDescription
         })
         this.message1 = 'Successfully Added a new location ID: '
