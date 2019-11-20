@@ -240,8 +240,13 @@ export default {
       // console.log(trackingNo)
       // Logic to get order information by tracking No
       try {
+        trackingNo = trackingNo.toUpperCase()
+        if (trackingNo.startsWith('FBA')) {
+          trackingNo = trackingNo.substring(0, 12)
+          console.log(trackingNo)
+        }
         let result = (await Shipment.getByShipmentId({
-          'trackingNo': trackingNo.toUpperCase(),
+          'trackingNo': trackingNo,
           'orderID': ''
         })).data
         if (result) {

@@ -172,10 +172,10 @@ module.exports = {
         error.status = 400;
         return next(error)
       }
-      await module.exports.calcShipStatus(req.db, shipment._id);
       if (shipment === null) {
         console.log('Tracking No ' + req.params.Id + ' is not found');
       } else {
+        await module.exports.calcShipStatus(req.db, shipment._id);
         if (shipment.rcIts) {
           for (i =0; i < shipment.rcIts.length; i++) {
             let prod = await prdCollection.findOne({_id: shipment.rcIts[i].UPC});
