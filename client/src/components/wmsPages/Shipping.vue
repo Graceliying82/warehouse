@@ -372,14 +372,18 @@ export default {
     },
     onBarcodeScanned (barcode) {
       this.clearAlert()
-      if (this.currentScan === 'Tracking No') {
-        this.handleTrackingNo(barcode.toUpperCase())
-      } else if (this.currentScan === 'UPC') {
-        this.handleUPCInput(barcode)
-      } else if (this.currentScan === 'SN') {
-        this.scannedSN = barcode
-        this.updateScannedItems()
-        this.currentScan = 'UPC'
+      if (barcode === 'WMS-SUBMIT') {
+        this.submit()
+      } else {
+        if (this.currentScan === 'Tracking No') {
+          this.handleTrackingNo(barcode.toUpperCase())
+        } else if (this.currentScan === 'UPC') {
+          this.handleUPCInput(barcode)
+        } else if (this.currentScan === 'SN') {
+          this.scannedSN = barcode
+          this.updateScannedItems()
+          this.currentScan = 'UPC'
+        }
       }
     },
     checkData () {
@@ -394,7 +398,9 @@ export default {
     },
     async submit () {
       this.clearAlert()
-      if (this.checkData()) {
+      if (this.trackingNo === '') {
+        this.setAlertDialog('Please input a tracking first!')
+      } else if (this.checkData()) {
         console.log('Passed Check!')
         try {
           await Shipment.ship({

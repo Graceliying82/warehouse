@@ -650,6 +650,7 @@ export default {
       this.uploadButton = true
       await this.transPIDToUPC(orders)
       for (let aOrder of orders) {
+        aOrder.TrackingNo = aOrder.TrackingNo.toUpperCase()
         // aOrder[status] = 'Success'
         aOrder.status = 'Pass Check'
         // Order ID, trackingNo can not be empty. UPC is a must have
