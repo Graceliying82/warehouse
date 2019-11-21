@@ -165,6 +165,21 @@ module.exports = {
       let shipment = null;
       if (req.body.trackingNo !== '') {
         shipment = await shipCollection.findOne({ _id: req.body.trackingNo });
+        if (shipment === null) {
+          // Use fuzzy matching
+          let fuzzy = await shipCollection.find({ _id: new RegExp(req.body.trackingNo) }).toArray();
+          if (fuzzy !== null) {
+            if ( fuzzy.length > 1 ) {
+              const error = new Error('Multiple records found. Please check!');
+              error.status = 400;
+              return next(error)
+            } else if ( fuzzy.length === 0 ) {
+              shipment = null
+            } else {
+              shipment = fuzzy[0]
+            }
+          }
+        }
       } else if (req.body.orderID !== '') {
         shipment = await shipCollection.findOne({ orderID: req.body.orderID });
       } else {

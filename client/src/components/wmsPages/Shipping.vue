@@ -30,10 +30,8 @@
           <v-layout mx-5 >
             <v-text-field
               label="Tracking No"
-              v-model="trackingInput"
               id="trackingNo"
               clearable
-              v-on:keydown.enter="changeTrackingMan"
             ></v-text-field>
             <v-btn @click = "changeTrackingMan">Find</v-btn>
           </v-layout>
@@ -175,7 +173,6 @@ export default {
         pressedTime: []
       },
       currentScan: 'Tracking No',
-      trackingInput: '',
       // items to be showed on pages
       trackingNo: '',
       PID: '',
@@ -234,13 +231,11 @@ export default {
       this.scannedUPC = ''
       this.scannedSN = ''
       this.HighLightIdx = -1
-      this.trackingInput = ''
     },
     async handleTrackingNo (trackingNo) {
       // console.log(trackingNo)
       // Logic to get order information by tracking No
       try {
-        trackingNo = trackingNo.toUpperCase()
         if (trackingNo.startsWith('FBA')) {
           trackingNo = trackingNo.substring(0, 12)
           console.log(trackingNo)
@@ -287,7 +282,7 @@ export default {
         }
       }
     },
-    changeTrackingMan () {
+    async changeTrackingMan () {
       this.clearAlert()
       this.clearUp()
       let aTracking = document.getElementById('trackingNo').value.trim().toUpperCase()
@@ -378,7 +373,7 @@ export default {
     onBarcodeScanned (barcode) {
       this.clearAlert()
       if (this.currentScan === 'Tracking No') {
-        this.handleTrackingNo(barcode)
+        this.handleTrackingNo(barcode.toUpperCase())
       } else if (this.currentScan === 'UPC') {
         this.handleUPCInput(barcode)
       } else if (this.currentScan === 'SN') {
