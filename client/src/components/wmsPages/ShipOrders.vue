@@ -158,6 +158,8 @@
               <div class="font-weight-bold text-xs-left">Tracking NO: {{orderBasic._id}}</div>
               <div class="font-weight-bold text-xs-left">Org Name : {{orderBasic.orgNm}}</div>
               <div class="font-weight-bold text-xs-left">Status : {{orderBasic.status}}</div>
+              <div class="font-weight-bold text-xs-left">CreateBy : {{orderBasic.createBy}}</div>
+              <div class="font-weight-bold text-xs-left">ShipBy : {{orderBasic.shipBy}}</div>
               <br>
               <v-card color = 'grey lighten-4' v-if="orderBasic.status==='shipped'">
                 <v-layout column>
@@ -425,14 +427,16 @@ export default {
         _id: '',
         orgNm: '',
         status: '',
-        orderDetail: []
+        orderDetail: [],
+        createBy: '',
+        shipBy: ''
       },
       trackingMan: '',
       orderID: '',
       orderForShip: [],
       menu: false,
       slider: 1,
-      statusType: ['ready', 'backOrder', 'upgrade', 'all'],
+      statusType: ['ready', 'backOrder', 'upgrade', 'shipped', 'all'],
       statusTypeFilter: 'ready',
       currentDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
       startDate: new Date(new Date().toLocaleString() + ' UTC').toISOString().split('T')[0],
@@ -809,6 +813,10 @@ export default {
       this.orderBasic.orgNm = result.orgNm
       this.orderBasic.status = result.status
       this.orderBasic.orderDetail = result.rcIts
+      this.orderBasic.createBy = result.userID
+      if (result.shipBy !== null) {
+        this.orderBasic.shipBy = result.shipBy
+      }
       if (this.orderBasic.status === 'shipped') {
         this.orderBasic.UPCandSN = result.UPCandSN
       } else {
