@@ -372,7 +372,7 @@ export default {
     },
     onBarcodeScanned (barcode) {
       this.clearAlert()
-      if (barcode === 'WMS-SUBMIT') {
+      if (barcode.toUpperCase() === 'WMS-SUBMIT') {
         this.submit()
       } else {
         if (this.currentScan === 'Tracking No') {
