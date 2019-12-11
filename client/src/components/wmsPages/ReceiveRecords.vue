@@ -209,6 +209,10 @@
                 {{ props.item.qn }}
               </td>
               <td
+                class="text-xs-left">
+                {{ props.item.usrID }}
+              </td>
+              <td
                 class="justify-center layout px-0">
                 <v-btn icon class="mx-0" @click="editItem(props.item)">
                   <v-icon color="teal">edit</v-icon>
@@ -256,6 +260,7 @@ export default {
         { text: 'OrgName', value: 'orgName' },
         { text: 'Price', value: 'price' },
         { text: 'Quantity', value: 'qn', sortable: false },
+        { text: 'UsrID', value: 'usrID' },
         { text: 'Actions', value: 'id', sortable: false }
       ],
       items: [],
@@ -267,6 +272,7 @@ export default {
         'UPC': 'UPC',
         'Price': 'price',
         'Quantity': 'qn',
+        'UsrID': 'usrID',
         'Note': 'note'
       },
       editedIndex: -1,

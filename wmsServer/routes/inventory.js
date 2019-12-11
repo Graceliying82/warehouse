@@ -15,7 +15,8 @@ function makeFlat(invResult) {
         UPC: invResult[i].rcIts[j].UPC,
         productName: invResult[i].rcIts[j].prdNm,
         qn: invResult[i].rcIts[j].qn,
-        price: invResult[i].rcIts[j].price / 100
+        price: invResult[i].rcIts[j].price / 100,
+        usrID: invResult[i].usrID
       })
     }
   }
