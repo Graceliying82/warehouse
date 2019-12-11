@@ -69,10 +69,15 @@ export default {
     handleCodes () {
       if (this.codes.length !== 0) {
         // Have to get rid of the last ';' in codes
-        this.codes = this.codes.substring(0, this.codes.length - 1)
+        if (this.codes.charAt(this.codes.length - 1) === ';') {
+          this.codes = this.codes.substring(0, this.codes.length - 1)
+        }
+        // get rid of the white space
+        this.codes = this.codes.replace(/\s+/g, '')
         this.barcodes = this.codes.split(';', 10)
         let atrbName = ''
         for (let i = 0; i < this.barcodes.length; i++) {
+          console.log('@' + this.barcodes[i] + '@')
           atrbName = '#barcode' + i
           // eslint-disable-next-line
           let result = JsBarcode(atrbName, this.barcodes[i])
